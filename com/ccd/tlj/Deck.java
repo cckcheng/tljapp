@@ -1,7 +1,6 @@
 package com.ccd.tlj;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,28 +20,16 @@ public class Deck {
         this.init();
     }
 
-    private List<Card> wholeDeck = new ArrayList<>();
+    private List<Hand> wholeDeck = new ArrayList<>();
 
     public void init() {
-        for (int d = 0; d < this.deckNumber; d++) {
-            for (int rank = 2; rank <= 14; rank++) {
-                wholeDeck.add(new Card(Card.HEART, rank));
-                wholeDeck.add(new Card(Card.CLUB, rank));
-                wholeDeck.add(new Card(Card.DIAMOND, rank));
-                wholeDeck.add(new Card(Card.SPADE, rank));
-            }
-            wholeDeck.add(new Card(Card.BIG_JOKER, Card.BigJoker));
-            wholeDeck.add(new Card(Card.SMALL_JOKER, Card.SmallJoker));
-        }
-
-        Collections.shuffle(wholeDeck);
     }
 
     private void deal(Player player) {
         int reserved = this.totalCards % this.playerNumber;
         if (reserved < this.playerNumber / 2) reserved += this.playerNumber;
         int num = (this.totalCards - reserved) / this.playerNumber;
-        List<Card> cards = wholeDeck.subList(0, num);
+        List<Hand> cards = wholeDeck.subList(0, num);
         player.addCards(cards);
         wholeDeck.removeAll(cards);
     }

@@ -10,52 +10,26 @@ import java.util.List;
  */
 public class Player {
 
-    private List<Card> hand = new ArrayList<>();
-    private List<Card> jokers = new ArrayList<>();
-    private List<Card> spades = new ArrayList<>();
-    private List<Card> hearts = new ArrayList<>();
-    private List<Card> diamonds = new ArrayList<>();
-    private List<Card> clubs = new ArrayList<>();
-    private List<Card> trumps = new ArrayList<>();
+    private List<Hand> hand = new ArrayList<>();
+    private List<Hand> jokers = new ArrayList<>();
+    private List<Hand> spades = new ArrayList<>();
+    private List<Hand> hearts = new ArrayList<>();
+    private List<Hand> diamonds = new ArrayList<>();
+    private List<Hand> clubs = new ArrayList<>();
+    private List<Hand> trumps = new ArrayList<>();
 
     public Player() {
     }
 
-    public void addCards(List<Card> cards) {
+    public void addCards(List<Hand> cards) {
         this.hand.addAll(cards);
         Collections.sort(hand, Collections.reverseOrder());
 
-        for (Card c : cards) {
-            switch (c.getSuite()) {
-                case Card.BIG_JOKER:
-                case Card.SMALL_JOKER:
-                    this.jokers.add(c);
-                    break;
-                case Card.SPADE:
-                    this.spades.add(c);
-                    break;
-                case Card.HEART:
-                    this.hearts.add(c);
-                    break;
-                case Card.DIAMOND:
-                    this.diamonds.add(c);
-                    break;
-                case Card.CLUB:
-                    this.clubs.add(c);
-                    break;
-            }
-        }
-
-        Collections.sort(this.jokers);
-        Collections.sort(this.spades);
-        Collections.sort(this.hearts);
-        Collections.sort(this.diamonds);
-        Collections.sort(this.clubs);
     }
 
     public String showCards() {
         StringBuilder sb = new StringBuilder();
-        for (Card c : this.hand) {
+        for (Hand c : this.hand) {
             sb.append(c.toString());
         }
 
@@ -64,23 +38,23 @@ public class Player {
 
     public String showSplitCards() {
         StringBuilder sb = new StringBuilder();
-        for (Card c : this.jokers) {
+        for (Hand c : this.jokers) {
             sb.append(c.toString());
         }
         sb.append("\n");
-        for (Card c : this.spades) {
+        for (Hand c : this.spades) {
             sb.append(c.toString());
         }
         sb.append("\n");
-        for (Card c : this.hearts) {
+        for (Hand c : this.hearts) {
             sb.append(c.toString());
         }
         sb.append("\n");
-        for (Card c : this.diamonds) {
+        for (Hand c : this.diamonds) {
             sb.append(c.toString());
         }
         sb.append("\n");
-        for (Card c : this.clubs) {
+        for (Hand c : this.clubs) {
             sb.append(c.toString());
         }
         sb.append("\n");

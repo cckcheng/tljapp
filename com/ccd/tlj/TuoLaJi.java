@@ -5,9 +5,8 @@ import com.codename1.io.Log;
 import static com.codename1.ui.CN.*;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Form;
-import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
-import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.Resources;
 
@@ -51,8 +50,67 @@ public class TuoLaJi {
             current.show();
             return;
         }
-        Form hi = new Form("Hi World", BoxLayout.y());
-        hi.add(new Label("Hi World"));
+        Form hi = new Form("", new BorderLayout());
+
+//        String s = "Hi World->\n" + "\u2660K";
+//        String s = "Hi World: " + Character.toChars(0x1F0B4);
+        String s = "Hi World: " + "\uD83C\uDCC1";
+//        hi.add(BorderLayout.NORTH, new Label(s));
+        Hand hand = new Hand();
+        hand.addCard(new Card('S', 8));
+        hand.addCard(new Card('H', 9));
+        hand.addCard(new Card('D', 12));
+        hand.addCard(new Card('C', 11));
+        hand.addCard(new Card('D', 14));
+        hand.addCard(new Card('C', 10));
+        hand.addCard(new Card('D', 14));
+        hand.addCard(new Card('C', 10));
+        hand.addCard(new Card('S', 5));
+        hand.addCard(new Card('S', 6));
+
+        hand.addCard(new Card('S', 8));
+        hand.addCard(new Card('H', 9));
+        hand.addCard(new Card('D', 3));
+        hand.addCard(new Card('C', 11));
+        hand.addCard(new Card('H', 12));
+        hand.addCard(new Card('D', 10));
+        hand.addCard(new Card('S', 12));
+        hand.addCard(new Card('H', 10));
+        hand.addCard(new Card('S', 5));
+        hand.addCard(new Card('S', 6));
+
+        hand.addCard(new Card('S', 8));
+        hand.addCard(new Card('H', 9));
+        hand.addCard(new Card('D', 13));
+        hand.addCard(new Card('C', 11));
+        hand.addCard(new Card('D', 13));
+        hand.addCard(new Card('S', 10));
+        hand.addCard(new Card('D', 12));
+        hand.addCard(new Card('H', 10));
+        hand.addCard(new Card('S', 5));
+        hand.addCard(new Card('S', 6));
+
+        hand.addCard(new Card('V', Card.BigJokerRank));
+        hand.addCard(new Card('V', Card.BigJokerRank));
+        hand.addCard(new Card('V', Card.SmallJokerRank));
+        hand.addCard(new Card('H', 9));
+        hand.addCard(new Card('D', 9));
+        hand.addCard(new Card('C', 11));
+        hand.addCard(new Card('D', 12));
+        hand.addCard(new Card('C', 10));
+        hand.addCard(new Card('D', 12));
+        hand.addCard(new Card('C', 10));
+
+        hand.sortCards();
+
+        hi.add(BorderLayout.CENTER, hand);
+
+//        hi.setGlassPane((g, rect) -> {
+//            g.setColor(0x0000ff);
+//            g.drawRoundRect(10, 10, 100, 150, 15, 15);
+//            g.drawString("A", 15, 12);
+//            g.drawString("" + Hand.HEART, 12, 50);
+//        });
         hi.show();
     }
 

@@ -12,84 +12,73 @@ public class Card implements Comparable {
     static final char BIG_JOKER = '\u265B';
     static final char SMALL_JOKER = '\u2657';
 
-    static final int BigJoker = 99;
-    static final int SmallJoker = 33;
-    private char suite;
-    private int rank;
+    static final int SmallJokerRank = 97;
+    static final int BigJokerRank = 98;
 
-    public Card(char suite, int rank) {
+    public final char suite;
+    public final int rank;
+
+    Card(char suite, int rank) {
         this.suite = suite;
         this.rank = rank;
     }
 
-    public char getSuite() {
-        return suite;
-    }
-
-    public int getRank() {
-        return rank;
-    }
-
-    public static int suiteRank(char suite) {
-        int n = 0;
-        switch (suite) {
-            case CLUB:
-                n = 10;
-                break;
-            case DIAMOND:
-                n = 20;
-                break;
-            case HEART:
-                n = 30;
-                break;
-            case SPADE:
-                n = 40;
-                break;
-            case SMALL_JOKER:
-                n = 50;
-                break;
-            case BIG_JOKER:
-                n = 60;
-                break;
-            default:
-                n = 100;
-                break;
+    public int trumpRank(char trumpSuite, int gameRank) {
+        if (this.rank == gameRank) {
+            return this.suite == trumpSuite ? 15 : 14;
         }
-        return n;
+
+        if (this.rank == SmallJokerRank) {
+            return trumpSuite == 'V' ? 16 : 17;
+        }
+        if (this.rank == BigJokerRank) {
+            return trumpSuite == 'V' ? 15 : 16;
+        }
+
+        return this.rank < gameRank ? this.rank : this.rank - 1;
     }
 
-    @Override
-    public String toString() {
-        String s = "";
-        switch (rank) {
+    public String rankToString() {
+        if (this.rank <= 10) return "" + this.rank;
+        switch (this.rank) {
+//            case 10:
+//                return "\u2491";
             case 11:
-                s += 'J';
-                break;
+                return "J";
             case 12:
-                s += 'Q';
-                break;
+                return "Q";
             case 13:
-                s += 'K';
-                break;
+                return "K";
             case 14:
-                s += 'A';
-                break;
-            case BigJoker:
-            case SmallJoker:
-                break;
-            default:
-                s += rank;
+                return "A";
         }
-        return suite + s;
+
+        return "V";
+    }
+
+    public String suiteSign() {
+        switch (this.suite) {
+            case 'S':
+                return "" + SPADE;
+            case 'H':
+                return "" + HEART;
+            case 'D':
+                return "" + DIAMOND;
+            case 'C':
+                return "" + CLUB;
+        }
+
+        return "V";
     }
 
     @Override
     public int compareTo(Object o) {
-        Card other = (Card) o;
-        if (this.suite == other.suite) return this.rank > other.rank ? 1 : (this.rank == other.rank ? 0 : -1);
+        if (o == null) return 1;
+        Card otherCard = (Card) o;
+        if (this.suite == otherCard.suite) {
+            return this.rank - otherCard.rank;
+        }
 
-        int thisSuiteRank = suiteRank(this.suite);
-        int otherSuiteRank = suiteRank(other.suite);
-        return thisSuiteRank > otherSuiteRank ? 1 : (thisSuiteRank == otherSuiteRank ? 0 : -1);
+        return this.suite - otherCard.suite;
     }
 }
