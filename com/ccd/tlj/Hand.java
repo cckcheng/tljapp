@@ -14,6 +14,7 @@ import java.util.List;
 public class Hand extends Component {
 
     private List<Card> cards = new ArrayList<>();
+    private List<Card> selected = new ArrayList<>();
     Hand() {
     }
 
@@ -32,16 +33,19 @@ public class Hand extends Component {
     Font fontSymbol = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_SMALL);
     int xPitch = 40;
     int yPitch = 30;
+    int cardWidth = 100;
+    int cardHeight = 160;
 
     private void drawCard(Graphics g, Card c) {
-        int w = 100;
-        int h = 160;
         int x0 = 5;
-        int y0 = -h;
+        int y0 = -cardHeight;
+        if (this.selected.contains(c)) {
+            y0 -= 10;
+        }
         g.setColor(blackColor);
-        g.drawRoundRect(x0 - 1, y0 - 1, w + 2, h + 2, 10, 10);
+        g.drawRoundRect(x0 - 1, y0 - 1, cardWidth + 2, cardHeight + 2, 10, 10);
         g.setColor(whiteColor);
-        g.fillRoundRect(x0, y0, w, h, 10, 10);
+        g.fillRoundRect(x0, y0, cardWidth, cardHeight, 10, 10);
         if (c.suite == 'S' || c.suite == 'C' || c.rank == Card.SmallJokerRank) {
             g.setColor(blackColor);
         } else {
@@ -76,7 +80,8 @@ public class Hand extends Component {
 //        float dy = (float) getHeight() / 1000;
 //        g.scale(dx, dy);
         int x = getX();
-        int y = getHeight() - 100;
+//        int y = getY() + getHeight() - 100;
+        int y = getY() + getHeight() - 50;
         g.translate(x, y);
         for (Card c : this.cards) {
             drawCard(g, c);
@@ -87,6 +92,19 @@ public class Hand extends Component {
 
     @Override
     public void pointerPressed(int x, int y) {
-        super.pointerPressed(x, y); //To change body of generated methods, choose Tools | Templates.
+        int y0 = getY() + getHeight() + 50;
+        int y1 = y0 - cardHeight;
+        if (y > y0 || y < y1) return;
+        int x0 = getX() + 5;
+        int x1 = x0 + (this.cards.size() - 1) * xPitch + cardWidth;
+        if (x < x0 || x > x1) return;
+        int idx = (x - x0) / xPitch;
+        if (idx >= this.cards.size()) idx = this.cards.size() - 1;
+        Card c = this.cards.get(idx);
+        if (this.selected.contains(c)) {
+            this.selected.remove(c);
+        } else {
+            this.selected.add(c);
+        }
     }
 }
