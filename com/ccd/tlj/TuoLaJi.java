@@ -50,6 +50,10 @@ public class TuoLaJi {
             current.show();
             return;
         }
+
+//        Display disp = Display.getInstance();
+//        disp.lockOrientation(true);
+        lockOrientation(false);
         Form hi = new Form("", new BorderLayout());
 
 //        String s = "Hi World->\n" + "\u2660K";
@@ -69,7 +73,7 @@ public class TuoLaJi {
         hand.addCard(new Card('S', 6));
 
         hand.addCard(new Card('S', 8));
-        hand.addCard(new Card('H', 9));
+        hand.addCard(new Card('D', 9));
         hand.addCard(new Card('D', 3));
         hand.addCard(new Card('C', 11));
         hand.addCard(new Card('H', 12));
@@ -81,7 +85,7 @@ public class TuoLaJi {
 
         hand.addCard(new Card('S', 8));
         hand.addCard(new Card('H', 9));
-        hand.addCard(new Card('D', 13));
+        hand.addCard(new Card('S', 13));
         hand.addCard(new Card('C', 11));
         hand.addCard(new Card('D', 13));
         hand.addCard(new Card('S', 10));
@@ -90,6 +94,7 @@ public class TuoLaJi {
         hand.addCard(new Card('S', 5));
         hand.addCard(new Card('S', 6));
 
+        hand.addCard(new Card('V', Card.BigJokerRank));
         hand.addCard(new Card('V', Card.BigJokerRank));
         hand.addCard(new Card('V', Card.BigJokerRank));
         hand.addCard(new Card('V', Card.SmallJokerRank));

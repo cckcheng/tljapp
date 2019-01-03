@@ -79,6 +79,8 @@ public class Card implements Comparable {
             return this.rank - otherCard.rank;
         }
 
+        if (this.suite == 'D') return -1;
+        if (otherCard.suite == 'D') return 1;
         return this.suite - otherCard.suite;
     }
 }
