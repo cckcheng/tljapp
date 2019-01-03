@@ -62,6 +62,7 @@ public class TuoLaJi {
 //        hi.add(BorderLayout.NORTH, new Label(s));
         Hand hand = new Hand();
         hand.addCard(new Card('S', 8));
+        hand.addCard(new Card('S', 8));
         hand.addCard(new Card('H', 9));
         hand.addCard(new Card('D', 12));
         hand.addCard(new Card('C', 11));
@@ -70,15 +71,12 @@ public class TuoLaJi {
         hand.addCard(new Card('D', 14));
         hand.addCard(new Card('C', 10));
         hand.addCard(new Card('S', 5));
-        hand.addCard(new Card('S', 6));
 
-        hand.addCard(new Card('S', 8));
         hand.addCard(new Card('D', 9));
         hand.addCard(new Card('D', 3));
         hand.addCard(new Card('C', 11));
         hand.addCard(new Card('H', 12));
         hand.addCard(new Card('D', 10));
-        hand.addCard(new Card('S', 12));
         hand.addCard(new Card('H', 10));
         hand.addCard(new Card('S', 5));
         hand.addCard(new Card('S', 6));
@@ -94,8 +92,6 @@ public class TuoLaJi {
         hand.addCard(new Card('S', 5));
         hand.addCard(new Card('S', 6));
 
-        hand.addCard(new Card('V', Card.BigJokerRank));
-        hand.addCard(new Card('V', Card.BigJokerRank));
         hand.addCard(new Card('V', Card.BigJokerRank));
         hand.addCard(new Card('V', Card.SmallJokerRank));
         hand.addCard(new Card('H', 9));
