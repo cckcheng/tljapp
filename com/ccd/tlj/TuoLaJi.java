@@ -4,7 +4,9 @@ package com.ccd.tlj;
 import com.codename1.io.Log;
 import static com.codename1.ui.CN.*;
 import com.codename1.ui.Dialog;
+import com.codename1.ui.Display;
 import com.codename1.ui.Form;
+import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.plaf.UIManager;
@@ -16,6 +18,7 @@ import com.codename1.ui.util.Resources;
  */
 public class TuoLaJi {
 
+    static public int BACKGROUND_COLOR = 0x008000;
     private Form current;
     private Resources theme;
 
@@ -51,68 +54,85 @@ public class TuoLaJi {
             return;
         }
 
-//        Display disp = Display.getInstance();
-//        disp.lockOrientation(true);
-        lockOrientation(false);
-        Form hi = new Form("", new BorderLayout());
-
-//        String s = "Hi World->\n" + "\u2660K";
 //        String s = "Hi World: " + Character.toChars(0x1F0B4);
-        String s = "Hi World: " + "\uD83C\uDCC1";
-//        hi.add(BorderLayout.NORTH, new Label(s));
+//        String s = "Player 1: " + "\uD83C\uDCC1";
+        Display disp = Display.getInstance();
+        disp.lockOrientation(false);
+
+        BorderLayout layout = new BorderLayout();
+        Form mainForm = new Form("", layout);
+        mainForm.getStyle().setBgColor(BACKGROUND_COLOR);
+
+        String title = "Bid Tractor";
+        Label lbTitle = new Label(title);
+        lbTitle.getStyle().setAlignment(CENTER);
+//        lbTitle.setHeight(30);
+//        mainForm.add(BorderLayout.NORTH, lbTitle);
+//        layout.getNorth().setHeight(60);
+
+        String playerInfo = "Player 1, Rank 2, Current Contractor";
+        Label lbInfo = new Label(playerInfo);
+        lbInfo.getStyle().setAlignment(CENTER);
+
+        mainForm.add(BorderLayout.SOUTH, lbInfo);
+//        layout.getSouth().setHeight(30);
+
         Hand hand = new Hand();
-        hand.addCard(new Card('S', 8));
-        hand.addCard(new Card('S', 8));
-        hand.addCard(new Card('H', 9));
-        hand.addCard(new Card('D', 12));
-        hand.addCard(new Card('C', 11));
-        hand.addCard(new Card('D', 14));
-        hand.addCard(new Card('C', 10));
-        hand.addCard(new Card('D', 14));
-        hand.addCard(new Card('C', 10));
-        hand.addCard(new Card('S', 5));
+        hand.addCard(new Card(Card.SPADE, 8));
+        hand.addCard(new Card(Card.SPADE, 8));
+        hand.addCard(new Card(Card.CLUB, 9));
+        hand.addCard(new Card(Card.DIAMOND, 12));
+        hand.addCard(new Card(Card.CLUB, 11));
+        hand.addCard(new Card(Card.DIAMOND, 14));
+        hand.addCard(new Card(Card.CLUB, 10));
+        hand.addCard(new Card(Card.DIAMOND, 14));
+        hand.addCard(new Card(Card.CLUB, 10));
+        hand.addCard(new Card(Card.SPADE, 5));
 
-        hand.addCard(new Card('D', 9));
-        hand.addCard(new Card('D', 3));
-        hand.addCard(new Card('C', 11));
-        hand.addCard(new Card('H', 12));
-        hand.addCard(new Card('D', 10));
-        hand.addCard(new Card('H', 10));
-        hand.addCard(new Card('S', 5));
-        hand.addCard(new Card('S', 6));
+        hand.addCard(new Card(Card.DIAMOND, 9));
+        hand.addCard(new Card(Card.DIAMOND, 3));
+        hand.addCard(new Card(Card.CLUB, 11));
+        hand.addCard(new Card(Card.DIAMOND, 12));
+        hand.addCard(new Card(Card.DIAMOND, 10));
+        hand.addCard(new Card(Card.DIAMOND, 10));
+        hand.addCard(new Card(Card.SPADE, 5));
+        hand.addCard(new Card(Card.SPADE, 6));
+        hand.addCard(new Card(Card.SPADE, 8));
+        hand.addCard(new Card(Card.DIAMOND, 9));
 
-        hand.addCard(new Card('S', 8));
-        hand.addCard(new Card('H', 9));
-        hand.addCard(new Card('S', 13));
-        hand.addCard(new Card('C', 11));
-        hand.addCard(new Card('D', 13));
-        hand.addCard(new Card('S', 10));
-        hand.addCard(new Card('D', 12));
-        hand.addCard(new Card('H', 10));
-        hand.addCard(new Card('S', 5));
-        hand.addCard(new Card('S', 6));
+        hand.addCard(new Card(Card.SPADE, 13));
+        hand.addCard(new Card(Card.CLUB, 11));
+        hand.addCard(new Card(Card.DIAMOND, 13));
+        hand.addCard(new Card(Card.SPADE, 10));
+        hand.addCard(new Card(Card.DIAMOND, 12));
+        hand.addCard(new Card(Card.CLUB, 10));
+        hand.addCard(new Card(Card.SPADE, 5));
+        hand.addCard(new Card(Card.SPADE, 6));
+        hand.addCard(new Card(Card.JOKER, Card.BigJokerRank));
+        hand.addCard(new Card(Card.JOKER, Card.SmallJokerRank));
 
-        hand.addCard(new Card('V', Card.BigJokerRank));
-        hand.addCard(new Card('V', Card.SmallJokerRank));
-        hand.addCard(new Card('H', 9));
-        hand.addCard(new Card('D', 9));
-        hand.addCard(new Card('C', 11));
-        hand.addCard(new Card('D', 12));
-        hand.addCard(new Card('C', 10));
-        hand.addCard(new Card('D', 12));
-        hand.addCard(new Card('C', 10));
+        hand.addCard(new Card(Card.CLUB, 9));
+        hand.addCard(new Card(Card.CLUB, 9));
+        hand.addCard(new Card(Card.CLUB, 9));
+        hand.addCard(new Card(Card.CLUB, 9));
+        hand.addCard(new Card(Card.CLUB, 9));
 
-        hand.sortCards();
+        hand.sortCards('#', 0, true);
+//        hand.addCard(new Card(Card.HEART, 9));
+//        hand.addCard(new Card(Card.DIAMOND, 9));
+//        hand.addCard(new Card(Card.CLUB, 11));
+//        hand.addCard(new Card(Card.DIAMOND, 12));
+//        hand.addCard(new Card(Card.CLUB, 10));
+//        hand.addCard(new Card(Card.DIAMOND, 12));
+//        hand.sortCards('#', 0, true);
 
-        hi.add(BorderLayout.CENTER, hand);
+        mainForm.add(BorderLayout.CENTER, hand);
 
-//        hi.setGlassPane((g, rect) -> {
-//            g.setColor(0x0000ff);
-//            g.drawRoundRect(10, 10, 100, 150, 15, 15);
-//            g.drawString("A", 15, 12);
-//            g.drawString("" + Hand.HEART, 12, 50);
-//        });
-        hi.show();
+        mainForm.show();
+//        hand.sortCards(Card.CLUB, 10, false);
+//        hand.sortCards(Card.JOKER, 10, false);
+        hand.sortCards(Card.DIAMOND, 7, false);
+        //     mainForm.repaint();
     }
 
     public void stop() {

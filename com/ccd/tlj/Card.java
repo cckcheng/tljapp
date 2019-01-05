@@ -5,12 +5,13 @@ package com.ccd.tlj;
  * @author ccheng
  */
 public class Card implements Comparable {
-    static final char SPADE = '\u2660';
-    static final char HEART = '\u2665';
-    static final char DIAMOND = '\u2666';
-    static final char CLUB = '\u2663';
-    static final char BIG_JOKER = '\u265B';
-    static final char SMALL_JOKER = '\u2657';
+    static final char SPADE = 'S';
+    static final char HEART = 'H';
+    static final char DIAMOND = 'D';
+    static final char CLUB = 'C';
+    static final char JOKER = 'V';
+//    static final char BIG_JOKER = '\u265B';
+//    static final char SMALL_JOKER = '\u2657';
 
     static final int SmallJokerRank = 97;
     static final int BigJokerRank = 98;
@@ -29,10 +30,10 @@ public class Card implements Comparable {
         }
 
         if (this.rank == SmallJokerRank) {
-            return trumpSuite == 'V' ? 16 : 17;
+            return trumpSuite == Card.JOKER ? 16 : 17;
         }
         if (this.rank == BigJokerRank) {
-            return trumpSuite == 'V' ? 15 : 16;
+            return trumpSuite == Card.JOKER ? 15 : 16;
         }
 
         return this.rank < gameRank ? this.rank : this.rank - 1;
@@ -58,17 +59,17 @@ public class Card implements Comparable {
 
     public String suiteSign() {
         switch (this.suite) {
-            case 'S':
-                return "" + SPADE;
-            case 'H':
-                return "" + HEART;
-            case 'D':
-                return "" + DIAMOND;
-            case 'C':
-                return "" + CLUB;
+            case SPADE:
+                return "\u2660";
+            case HEART:
+                return "\u2665";
+            case DIAMOND:
+                return "\u2666";
+            case CLUB:
+                return "\u2663";
         }
 
-        return "V";
+        return "" + JOKER;
     }
 
     @Override
@@ -79,8 +80,8 @@ public class Card implements Comparable {
             return this.rank - otherCard.rank;
         }
 
-        if (this.suite == 'D') return -1;
-        if (otherCard.suite == 'D') return 1;
+        if (this.suite == DIAMOND) return -1;
+        if (otherCard.suite == DIAMOND) return 1;
         return this.suite - otherCard.suite;
     }
 }
