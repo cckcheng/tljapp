@@ -285,8 +285,8 @@ public class Hand extends Component {
     int blackColor = 0x000000;
     int redColor = 0xff0000;
     int whiteColor = 0xffffff;
-    Font fontRank = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_LARGE);
-    Font fontSymbol = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_SMALL);
+    static public Font fontRank = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_LARGE);
+    static public Font fontSymbol = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_SMALL);
 
     private void drawCard(Graphics g, Card c) {
         int x0 = 5;
@@ -338,7 +338,7 @@ public class Hand extends Component {
 
     boolean flip = false;
     @Override
-    public void paint(Graphics g) {
+    public void paintBackground(Graphics g) {
         g.translate(-g.getTranslateX(), -g.getTranslateY());
 //        g.clearRect(0, 0, getWidth(), getY() + getHeight());
         if (flip) return;

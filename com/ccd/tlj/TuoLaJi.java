@@ -2,13 +2,17 @@ package com.ccd.tlj;
 
 
 import com.codename1.io.Log;
+import com.codename1.ui.Button;
 import static com.codename1.ui.CN.*;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
+import com.codename1.ui.TextArea;
+import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.Resources;
 
@@ -59,23 +63,59 @@ public class TuoLaJi {
         Display disp = Display.getInstance();
         disp.lockOrientation(false);
 
-        BorderLayout layout = new BorderLayout();
-        Form mainForm = new Form("", layout);
-        mainForm.getStyle().setBgColor(BACKGROUND_COLOR);
-
         String title = "Bid Tractor";
+//        String title = "";
+        BoxLayout layout = BoxLayout.y();
+        Form mainForm = new Form(title, layout);
+        mainForm.getStyle().setBgColor(BACKGROUND_COLOR);
+        mainForm.getToolbar().hideToolbar();
+//        mainForm.getToolbar().addCommandToLeftSideMenu("New Game", null, (e) -> {
+//            Log.p("Start New Game");
+//        });
+
+//        Style sTitle = mainForm.getToolbar().getTitleComponent().getUnselectedStyle();
+//        sTitle.setFont(Hand.fontSymbol);
         Label lbTitle = new Label(title);
-        lbTitle.getStyle().setAlignment(CENTER);
-//        lbTitle.setHeight(30);
-//        mainForm.add(BorderLayout.NORTH, lbTitle);
-//        layout.getNorth().setHeight(60);
+//        lbTitle.getStyle().setAlignment(CENTER);
+        mainForm.add(lbTitle);
 
-        String playerInfo = "Player 1, Rank 2, Current Contractor";
-        Label lbInfo = new Label(playerInfo);
-        lbInfo.getStyle().setAlignment(CENTER);
+        TextField pName = new TextField("", "Your Name", 20, TextArea.ANY);
+//        Button bPlay = new Button("Play", "PlayButton");
+        Button bPlay = new Button("Play");
+        bPlay.addActionListener((e) -> {
+            String playerName = pName.getText().trim();
+            if (playerName.isEmpty()) {
+                Dialog.show("Name Required", "Please input your name", "OK", "");
+            } else {
+                startGame(mainForm, playerName);
+            }
+        });
+        Button bExit = new Button("Exit");
+        bExit.addActionListener((e) -> {
+            if (this.player != null) {
+                player.disconnect();
+            } else {
+                Display.getInstance().exitApplication();
+            }
+        });
+        mainForm.add(pName)
+                .add(bPlay)
+                .add(bExit);
 
-        mainForm.add(BorderLayout.SOUTH, lbInfo);
-//        layout.getSouth().setHeight(30);
+        mainForm.show();
+    }
+
+    private Player player = null;
+
+    private void startGame(Form mainForm, String playerName) {
+        if (this.player == null) {
+            player = new Player(playerName, mainForm);
+        }
+
+        player.connectServer();
+        if (true) {
+            return;
+        }
 
         Hand hand = new Hand();
         hand.addCard(new Card(Card.SPADE, 8));
@@ -127,12 +167,15 @@ public class TuoLaJi {
 //        hand.sortCards('#', 0, true);
 
         mainForm.add(BorderLayout.CENTER, hand);
-
-        mainForm.show();
 //        hand.sortCards(Card.CLUB, 10, false);
 //        hand.sortCards(Card.JOKER, 10, false);
         hand.sortCards(Card.DIAMOND, 7, false);
-        //     mainForm.repaint();
+
+        String playerInfo = playerName + ", Rank 2, Current Contractor";
+        Label lbInfo = new Label(playerInfo);
+        lbInfo.getStyle().setAlignment(CENTER);
+
+        mainForm.add(BorderLayout.SOUTH, lbInfo);
     }
 
     public void stop() {
