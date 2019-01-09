@@ -61,7 +61,7 @@ public class Hand extends Component {
         this.xPitch = w / MAX_CARDS;
         this.yPitch = (this.cardHeight - 10) / 5;
 
-        this.hReserved = -(this.yPitch * 4);
+        this.hReserved = this.yPitch * 2 + 10;
         this.maxWidth = w;
     }
 
@@ -349,7 +349,7 @@ public class Hand extends Component {
         int y0 = getY() + getHeight() - hReserved;
         int y1 = y0 - cardHeight * 5 / 6;
 
-        g.fillRect(0, 0, getX() + getWidth(), y0 + 15);
+        g.fillRect(0, 0, getX() + getWidth(), getY() + getHeight());
 
         g.translate(x, y1);
         int px = this.xPitch;

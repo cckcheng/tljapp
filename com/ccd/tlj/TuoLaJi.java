@@ -4,6 +4,7 @@ package com.ccd.tlj;
 import com.codename1.io.Log;
 import com.codename1.ui.Button;
 import static com.codename1.ui.CN.*;
+import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Form;
@@ -11,8 +12,8 @@ import com.codename1.ui.Label;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
-import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.Resources;
 
@@ -63,7 +64,8 @@ public class TuoLaJi {
         Display disp = Display.getInstance();
         disp.lockOrientation(false);
 
-        String title = "Bid Tractor";
+//        String title = "Bid Tractor";
+        String title = "Langley TuoLaJi";
 //        String title = "";
         BoxLayout layout = BoxLayout.y();
         Form mainForm = new Form(title, layout);
@@ -77,6 +79,7 @@ public class TuoLaJi {
 //        sTitle.setFont(Hand.fontSymbol);
         Label lbTitle = new Label(title);
 //        lbTitle.getStyle().setAlignment(CENTER);
+        lbTitle.getStyle().setFont(Hand.fontRank);
         mainForm.add(lbTitle);
 
         TextField pName = new TextField("", "Your Name", 20, TextArea.ANY);
@@ -113,9 +116,10 @@ public class TuoLaJi {
         }
 
         player.connectServer();
-        if (true) {
-            return;
-        }
+
+        if (true) return;
+        Container pane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
+        pane.setLayout(new LayeredLayout());
 
         Hand hand = new Hand();
         hand.addCard(new Card(Card.SPADE, 8));
@@ -166,7 +170,7 @@ public class TuoLaJi {
 //        hand.addCard(new Card(Card.DIAMOND, 12));
 //        hand.sortCards('#', 0, true);
 
-        mainForm.add(BorderLayout.CENTER, hand);
+//        pane.add(BorderLayout.CENTER, hand);
 //        hand.sortCards(Card.CLUB, 10, false);
 //        hand.sortCards(Card.JOKER, 10, false);
         hand.sortCards(Card.DIAMOND, 7, false);
@@ -175,7 +179,19 @@ public class TuoLaJi {
         Label lbInfo = new Label(playerInfo);
         lbInfo.getStyle().setAlignment(CENTER);
 
-        mainForm.add(BorderLayout.SOUTH, lbInfo);
+        Button bExit = new Button("Exit");
+        bExit.setUIID("myExit");
+        bExit.addActionListener((e) -> {
+            pane.removeAll();
+            mainForm.repaint();
+        });
+
+        pane.add(hand).add(lbInfo).add(bExit);
+        LayeredLayout ll = (LayeredLayout) pane.getLayout();
+        ll.setInsets(bExit, "0 0 auto auto");
+        ll.setInsets(lbInfo, "auto auto 0 auto");
+
+        mainForm.repaint();
     }
 
     public void stop() {
