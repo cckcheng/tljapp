@@ -185,25 +185,26 @@ public class Hand extends Component {
         boolean redTrump = (trumpSuite == Card.HEART || trumpSuite == Card.DIAMOND);
         boolean blackTrump = (trumpSuite == Card.SPADE || trumpSuite == Card.CLUB);
 
-        int halfLen = total / 2;
+        int halfLen = total / 2 + 1;
+        int tolerance = 3;
 
         if (redTrump) {
             int biasS = Math.abs(lenT + lenS - halfLen);
             int biasC = Math.abs(lenT + lenC - halfLen);
-            if (biasC < biasS && biasC <= 5) {
+            if (biasC < biasS && biasC <= tolerance) {
                 makeLists1_3(suiteIndex.indexOf(Card.CLUB), true);
                 return;
-            } else if (biasS <= 5) {
+            } else if (biasS <= tolerance) {
                 makeLists1_3(suiteIndex.indexOf(Card.SPADE), true);
                 return;
             }
         } else if (blackTrump) {
             int biasH = Math.abs(lenT + lenH - halfLen);
             int biasD = Math.abs(lenT + lenD - halfLen);
-            if (biasD < biasH && biasD <= 5) {
+            if (biasD < biasH && biasD <= tolerance) {
                 makeLists1_3(suiteIndex.indexOf(Card.DIAMOND), true);
                 return;
-            } else if (biasH <= 5) {
+            } else if (biasH <= tolerance) {
                 makeLists1_3(suiteIndex.indexOf(Card.HEART), true);
                 return;
             }
@@ -219,7 +220,7 @@ public class Hand extends Component {
                 }
                 if (++idx == TOTAL_SUITES) break;
             }
-            if (bias <= 5) {
+            if (bias <= tolerance) {
                 makeLists1_3(idx0, true);
                 return;
             }
@@ -314,7 +315,7 @@ public class Hand extends Component {
                 g.drawString("" + s.charAt(1), x0 + 20, y0);
             }
             g.setFont(fontSymbol);
-            g.drawString(c.suiteSign(), x0 + 2, y0 + fontRank.getHeight());
+            g.drawString(c.suiteSign(), x0 + 2, y0 + fontRank.getHeight() - 5);
         } else {
             g.setFont(fontSymbol);
             x0 += 5;
