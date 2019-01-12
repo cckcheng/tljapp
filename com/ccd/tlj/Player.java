@@ -31,13 +31,17 @@ public class Player {
     static final int TLJ_PORT = 6688;
     static final int TIME_OUT_SECONDS = 10;
     private final String playerId;
-    private final String playerName;
+    private String playerName;
     private final Form mainForm;
 
     public Player(String playerId, String playerName, Form mainForm) {
         this.playerId = playerId;
         this.playerName = playerName;
         this.mainForm = mainForm;
+    }
+
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
     }
 
     private MySocket mySocket = null;

@@ -101,6 +101,7 @@ public class TuoLaJi {
             if (playerName.isEmpty()) {
                 Dialog.show("Name Required", "Please input your name", "OK", "");
             } else {
+                pName.stopEditing();
                 Storage.getInstance().writeObject("playerName", playerName);
                 startGame(mainForm, playerId, playerName);
                 bPlay.setEnabled(false);
@@ -109,7 +110,7 @@ public class TuoLaJi {
                     public void run() {
                         bPlay.setEnabled(true);
                     }
-                }).schedule(2000, false, mainForm);
+                }).schedule(10000, false, mainForm);
             }
         });
         Button bExit = new Button("Exit");
@@ -147,8 +148,9 @@ public class TuoLaJi {
     private void startGame(Form mainForm, String playerId, String playerName) {
         if (this.player == null) {
             player = new Player(playerId, playerName, mainForm);
+        } else {
+            player.setPlayerName(playerName);
         }
-
         player.connectServer();
     }
 
