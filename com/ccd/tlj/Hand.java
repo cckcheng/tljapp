@@ -52,6 +52,17 @@ public class Hand extends Component {
         suiteIndex.add(Card.DIAMOND);
     }
 
+    int xPR1 = 0;   // right player 1 coodinate
+    int yPR1 = 0;   // right player 1 coodinate
+    int xPR2 = 0;   // right player 2 coodinate
+    int yPR2 = 0;   // right player 2 coodinate
+    int xPL1 = 0;   // left player 1 coodinate
+    int yPL1 = 0;   // left player 1 coodinate
+    int xPL2 = 0;   // left player 2 coodinate
+    int yPL2 = 0;   // left player 2 coodinate
+    int xPopp = 0;   // oppisite player coodinate
+    int yPopp = 0;   // opposite player coodinate
+
     private void init() {
         int w = getWidth();
         int h = getHeight();
@@ -63,6 +74,13 @@ public class Hand extends Component {
 
         this.hReserved = this.yPitch * 2 + 10;
         this.maxWidth = w;
+
+        this.xPL1 = this.xPL2 = getX() + 5;
+        this.xPR1 = this.xPR2 = getX() + w - 50;
+        this.yPL1 = this.yPR1 = getY() + h - h / 4 - 20;
+        this.yPL2 = this.yPR2 = getY() + h / 2 - 20;
+        this.xPopp = getX() + w / 4;
+        this.yPopp = getY() + h / 4 - 20;
     }
 
     public void addCard(Card c) {

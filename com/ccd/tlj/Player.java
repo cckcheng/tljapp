@@ -103,7 +103,7 @@ public class Player {
         addCardsToHand(hand, Card.CLUB, (List<Object>) data.get("C"));
         addCardsToHand(hand, Card.JOKER, (List<Object>) data.get("T"));
 
-        hand.sortCards('#', 0, true);
+        hand.sortCards(Card.JOKER, rank, true);
 
         String playerInfo = playerName + ", Rank " + rank + ", Seat #" + seat;
         Label lbInfo = new Label(playerInfo);
@@ -117,10 +117,38 @@ public class Player {
             disconnect();
         });
 
-        pane.add(hand).add(lbInfo).add(bExit);
+        List<Object> players = (List<Object>) data.get("players");
+        Map<String, Object> pR1 = (Map<String, Object>) players.get(0);
+        Map<String, Object> pR2 = (Map<String, Object>) players.get(1);
+        Map<String, Object> pOpp = (Map<String, Object>) players.get(2);
+        Map<String, Object> pL2 = (Map<String, Object>) players.get(3);
+        Map<String, Object> pL1 = (Map<String, Object>) players.get(4);
+        String infoR1 = "Rank: " + parseInteger(pR1.get("rank")) + ", Seat #" + parseInteger(pR1.get("seat"));
+        Label lbR1Player = new Label(infoR1);
+        String infoR2 = "Rank: " + parseInteger(pR2.get("rank")) + ", Seat #" + parseInteger(pR2.get("seat"));
+        Label lbR2Player = new Label(infoR2);
+        String infoOpp = "Rank: " + parseInteger(pOpp.get("rank")) + ", Seat #" + parseInteger(pOpp.get("seat"));
+        Label lbOppPlayer = new Label(infoOpp);
+        String infoL2 = "Rank: " + parseInteger(pL2.get("rank")) + ", Seat #" + parseInteger(pL2.get("seat"));
+        Label lbL2Player = new Label(infoL2);
+        String infoL1 = "Rank: " + parseInteger(pL1.get("rank")) + ", Seat #" + parseInteger(pL1.get("seat"));
+        Label lbL1Player = new Label(infoL1);
+
+        pane.add(hand).add(bExit).add(lbInfo)
+                .add(lbR1Player).add(lbR2Player).add(lbOppPlayer)
+                .add(lbL1Player).add(lbL2Player);
         LayeredLayout ll = (LayeredLayout) pane.getLayout();
-        ll.setInsets(bExit, "0 0 auto auto");
+        ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
         ll.setInsets(lbInfo, "auto auto 0 auto");
+        ll.setInsets(lbOppPlayer, "0 auto auto auto");
+
+        int h = pane.getHeight();
+        int y1 = h * 2 / 5;
+        int y2 = h / 5;
+        ll.setInsets(lbR1Player, y1 + " 0 auto auto");
+        ll.setInsets(lbR2Player, y2 + " 0 auto auto");
+        ll.setInsets(lbL1Player, y1 + " auto auto 0");
+        ll.setInsets(lbL2Player, y2 + " auto auto 0");
 
         mainForm.repaint();
     }
