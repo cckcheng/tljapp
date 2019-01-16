@@ -8,6 +8,7 @@ import com.codename1.ui.Button;
 import static com.codename1.ui.CN.CENTER;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
+import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
 import com.codename1.ui.layouts.LayeredLayout;
@@ -24,9 +25,9 @@ import java.util.Map;
  * @author ccheng
  */
 public class Player {
-//    static final String TLJ_HOST = "tlj.webhop.me";
+    static final String TLJ_HOST = "tlj.webhop.me";
 
-    static final String TLJ_HOST = "172.16.107.204";
+//    static final String TLJ_HOST = "172.16.107.204";
 
     static final int TLJ_PORT = 6688;
     static final int TIME_OUT_SECONDS = 10;
@@ -95,6 +96,7 @@ public class Player {
 
         int seat = parseInteger(data.get("seat"));
         int rank = parseInteger(data.get("rank"));
+        int game = parseInteger(data.get("game"));
 
         Hand hand = new Hand();
         addCardsToHand(hand, Card.SPADE, (List<Object>) data.get("S"));
@@ -103,13 +105,17 @@ public class Player {
         addCardsToHand(hand, Card.CLUB, (List<Object>) data.get("C"));
         addCardsToHand(hand, Card.JOKER, (List<Object>) data.get("T"));
 
-        hand.sortCards(Card.JOKER, rank, true);
+        char trumpSuite = Card.JOKER;
+        String iTrump = data.get("iTrump").toString();
+        if (!iTrump.isEmpty()) trumpSuite = iTrump.charAt(0);
+        hand.sortCards(trumpSuite, rank, true);
 
-        String playerInfo = playerName + ", Rank " + rank + ", Seat #" + seat;
+        String playerInfo = playerName + " #" + seat + ",R" + rank + "," + parseInteger(data.get("handStrongth"));
         Label lbInfo = new Label(playerInfo);
         lbInfo.getStyle().setAlignment(CENTER);
 
         Button bExit = new Button("Exit");
+        FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
         bExit.setUIID("myExit");
         bExit.addActionListener((e) -> {
             pane.removeAll();
@@ -123,22 +129,26 @@ public class Player {
         Map<String, Object> pOpp = (Map<String, Object>) players.get(2);
         Map<String, Object> pL2 = (Map<String, Object>) players.get(3);
         Map<String, Object> pL1 = (Map<String, Object>) players.get(4);
-        String infoR1 = "Rank: " + parseInteger(pR1.get("rank")) + ", Seat #" + parseInteger(pR1.get("seat"));
+        String infoR1 = "#" + parseInteger(pR1.get("seat")) + ",R" + parseInteger(pR1.get("rank"));
         Label lbR1Player = new Label(infoR1);
-        String infoR2 = "Rank: " + parseInteger(pR2.get("rank")) + ", Seat #" + parseInteger(pR2.get("seat"));
+        String infoR2 = "#" + parseInteger(pR2.get("seat")) + ",R" + parseInteger(pR2.get("rank"));
         Label lbR2Player = new Label(infoR2);
-        String infoOpp = "Rank: " + parseInteger(pOpp.get("rank")) + ", Seat #" + parseInteger(pOpp.get("seat"));
+        String infoOpp = "#" + parseInteger(pOpp.get("seat")) + ",R" + parseInteger(pOpp.get("rank"));
         Label lbOppPlayer = new Label(infoOpp);
-        String infoL2 = "Rank: " + parseInteger(pL2.get("rank")) + ", Seat #" + parseInteger(pL2.get("seat"));
+        String infoL2 = "#" + parseInteger(pL2.get("seat")) + ",R" + parseInteger(pL2.get("rank"));
         Label lbL2Player = new Label(infoL2);
-        String infoL1 = "Rank: " + parseInteger(pL1.get("rank")) + ", Seat #" + parseInteger(pL1.get("seat"));
+        String infoL1 = "#" + parseInteger(pL1.get("seat")) + ",R" + parseInteger(pL1.get("rank"));
         Label lbL1Player = new Label(infoL1);
 
-        pane.add(hand).add(bExit).add(lbInfo)
+        Label lbGeneral = new Label("Game " + game);
+        lbGeneral.getStyle().setFont(Hand.fontRank);
+
+        pane.add(hand).add(bExit).add(lbInfo).add(lbGeneral)
                 .add(lbR1Player).add(lbR2Player).add(lbOppPlayer)
                 .add(lbL1Player).add(lbL2Player);
         LayeredLayout ll = (LayeredLayout) pane.getLayout();
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
+        ll.setInsets(lbGeneral, "0 auto auto 0");
         ll.setInsets(lbInfo, "auto auto 0 auto");
         ll.setInsets(lbOppPlayer, "0 auto auto auto");
 

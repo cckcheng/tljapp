@@ -7,6 +7,7 @@ import com.codename1.ui.Button;
 import static com.codename1.ui.CN.*;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
+import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
 import com.codename1.ui.TextArea;
@@ -94,8 +95,9 @@ public class TuoLaJi {
         if (sObj != null) {
             pName.setText(sObj.toString());
         }
-//        Button bPlay = new Button("Play", "PlayButton");
+
         Button bPlay = new Button("Play");
+        FontImage.setMaterialIcon(bPlay, FontImage.MATERIAL_PEOPLE);
         bPlay.addActionListener((e) -> {
             String playerName = pName.getText().trim();
             if (playerName.isEmpty()) {
@@ -113,7 +115,15 @@ public class TuoLaJi {
                 }).schedule(10000, false, mainForm);
             }
         });
+
+        Button bHelp = new Button("Help");
+        FontImage.setMaterialIcon(bHelp, FontImage.MATERIAL_HELP);
+        bHelp.addActionListener((e) -> {
+            Dialog.show("Help", "To Be Available", "OK", "");
+        });
+
         Button bExit = new Button("Exit");
+        FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
         bExit.addActionListener((e) -> {
             if (this.player != null) {
                 player.disconnect();
@@ -122,6 +132,7 @@ public class TuoLaJi {
         });
         mainForm.add(pName)
                 .add(bPlay)
+                .add(bHelp)
                 .add(bExit);
 
         mainForm.show();
