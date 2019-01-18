@@ -161,7 +161,16 @@ public class Hand extends Component {
     private void splitSuites(char trumpSuite) {
         this.upperList.addAll(this.trumps);
         int lenT = this.trumps.size();
-        if (lenT > 15) {
+        int lenS = this.spades.size();
+        int lenH = this.hearts.size();
+        int lenC = this.clubs.size();
+        int lenD = this.diamonds.size();
+        int total = lenT + lenS + lenH + lenC + lenD;
+        int halfLen = total / 2 + 1;
+        int tolerance = 3;
+        int threshold = halfLen - tolerance;
+
+        if (lenT >= threshold) {
             for (int i = 0; i < TOTAL_SUITES; i++) {
                 List<Card> cc = this.suites.get(i);
                 if (!cc.isEmpty()) {
@@ -181,12 +190,6 @@ public class Hand extends Component {
             return;
         }
 
-        int lenS = this.spades.size();
-        int lenH = this.hearts.size();
-        int lenC = this.clubs.size();
-        int lenD = this.diamonds.size();
-        int total = lenT + lenS + lenH + lenC + lenD;
-
         List<Integer> suiteLens = new ArrayList<>();
         suiteLens.add(lenS);
         suiteLens.add(lenH);
@@ -195,16 +198,13 @@ public class Hand extends Component {
 
         int maxLen = Collections.max(suiteLens);
         int idx0 = suiteLens.indexOf(maxLen);
-        if (maxLen > 15) {
+        if (maxLen >= threshold) {
             makeLists1_3(idx0, false);
             return;
         }
 
         boolean redTrump = (trumpSuite == Card.HEART || trumpSuite == Card.DIAMOND);
         boolean blackTrump = (trumpSuite == Card.SPADE || trumpSuite == Card.CLUB);
-
-        int halfLen = total / 2 + 1;
-        int tolerance = 3;
 
         if (redTrump) {
             int biasS = Math.abs(lenT + lenS - halfLen);

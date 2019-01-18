@@ -12,6 +12,7 @@ import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
 import com.codename1.ui.layouts.LayeredLayout;
+import com.codename1.util.Base64;
 import com.codename1.util.regex.StringReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,24 +26,47 @@ import java.util.Map;
  * @author ccheng
  */
 public class Player {
-    static final String TLJ_HOST = "tlj.webhop.me";
 
-//    static final String TLJ_HOST = "172.16.107.204";
+//    static final String TLJ_HOST = "tlj.webhop.me";
+    static final String TLJ_HOST = "172.16.107.204";
 
     static final int TLJ_PORT = 6688;
-    static final int TIME_OUT_SECONDS = 10;
+    static final int TIME_OUT_SECONDS = 15;
     private final String playerId;
     private String playerName;
     private final Form mainForm;
+    private final TuoLaJi main;
 
-    public Player(String playerId, String playerName, Form mainForm) {
+    public Player(String playerId, String playerName, TuoLaJi main) {
         this.playerId = playerId;
         this.playerName = playerName;
-        this.mainForm = mainForm;
+        this.mainForm = main.formMain;
+        this.main = main;
     }
 
     public void setPlayerName(String playerName) {
         this.playerName = playerName;
+    }
+
+    public static String rankToString(int rank) {
+        if (rank <= 10) return "R" + rank;
+        switch (rank) {
+            case 11:
+                return "J";
+            case 12:
+                return "Q";
+            case 13:
+                return "K";
+            case 14:
+                return "A";
+        }
+
+        String s = "A";
+        while (rank > 14) {
+            s += "+";
+            rank--;
+        }
+        return s;
     }
 
     private MySocket mySocket = null;
@@ -56,13 +80,14 @@ public class Player {
         }
         if (this.mySocket != null) {
             if (!mySocket.isConnected()) {
+                mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
                 Socket.connect(TLJ_HOST, TLJ_PORT, mySocket);
             }
         } else {
             this.mySocket = new MySocket();
+            mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
             Socket.connect(TLJ_HOST, TLJ_PORT, mySocket);
         }
-        mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
     }
 
     public void disconnect() {
@@ -90,9 +115,14 @@ public class Player {
         }
     }
 
+    private boolean tableOn = false;
+
     private void showTable(Map<String, Object> data) {
         Container pane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
         pane.setLayout(new LayeredLayout());
+        if (this.tableOn) {
+            pane.removeAll();
+        }
 
         int seat = parseInteger(data.get("seat"));
         int rank = parseInteger(data.get("rank"));
@@ -110,7 +140,9 @@ public class Player {
         if (!iTrump.isEmpty()) trumpSuite = iTrump.charAt(0);
         hand.sortCards(trumpSuite, rank, true);
 
-        String playerInfo = playerName + " #" + seat + ",R" + rank + "," + parseInteger(data.get("handStrongth"));
+        String playerInfo = playerName + " #" + seat + "," + rankToString(rank);
+        int minBid = parseInteger(data.get("minBid"));
+        if (minBid > 0) playerInfo += ", " + minBid;
         Label lbInfo = new Label(playerInfo);
         lbInfo.getStyle().setAlignment(CENTER);
 
@@ -118,6 +150,7 @@ public class Player {
         FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
         bExit.setUIID("myExit");
         bExit.addActionListener((e) -> {
+            this.tableOn = false;
             pane.removeAll();
             mainForm.repaint();
             disconnect();
@@ -129,15 +162,15 @@ public class Player {
         Map<String, Object> pOpp = (Map<String, Object>) players.get(2);
         Map<String, Object> pL2 = (Map<String, Object>) players.get(3);
         Map<String, Object> pL1 = (Map<String, Object>) players.get(4);
-        String infoR1 = "#" + parseInteger(pR1.get("seat")) + ",R" + parseInteger(pR1.get("rank"));
+        String infoR1 = "#" + parseInteger(pR1.get("seat")) + "," + rankToString(parseInteger(pR1.get("rank")));
         Label lbR1Player = new Label(infoR1);
-        String infoR2 = "#" + parseInteger(pR2.get("seat")) + ",R" + parseInteger(pR2.get("rank"));
+        String infoR2 = "#" + parseInteger(pR2.get("seat")) + "," + rankToString(parseInteger(pR2.get("rank")));
         Label lbR2Player = new Label(infoR2);
-        String infoOpp = "#" + parseInteger(pOpp.get("seat")) + ",R" + parseInteger(pOpp.get("rank"));
+        String infoOpp = "#" + parseInteger(pOpp.get("seat")) + "," + rankToString(parseInteger(pOpp.get("rank")));
         Label lbOppPlayer = new Label(infoOpp);
-        String infoL2 = "#" + parseInteger(pL2.get("seat")) + ",R" + parseInteger(pL2.get("rank"));
+        String infoL2 = "#" + parseInteger(pL2.get("seat")) + "," + rankToString(parseInteger(pL2.get("rank")));
         Label lbL2Player = new Label(infoL2);
-        String infoL1 = "#" + parseInteger(pL1.get("seat")) + ",R" + parseInteger(pL1.get("rank"));
+        String infoL1 = "#" + parseInteger(pL1.get("seat")) + "," + rankToString(parseInteger(pL1.get("rank")));
         Label lbL1Player = new Label(infoL1);
 
         Label lbGeneral = new Label("Game " + game);
@@ -161,6 +194,8 @@ public class Player {
         ll.setInsets(lbL2Player, y2 + " auto auto 0");
 
         mainForm.repaint();
+        this.tableOn = true;
+        main.enableButtons();
     }
 
     class MySocket extends SocketConnection {
@@ -181,12 +216,25 @@ public class Player {
         }
 
         private void processReceived(String msg) {
+            msg = msg.replace('j', '#');
+            msg = msg.replace('L', 'j');
+            msg = msg.replace('T', 'L');
+            msg = msg.replace('#', 'T');
+            msg = new String(Base64.decode(msg.getBytes()));
 //            Log.p("Received: " + msg);
             JSONParser parser = new JSONParser();
             try {
                 Map<String, Object> data = parser.parseJSON(new StringReader(msg));
 //                Log.p("Received: " + data.keySet().toString());
-                showTable(data);
+                String action = data.get("action").toString();
+                if (action.equals("init")) {
+                    showTable(data);
+                    return;
+                }
+                if (action.equals("bid")) {
+                    Log.p("Please bid");
+                    return;
+                }
             } catch (IOException ex) {
                 Log.p("IOException: " + ex.getMessage());
             }
@@ -195,7 +243,8 @@ public class Player {
         @Override
         public void connectionError(int errorCode, String message) {
             if (isConnected()) closeRequested = true;
-            Dialog.show("Error", "Connection Error. " + message, "OK", "");
+            main.enableButtons();
+            Dialog.show("Error", message, "OK", "");
             mySocket = null;    // reset connection
         }
 

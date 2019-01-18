@@ -54,7 +54,16 @@ public class TuoLaJi {
         });
 
     }
-    
+
+    public Form formMain = null;
+    private Button btnPlay = null;
+    private UITimer connTimer = null;
+
+    public void enableButtons() {
+        if (this.btnPlay != null) this.btnPlay.setEnabled(true);
+        this.connTimer.cancel();
+    }
+
     public void start() {
         if(current != null){
             current.show();
@@ -71,6 +80,7 @@ public class TuoLaJi {
 //        String title = "";
         BoxLayout layout = BoxLayout.y();
         Form mainForm = new Form(title, layout);
+        this.formMain = mainForm;
         mainForm.getStyle().setBgColor(BACKGROUND_COLOR);
         mainForm.getToolbar().hideToolbar();
 //        mainForm.getToolbar().addCommandToLeftSideMenu("New Game", null, (e) -> {
@@ -97,6 +107,16 @@ public class TuoLaJi {
         }
 
         Button bPlay = new Button("Play");
+        this.btnPlay = bPlay;
+        this.connTimer = new UITimer(new Runnable() {
+            @Override
+            public void run() {
+                if (bPlay.isEnabled()) return;
+                Dialog.show("Error", "Failed to connect, please try again later.", "OK", "");
+                bPlay.setEnabled(true);
+            }
+        });
+
         FontImage.setMaterialIcon(bPlay, FontImage.MATERIAL_PEOPLE);
         bPlay.addActionListener((e) -> {
             String playerName = pName.getText().trim();
@@ -107,18 +127,16 @@ public class TuoLaJi {
                 Storage.getInstance().writeObject("playerName", playerName);
                 startGame(mainForm, playerId, playerName);
                 bPlay.setEnabled(false);
-                new UITimer(new Runnable() {
-                    @Override
-                    public void run() {
-                        bPlay.setEnabled(true);
-                    }
-                }).schedule(10000, false, mainForm);
+                connTimer.schedule(Player.TIME_OUT_SECONDS * 1000, false, mainForm);
             }
         });
 
         Button bHelp = new Button("Help");
         FontImage.setMaterialIcon(bHelp, FontImage.MATERIAL_HELP);
         bHelp.addActionListener((e) -> {
+//            String s = "China中国";
+//            String d = Base64.encode(s.getBytes());
+//            Dialog.show("Help", s + "|" + d + ":" + (new String(Base64.decode(d.getBytes()))), "OK", "");
             Dialog.show("Help", "To Be Available", "OK", "");
         });
 
@@ -158,7 +176,7 @@ public class TuoLaJi {
 
     private void startGame(Form mainForm, String playerId, String playerName) {
         if (this.player == null) {
-            player = new Player(playerId, playerName, mainForm);
+            player = new Player(playerId, playerName, this);
         } else {
             player.setPlayerName(playerName);
         }
