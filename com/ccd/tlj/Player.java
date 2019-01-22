@@ -78,22 +78,22 @@ public class Player {
             Dialog.show("Alert", "Socket is not supported", "OK", "");
             return;
         }
-        if (this.mySocket != null) {
-            if (!mySocket.isConnected()) {
-                mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
-                Socket.connect(TLJ_HOST, TLJ_PORT, mySocket);
-            }
-        } else {
+//        if (this.mySocket != null) {
+//            if (!mySocket.isConnected()) {
+//                mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
+//                Socket.connect(TLJ_HOST, TLJ_PORT, mySocket);
+//            }
+//        } else {
             this.mySocket = new MySocket();
             mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
             Socket.connect(TLJ_HOST, TLJ_PORT, mySocket);
-        }
+//        }
     }
 
     public void disconnect() {
         if (this.mySocket != null) {
             if (this.mySocket.isConnected()) {
-                mySocket.closeConnection();
+                this.mySocket.closeConnection();
                 this.mySocket = null;
             }
         }
@@ -118,15 +118,18 @@ public class Player {
     private boolean tableOn = false;
 
     private void showTable(Map<String, Object> data) {
+        Log.p("Show table: 01");
         Container pane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
         pane.setLayout(new LayeredLayout());
         if (this.tableOn) {
             pane.removeAll();
         }
 
+        Log.p("Show table: 02");
         int seat = parseInteger(data.get("seat"));
         int rank = parseInteger(data.get("rank"));
         int game = parseInteger(data.get("game"));
+        int gameRank = parseInteger(data.get("game_rank"));
 
         Hand hand = new Hand();
         addCardsToHand(hand, Card.SPADE, (List<Object>) data.get("S"));
@@ -135,10 +138,16 @@ public class Player {
         addCardsToHand(hand, Card.CLUB, (List<Object>) data.get("C"));
         addCardsToHand(hand, Card.JOKER, (List<Object>) data.get("T"));
 
+        Log.p("Show table: 03");
         char trumpSuite = Card.JOKER;
-        String iTrump = data.get("iTrump").toString();
-        if (!iTrump.isEmpty()) trumpSuite = iTrump.charAt(0);
-        hand.sortCards(trumpSuite, rank, true);
+        String trump = data.get("trump").toString();
+        if (!trump.isEmpty()) trumpSuite = trump.charAt(0);
+        
+        if(gameRank>0) {
+            hand.sortCards(trumpSuite, gameRank, true);
+        } else {
+            hand.sortCards(trumpSuite, rank, true);
+        }
 
         String playerInfo = playerName + " #" + seat + "," + rankToString(rank);
         int minBid = parseInteger(data.get("minBid"));
@@ -156,6 +165,7 @@ public class Player {
             disconnect();
         });
 
+        Log.p("Show table: 04");
         List<Object> players = (List<Object>) data.get("players");
         Map<String, Object> pR1 = (Map<String, Object>) players.get(0);
         Map<String, Object> pR2 = (Map<String, Object>) players.get(1);
@@ -184,6 +194,7 @@ public class Player {
         ll.setInsets(lbGeneral, "0 auto auto 0");
         ll.setInsets(lbInfo, "auto auto 0 auto");
         ll.setInsets(lbOppPlayer, "0 auto auto auto");
+        Log.p("Show table: 05");
 
         int h = pane.getHeight();
         int y1 = h * 2 / 5;
@@ -194,8 +205,11 @@ public class Player {
         ll.setInsets(lbL2Player, y2 + " auto auto 0");
 
         mainForm.repaint();
+        Log.p("Show table: 06");
         this.tableOn = true;
         main.enableButtons();
+
+        Log.p("Show table: done");
     }
 
     class MySocket extends SocketConnection {
@@ -205,6 +219,7 @@ public class Player {
 
         public void closeConnection() {
             this.closeRequested = true;
+            Log.p("this.closeRequested: " + this.closeRequested);
         }
 
         public void addRequest(String action, String data) {
@@ -215,49 +230,54 @@ public class Player {
             pendingRequests.add("{" + json + "}");
         }
 
-        private void processReceived(String msg) {
-            msg = msg.replace('j', '#');
-            msg = msg.replace('L', 'j');
-            msg = msg.replace('T', 'L');
-            msg = msg.replace('#', 'T');
-            msg = new String(Base64.decode(msg.getBytes()));
-//            Log.p("Received: " + msg);
+        private void processReceived(String msg) throws IOException {
+            if(!msg.startsWith("{")) {
+                msg = msg.replace('j', '#');
+                msg = msg.replace('L', 'j');
+                msg = msg.replace('T', 'L');
+                msg = msg.replace('#', 'T');
+                msg = new String(Base64.decode(msg.getBytes()));
+            }
+            Log.p("Received: " + msg);
             JSONParser parser = new JSONParser();
-            try {
-                Map<String, Object> data = parser.parseJSON(new StringReader(msg));
-//                Log.p("Received: " + data.keySet().toString());
+            int idx = msg.indexOf("\n");
+            while (idx > 0) {
+                String subMsg = msg.substring(0, idx);
+                msg = msg.substring(idx + 1);
+                idx = msg.indexOf("\n");
+                Map<String, Object> data = parser.parseJSON(new StringReader(subMsg));
                 String action = data.get("action").toString();
                 if (action.equals("init")) {
+                    Log.p("init table");
                     showTable(data);
-                    return;
+                    continue;
                 }
                 if (action.equals("bid")) {
                     Log.p("Please bid");
-                    return;
+                    continue;
                 }
-            } catch (IOException ex) {
-                Log.p("IOException: " + ex.getMessage());
             }
         }
 
         @Override
         public void connectionError(int errorCode, String message) {
-            if (isConnected()) closeRequested = true;
+//            if (isConnected()) closeRequested = true;
             main.enableButtons();
             Dialog.show("Error", message, "OK", "");
-            mySocket = null;    // reset connection
+//            mySocket = null;    // reset connection
         }
 
         @Override
         public void connectionEstablished(InputStream is, OutputStream os) {
-            closeRequested = false;
+//            closeRequested = false;
             byte[] buffer = new byte[4096];
             try {
+                Log.p("connected!");
                 while (isConnected() && !closeRequested) {
-//                    Log.p("connected!");
                     if (!pendingRequests.isEmpty()) {
                         String request = pendingRequests.remove(0);
                         os.write(request.getBytes());
+                        Log.p("send request: " + request);
                     }
                     int n = is.available();
                     if (n > 0) {
@@ -271,6 +291,7 @@ public class Player {
                 is.close();
                 os.close();
             } catch (Exception err) {
+                err.printStackTrace();
                 Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
             }
 //            Dialog.show("Alert", "Closed.", "OK", "");
