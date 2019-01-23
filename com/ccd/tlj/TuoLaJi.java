@@ -24,8 +24,9 @@ import com.codename1.ui.util.UITimer;
  */
 public class TuoLaJi {
 
-//    static public int BACKGROUND_COLOR = 0x008000;
-    static public int BACKGROUND_COLOR = 0xffffff;
+    static public boolean DEBUG_MODE = true;
+
+    static public int BACKGROUND_COLOR = DEBUG_MODE ? 0xffffff : 0x008000;
     private Form current;
     private Resources theme;
 
@@ -60,7 +61,10 @@ public class TuoLaJi {
     private UITimer connTimer = null;
 
     public void enableButtons() {
-        if (this.btnPlay != null) this.btnPlay.setEnabled(true);
+        if (this.btnPlay != null) {
+            this.btnPlay.setEnabled(true);
+            this.btnPlay.setText("Play");
+        }
         this.connTimer.cancel();
     }
 
@@ -114,6 +118,7 @@ public class TuoLaJi {
                 if (bPlay.isEnabled()) return;
                 Dialog.show("Error", "Failed to connect, please try again later.", "OK", "");
                 bPlay.setEnabled(true);
+                bPlay.setText("Play");
             }
         });
 
@@ -127,6 +132,7 @@ public class TuoLaJi {
                 Storage.getInstance().writeObject("playerName", playerName);
                 startGame(mainForm, playerId, playerName);
                 bPlay.setEnabled(false);
+                bPlay.setText("Connecting...");
                 connTimer.schedule(Player.TIME_OUT_SECONDS * 1000, false, mainForm);
             }
         });

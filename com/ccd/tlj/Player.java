@@ -27,10 +27,9 @@ import java.util.Map;
  */
 public class Player {
 
-//    static final String TLJ_HOST = "tlj.webhop.me";
-    static final String TLJ_HOST = "172.16.107.204";
-
+    static final String TLJ_HOST = TuoLaJi.DEBUG_MODE ? "172.16.107.204" : "tlj.webhop.me";
     static final int TLJ_PORT = 6688;
+
     static final int TIME_OUT_SECONDS = 15;
     private final String playerId;
     private String playerName;
@@ -118,14 +117,14 @@ public class Player {
     private boolean tableOn = false;
 
     private void showTable(Map<String, Object> data) {
-        Log.p("Show table: 01");
+        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 01");
         Container pane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
         pane.setLayout(new LayeredLayout());
         if (this.tableOn) {
             pane.removeAll();
         }
 
-        Log.p("Show table: 02");
+        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 02");
         int seat = parseInteger(data.get("seat"));
         int rank = parseInteger(data.get("rank"));
         int game = parseInteger(data.get("game"));
@@ -138,7 +137,7 @@ public class Player {
         addCardsToHand(hand, Card.CLUB, (List<Object>) data.get("C"));
         addCardsToHand(hand, Card.JOKER, (List<Object>) data.get("T"));
 
-        Log.p("Show table: 03");
+        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 03");
         char trumpSuite = Card.JOKER;
         String trump = data.get("trump").toString();
         if (!trump.isEmpty()) trumpSuite = trump.charAt(0);
@@ -165,7 +164,7 @@ public class Player {
             disconnect();
         });
 
-        Log.p("Show table: 04");
+        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 04");
         List<Object> players = (List<Object>) data.get("players");
         Map<String, Object> pR1 = (Map<String, Object>) players.get(0);
         Map<String, Object> pR2 = (Map<String, Object>) players.get(1);
@@ -194,7 +193,7 @@ public class Player {
         ll.setInsets(lbGeneral, "0 auto auto 0");
         ll.setInsets(lbInfo, "auto auto 0 auto");
         ll.setInsets(lbOppPlayer, "0 auto auto auto");
-        Log.p("Show table: 05");
+        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 05");
 
         int h = pane.getHeight();
         int y1 = h * 2 / 5;
@@ -205,11 +204,19 @@ public class Player {
         ll.setInsets(lbL2Player, y2 + " auto auto 0");
 
         mainForm.repaint();
-        Log.p("Show table: 06");
+        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 06");
         this.tableOn = true;
         main.enableButtons();
 
-        Log.p("Show table: done");
+        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: done");
+    }
+
+    public static String confusedData(String data) {
+        data = data.replace('j', '#');
+        data = data.replace('L', 'j');
+        data = data.replace('T', 'L');
+        data = data.replace('#', 'T');
+        return data;
     }
 
     class MySocket extends SocketConnection {
@@ -219,7 +226,7 @@ public class Player {
 
         public void closeConnection() {
             this.closeRequested = true;
-            Log.p("this.closeRequested: " + this.closeRequested);
+            if (TuoLaJi.DEBUG_MODE) Log.p("this.closeRequested: " + this.closeRequested);
         }
 
         public void addRequest(String action, String data) {
@@ -232,13 +239,10 @@ public class Player {
 
         private void processReceived(String msg) throws IOException {
             if(!msg.startsWith("{")) {
-                msg = msg.replace('j', '#');
-                msg = msg.replace('L', 'j');
-                msg = msg.replace('T', 'L');
-                msg = msg.replace('#', 'T');
+                msg = confusedData(msg);
                 msg = new String(Base64.decode(msg.getBytes()));
             }
-            Log.p("Received: " + msg);
+            if (TuoLaJi.DEBUG_MODE) Log.p("Received: " + msg);
             JSONParser parser = new JSONParser();
             int idx = msg.indexOf("\n");
             while (idx > 0) {
@@ -248,12 +252,12 @@ public class Player {
                 Map<String, Object> data = parser.parseJSON(new StringReader(subMsg));
                 String action = data.get("action").toString();
                 if (action.equals("init")) {
-                    Log.p("init table");
+                    if (TuoLaJi.DEBUG_MODE) Log.p("init table");
                     showTable(data);
                     continue;
                 }
                 if (action.equals("bid")) {
-                    Log.p("Please bid");
+                    if (TuoLaJi.DEBUG_MODE) Log.p("Please bid");
                     continue;
                 }
             }
@@ -272,12 +276,17 @@ public class Player {
 //            closeRequested = false;
             byte[] buffer = new byte[4096];
             try {
-                Log.p("connected!");
+                if (TuoLaJi.DEBUG_MODE) Log.p("connected!");
                 while (isConnected() && !closeRequested) {
                     if (!pendingRequests.isEmpty()) {
                         String request = pendingRequests.remove(0);
-                        os.write(request.getBytes());
-                        Log.p("send request: " + request);
+                        if (TuoLaJi.DEBUG_MODE) {
+                            os.write(request.getBytes());
+                            Log.p("send request: " + request);
+                        } else {
+                            request = Base64.encode(request.getBytes());
+                            os.write(confusedData(request).getBytes());
+                        }
                     }
                     int n = is.available();
                     if (n > 0) {
@@ -288,8 +297,8 @@ public class Player {
                         Thread.sleep(500);
                     }
                 }
-                is.close();
                 os.close();
+                is.close();
             } catch (Exception err) {
                 err.printStackTrace();
                 Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
