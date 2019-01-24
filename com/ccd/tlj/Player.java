@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,8 @@ public class Player {
 
     static final String TLJ_HOST = TuoLaJi.DEBUG_MODE ? "172.16.107.204" : "tlj.webhop.me";
     static final int TLJ_PORT = 6688;
+    static final int POINT_COLOR = 0xd60e90;
+    static final int CONTRACT_COLOR = 0xff0000;
 
     static final int TIME_OUT_SECONDS = 15;
     private final String playerId;
@@ -117,8 +120,9 @@ public class Player {
     }
 
     private List<PlayerInfo> infoLst = new ArrayList<>();
+    private Map<Integer, PlayerInfo> playerMap = new HashMap<>();
     private boolean tableOn = false;
-
+    
     private void showTable(Map<String, Object> data) {
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 01");
         Container pane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
@@ -155,6 +159,7 @@ public class Player {
 
         PlayerInfo p0 = new PlayerInfo("bottom", seat, rank);
         this.infoLst.add(p0);
+        this.playerMap.put(seat, p0);
         p0.setPlayerName(playerName);
         int minBid = parseInteger(data.get("minBid"));
         if (minBid > 0) p0.minBid = minBid;
@@ -178,16 +183,30 @@ public class Player {
         Map<String, Object> pL2 = (Map<String, Object>) players.get(3);
         Map<String, Object> pL1 = (Map<String, Object>) players.get(4);
 
-        PlayerInfo pp = new PlayerInfo("right down", parseInteger(pR1.get("seat")), parseInteger(pR1.get("rank")));
+        seat = parseInteger(pR1.get("seat"));
+        PlayerInfo pp = new PlayerInfo("right down", seat, parseInteger(pR1.get("rank")));
         this.infoLst.add(pp);
-        pp = new PlayerInfo("right up", parseInteger(pR2.get("seat")), parseInteger(pR2.get("rank")));
+        this.playerMap.put(seat, pp);
+        
+        seat = parseInteger(pR2.get("seat"));
+        pp = new PlayerInfo("right up", seat, parseInteger(pR2.get("rank")));
         this.infoLst.add(pp);
-        pp = new PlayerInfo("left up", parseInteger(pL2.get("seat")), parseInteger(pL2.get("rank")));
+        this.playerMap.put(seat, pp);
+        
+        seat = parseInteger(pL2.get("seat"));
+        pp = new PlayerInfo("left up", seat, parseInteger(pL2.get("rank")));
         this.infoLst.add(pp);
-        pp = new PlayerInfo("left down", parseInteger(pL1.get("seat")), parseInteger(pL1.get("rank")));
+        this.playerMap.put(seat, pp);
+        
+        seat = parseInteger(pL1.get("seat"));
+        pp = new PlayerInfo("left down", seat, parseInteger(pL1.get("rank")));
         this.infoLst.add(pp);
-        pp = new PlayerInfo("top", parseInteger(pTop.get("seat")), parseInteger(pTop.get("rank")));
+        this.playerMap.put(seat, pp);
+        
+        seat = parseInteger(pTop.get("seat"));
+        pp = new PlayerInfo("top", seat, parseInteger(pTop.get("rank")));
         this.infoLst.add(pp);
+        this.playerMap.put(seat, pp);
 
         Label lbGeneral = new Label("Game " + game);
         lbGeneral.getStyle().setFont(Hand.fontRank);
@@ -201,7 +220,7 @@ public class Player {
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 05");
         for (PlayerInfo info : infoLst) {
             info.addItems(pane);
-            break;
+//            break;
         }
 
 //        mainForm.setGlassPane((g, rect) -> {
@@ -216,6 +235,18 @@ public class Player {
         main.enableButtons();
 
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: done");
+    }
+
+    private void displayBid(Map<String, Object> data) {
+        int seat = parseInteger(data.get("seat"));
+        String bid = data.get("bid").toString();
+        PlayerInfo pp = this.playerMap.get(seat);
+        if(pp == null) return;
+        if(bid.equalsIgnoreCase("pass")) {
+            pp.points.setText("Pass");
+        } else {
+            pp.points.setText("" + parseInteger(bid));
+        }
     }
 
     Painter getPainter(String loc) {
@@ -273,6 +304,7 @@ public class Player {
                 }
                 if (action.equals("bid")) {
                     if (TuoLaJi.DEBUG_MODE) Log.p("Please bid");
+                    displayBid(data);
                     continue;
                 }
             }
@@ -345,26 +377,50 @@ public class Player {
             if (playerName != null) info = playerName + " " + info;
             if (minBid > 0) info += ", " + minBid;
             mainInfo = new Label(info);
-            points = new Label("505");
+            points = new Label("        ");
+            points.getStyle().setFgColor(POINT_COLOR);
 //            contractor = new Label("庄");
-            contractor = new Label("CC");
+            contractor = new Label("        ");
+            contractor.getStyle().setFgColor(CONTRACT_COLOR);
+            
             pane.add(mainInfo).add(points).add(contractor);
             LayeredLayout ll = (LayeredLayout) pane.getLayout();
+            
             switch (this.location) {
                 case "left up":
                     ll.setInsets(mainInfo, "20% auto auto 0");  //top right bottom left
+                    ll.setInsets(points, "20% auto auto 0")
+                            .setInsets(contractor, "20% auto auto 0");
+                    ll.setReferenceComponentLeft(contractor, mainInfo, 1.1f)
+                            .setReferenceComponentLeft(points, mainInfo, 1.5f);
                     break;
                 case "left down":
                     ll.setInsets(mainInfo, "40% auto auto 0");
+                    ll.setInsets(points, "40% auto auto 0")
+                            .setInsets(contractor, "40% auto auto 0");
+                    ll.setReferenceComponentLeft(contractor, mainInfo, 1.1f)
+                            .setReferenceComponentLeft(points, mainInfo, 1.5f);
                     break;
                 case "right up":
                     ll.setInsets(mainInfo, "20% 0 auto auto");
+                    ll.setInsets(points, "20% 20 auto auto")
+                            .setInsets(contractor, "20% 20 auto auto");
+                    ll.setReferenceComponentRight(contractor, mainInfo, 1.1f)
+                            .setReferenceComponentRight(points, mainInfo, 1.5f);
                     break;
                 case "right down":
                     ll.setInsets(mainInfo, "40% 0 auto auto");
+                    ll.setInsets(points, "40% 20 auto auto")
+                            .setInsets(contractor, "40% 20 auto auto");
+                    ll.setReferenceComponentRight(contractor, mainInfo, 1.1f)
+                            .setReferenceComponentRight(points, mainInfo, 1.5f);
                     break;
                 case "top":
                     ll.setInsets(mainInfo, "0 auto auto auto");
+                    ll.setInsets(points, "0 auto auto 0")
+                            .setInsets(contractor, "0 auto auto 0");
+                    ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
+                            .setReferenceComponentLeft(points, mainInfo, 1.2f);
                     break;
                 case "bottom":
                     ll.setInsets(mainInfo, "auto auto 0 auto");
