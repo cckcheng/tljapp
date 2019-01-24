@@ -139,6 +139,11 @@ public class TuoLaJi {
 
         Button bHelp = new Button("Help");
         FontImage.setMaterialIcon(bHelp, FontImage.MATERIAL_HELP);
+//        bHelp.getStyle().setBorder(Border.createGrooveBorder(5));
+//        bHelp.getStyle().setBgTransparency(127);
+//        bHelp.getStyle().setBgColor(0x8000);
+//        bHelp.getStyle().setBackgroundType(Style.BACKGROUND_IMAGE_SCALED);
+//        bHelp.getStyle().setBackgroundType(Style.BACKGROUND_GRADIENT_LINEAR_HORIZONTAL);
         bHelp.addActionListener((e) -> {
 //            String s = "China中国";
 //            String d = Base64.encode(s.getBytes());

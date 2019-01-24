@@ -5,12 +5,14 @@ import com.codename1.io.Log;
 import com.codename1.io.Socket;
 import com.codename1.io.SocketConnection;
 import com.codename1.ui.Button;
-import static com.codename1.ui.CN.CENTER;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
+import com.codename1.ui.Graphics;
 import com.codename1.ui.Label;
+import com.codename1.ui.Painter;
+import com.codename1.ui.geom.Rectangle;
 import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.util.Base64;
 import com.codename1.util.regex.StringReader;
@@ -114,6 +116,7 @@ public class Player {
         }
     }
 
+    private List<PlayerInfo> infoLst = new ArrayList<>();
     private boolean tableOn = false;
 
     private void showTable(Map<String, Object> data) {
@@ -123,6 +126,8 @@ public class Player {
         if (this.tableOn) {
             pane.removeAll();
         }
+
+        infoLst.clear();
 
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 02");
         int seat = parseInteger(data.get("seat"));
@@ -148,11 +153,11 @@ public class Player {
             hand.sortCards(trumpSuite, rank, true);
         }
 
-        String playerInfo = playerName + " #" + seat + "," + rankToString(rank);
+        PlayerInfo p0 = new PlayerInfo("bottom", seat, rank);
+        this.infoLst.add(p0);
+        p0.setPlayerName(playerName);
         int minBid = parseInteger(data.get("minBid"));
-        if (minBid > 0) playerInfo += ", " + minBid;
-        Label lbInfo = new Label(playerInfo);
-        lbInfo.getStyle().setAlignment(CENTER);
+        if (minBid > 0) p0.minBid = minBid;
 
         Button bExit = new Button("Exit");
         FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
@@ -160,6 +165,7 @@ public class Player {
         bExit.addActionListener((e) -> {
             this.tableOn = false;
             pane.removeAll();
+            mainForm.setGlassPane(null);
             mainForm.repaint();
             disconnect();
         });
@@ -168,47 +174,56 @@ public class Player {
         List<Object> players = (List<Object>) data.get("players");
         Map<String, Object> pR1 = (Map<String, Object>) players.get(0);
         Map<String, Object> pR2 = (Map<String, Object>) players.get(1);
-        Map<String, Object> pOpp = (Map<String, Object>) players.get(2);
+        Map<String, Object> pTop = (Map<String, Object>) players.get(2);
         Map<String, Object> pL2 = (Map<String, Object>) players.get(3);
         Map<String, Object> pL1 = (Map<String, Object>) players.get(4);
-        String infoR1 = "#" + parseInteger(pR1.get("seat")) + "," + rankToString(parseInteger(pR1.get("rank")));
-        Label lbR1Player = new Label(infoR1);
-        String infoR2 = "#" + parseInteger(pR2.get("seat")) + "," + rankToString(parseInteger(pR2.get("rank")));
-        Label lbR2Player = new Label(infoR2);
-        String infoOpp = "#" + parseInteger(pOpp.get("seat")) + "," + rankToString(parseInteger(pOpp.get("rank")));
-        Label lbOppPlayer = new Label(infoOpp);
-        String infoL2 = "#" + parseInteger(pL2.get("seat")) + "," + rankToString(parseInteger(pL2.get("rank")));
-        Label lbL2Player = new Label(infoL2);
-        String infoL1 = "#" + parseInteger(pL1.get("seat")) + "," + rankToString(parseInteger(pL1.get("rank")));
-        Label lbL1Player = new Label(infoL1);
+
+        PlayerInfo pp = new PlayerInfo("right down", parseInteger(pR1.get("seat")), parseInteger(pR1.get("rank")));
+        this.infoLst.add(pp);
+        pp = new PlayerInfo("right up", parseInteger(pR2.get("seat")), parseInteger(pR2.get("rank")));
+        this.infoLst.add(pp);
+        pp = new PlayerInfo("left up", parseInteger(pL2.get("seat")), parseInteger(pL2.get("rank")));
+        this.infoLst.add(pp);
+        pp = new PlayerInfo("left down", parseInteger(pL1.get("seat")), parseInteger(pL1.get("rank")));
+        this.infoLst.add(pp);
+        pp = new PlayerInfo("top", parseInteger(pTop.get("seat")), parseInteger(pTop.get("rank")));
+        this.infoLst.add(pp);
 
         Label lbGeneral = new Label("Game " + game);
         lbGeneral.getStyle().setFont(Hand.fontRank);
 
-        pane.add(hand).add(bExit).add(lbInfo).add(lbGeneral)
-                .add(lbR1Player).add(lbR2Player).add(lbOppPlayer)
-                .add(lbL1Player).add(lbL2Player);
+        pane.add(hand);
+        pane.add(bExit).add(lbGeneral);
         LayeredLayout ll = (LayeredLayout) pane.getLayout();
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
         ll.setInsets(lbGeneral, "0 auto auto 0");
-        ll.setInsets(lbInfo, "auto auto 0 auto");
-        ll.setInsets(lbOppPlayer, "0 auto auto auto");
+
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 05");
+        for (PlayerInfo info : infoLst) {
+            info.addItems(pane);
+            break;
+        }
 
-        int h = pane.getHeight();
-        int y1 = h * 2 / 5;
-        int y2 = h / 5;
-        ll.setInsets(lbR1Player, y1 + " 0 auto auto");
-        ll.setInsets(lbR2Player, y2 + " 0 auto auto");
-        ll.setInsets(lbL1Player, y1 + " auto auto 0");
-        ll.setInsets(lbL2Player, y2 + " auto auto 0");
-
+//        mainForm.setGlassPane((g, rect) -> {
+//            int x0 = lbL1Player.getAbsoluteX() + 5;
+//            int y0 = lbL1Player.getAbsoluteY() + 50;
+//            g.setColor(0);
+//            g.drawRoundRect(x0 - 1, y0 - 1, 50, 80, 10, 10);
+//        });
         mainForm.repaint();
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 06");
         this.tableOn = true;
         main.enableButtons();
 
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: done");
+    }
+
+    Painter getPainter(String loc) {
+        Painter p = (Graphics g, Rectangle rect) -> {
+            String a = loc;
+        };
+
+        return p;
     }
 
     public static String confusedData(String data) {
@@ -304,6 +319,66 @@ public class Player {
                 Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
             }
 //            Dialog.show("Alert", "Closed.", "OK", "");
+        }
+    }
+
+    class PlayerInfo {
+
+        final String location;    // top, bottom, left up, left down, right up, right down
+        Label mainInfo;
+        Label points;
+        Label contractor;   // for contractor and partner
+        List<Card> cards;   // cards played
+        String playerName;
+
+        int minBid = -1;
+        int seat;
+        int rank;
+        PlayerInfo(String loc, int seat, int rank) {
+            this.location = loc;
+            this.seat = seat;
+            this.rank = rank;
+        }
+
+        void addItems(Container pane) {
+            String info = "#" + seat + "," + rankToString(rank);
+            if (playerName != null) info = playerName + " " + info;
+            if (minBid > 0) info += ", " + minBid;
+            mainInfo = new Label(info);
+            points = new Label("505");
+//            contractor = new Label("庄");
+            contractor = new Label("CC");
+            pane.add(mainInfo).add(points).add(contractor);
+            LayeredLayout ll = (LayeredLayout) pane.getLayout();
+            switch (this.location) {
+                case "left up":
+                    ll.setInsets(mainInfo, "20% auto auto 0");  //top right bottom left
+                    break;
+                case "left down":
+                    ll.setInsets(mainInfo, "40% auto auto 0");
+                    break;
+                case "right up":
+                    ll.setInsets(mainInfo, "20% 0 auto auto");
+                    break;
+                case "right down":
+                    ll.setInsets(mainInfo, "40% 0 auto auto");
+                    break;
+                case "top":
+                    ll.setInsets(mainInfo, "0 auto auto auto");
+                    break;
+                case "bottom":
+                    ll.setInsets(mainInfo, "auto auto 0 auto");
+                    ll.setInsets(points, "auto auto 0 0")
+                            .setInsets(contractor, "auto auto 0 0");
+                    ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
+                            .setReferenceComponentLeft(points, mainInfo, 1.2f);
+                    break;
+            }
+
+        }
+
+        private void setPlayerName(String playerName) {
+            this.playerName = playerName;
         }
     }
 }
