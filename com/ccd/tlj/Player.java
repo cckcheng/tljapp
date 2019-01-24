@@ -162,7 +162,8 @@ public class Player {
         this.playerMap.put(seat, p0);
         p0.setPlayerName(playerName);
         int minBid = parseInteger(data.get("minBid"));
-        if (minBid > 0) p0.minBid = minBid;
+        if (minBid > 0) p0.addMidBid(minBid);
+        displayBidInfo(p0, data.get("bid").toString());
 
         Button bExit = new Button("Exit");
         FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
@@ -183,30 +184,11 @@ public class Player {
         Map<String, Object> pL2 = (Map<String, Object>) players.get(3);
         Map<String, Object> pL1 = (Map<String, Object>) players.get(4);
 
-        seat = parseInteger(pR1.get("seat"));
-        PlayerInfo pp = new PlayerInfo("right down", seat, parseInteger(pR1.get("rank")));
-        this.infoLst.add(pp);
-        this.playerMap.put(seat, pp);
-        
-        seat = parseInteger(pR2.get("seat"));
-        pp = new PlayerInfo("right up", seat, parseInteger(pR2.get("rank")));
-        this.infoLst.add(pp);
-        this.playerMap.put(seat, pp);
-        
-        seat = parseInteger(pL2.get("seat"));
-        pp = new PlayerInfo("left up", seat, parseInteger(pL2.get("rank")));
-        this.infoLst.add(pp);
-        this.playerMap.put(seat, pp);
-        
-        seat = parseInteger(pL1.get("seat"));
-        pp = new PlayerInfo("left down", seat, parseInteger(pL1.get("rank")));
-        this.infoLst.add(pp);
-        this.playerMap.put(seat, pp);
-        
-        seat = parseInteger(pTop.get("seat"));
-        pp = new PlayerInfo("top", seat, parseInteger(pTop.get("rank")));
-        this.infoLst.add(pp);
-        this.playerMap.put(seat, pp);
+        parsePlayerInfo(pR1, "right down");
+        parsePlayerInfo(pR2, "right up");
+        parsePlayerInfo(pL2, "left up");
+        parsePlayerInfo(pL1, "left down");
+        parsePlayerInfo(pTop, "top");
 
         Label lbGeneral = new Label("Game " + game);
         lbGeneral.getStyle().setFont(Hand.fontRank);
@@ -220,7 +202,6 @@ public class Player {
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 05");
         for (PlayerInfo info : infoLst) {
             info.addItems(pane);
-//            break;
         }
 
 //        mainForm.setGlassPane((g, rect) -> {
@@ -237,6 +218,24 @@ public class Player {
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: done");
     }
 
+    private void parsePlayerInfo(Map<String, Object> rawData, String location) {
+        int seat = parseInteger(rawData.get("seat"));
+        PlayerInfo pp = new PlayerInfo(location, seat, parseInteger(rawData.get("rank")));
+        displayBidInfo(pp, rawData.get("bid").toString());
+        this.infoLst.add(pp);
+        this.playerMap.put(seat, pp);
+    }
+    
+    private void displayBidInfo(PlayerInfo pp, String bid) {
+        if (!bid.isEmpty() && !bid.equals("-")) {
+            if(bid.equalsIgnoreCase("pass")){
+                pp.points.setText("Pass");
+            } else {
+                pp.points.setText("" + parseInteger(bid));
+            }
+        }
+    }
+    
     private void displayBid(Map<String, Object> data) {
         int seat = parseInteger(data.get("seat"));
         String bid = data.get("bid").toString();
@@ -363,71 +362,69 @@ public class Player {
         List<Card> cards;   // cards played
         String playerName;
 
-        int minBid = -1;
         int seat;
         int rank;
         PlayerInfo(String loc, int seat, int rank) {
             this.location = loc;
             this.seat = seat;
             this.rank = rank;
-        }
-
-        void addItems(Container pane) {
             String info = "#" + seat + "," + rankToString(rank);
-            if (playerName != null) info = playerName + " " + info;
-            if (minBid > 0) info += ", " + minBid;
             mainInfo = new Label(info);
             points = new Label("        ");
             points.getStyle().setFgColor(POINT_COLOR);
+            points.getStyle().setFont(Hand.fontRank);
 //            contractor = new Label("庄");
             contractor = new Label("        ");
             contractor.getStyle().setFgColor(CONTRACT_COLOR);
-            
+            contractor.getStyle().setFont(Hand.fontRank);
+        }
+
+        void addItems(Container pane) {
             pane.add(mainInfo).add(points).add(contractor);
             LayeredLayout ll = (LayeredLayout) pane.getLayout();
             
             switch (this.location) {
                 case "left up":
                     ll.setInsets(mainInfo, "20% auto auto 0");  //top right bottom left
-                    ll.setInsets(points, "20% auto auto 0")
-                            .setInsets(contractor, "20% auto auto 0");
-                    ll.setReferenceComponentLeft(contractor, mainInfo, 1.1f)
-                            .setReferenceComponentLeft(points, mainInfo, 1.5f);
+                    ll.setInsets(points, "20% auto auto 20")
+                            .setInsets(contractor, "20% auto auto 20");
+                    ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
+                            .setReferenceComponentLeft(points, mainInfo, 1f);
                     break;
                 case "left down":
                     ll.setInsets(mainInfo, "40% auto auto 0");
-                    ll.setInsets(points, "40% auto auto 0")
-                            .setInsets(contractor, "40% auto auto 0");
-                    ll.setReferenceComponentLeft(contractor, mainInfo, 1.1f)
-                            .setReferenceComponentLeft(points, mainInfo, 1.5f);
+                    ll.setInsets(points, "40% auto auto 20")
+                            .setInsets(contractor, "40% auto auto 20");
+                    ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
+                            .setReferenceComponentLeft(points, mainInfo, 1f);
                     break;
                 case "right up":
                     ll.setInsets(mainInfo, "20% 0 auto auto");
                     ll.setInsets(points, "20% 20 auto auto")
                             .setInsets(contractor, "20% 20 auto auto");
-                    ll.setReferenceComponentRight(contractor, mainInfo, 1.1f)
-                            .setReferenceComponentRight(points, mainInfo, 1.5f);
+                    ll.setReferenceComponentRight(contractor, mainInfo, 1f)
+                            .setReferenceComponentRight(points, mainInfo, 1f);
                     break;
                 case "right down":
                     ll.setInsets(mainInfo, "40% 0 auto auto");
                     ll.setInsets(points, "40% 20 auto auto")
                             .setInsets(contractor, "40% 20 auto auto");
-                    ll.setReferenceComponentRight(contractor, mainInfo, 1.1f)
-                            .setReferenceComponentRight(points, mainInfo, 1.5f);
+                    ll.setReferenceComponentRight(contractor, mainInfo, 1f)
+                            .setReferenceComponentRight(points, mainInfo, 1f);
                     break;
                 case "top":
                     ll.setInsets(mainInfo, "0 auto auto auto");
-                    ll.setInsets(points, "0 auto auto 0")
-                            .setInsets(contractor, "0 auto auto 0");
+                    ll.setInsets(points, "0 auto auto 20")
+                            .setInsets(contractor, "0 auto auto 20");
                     ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
-                            .setReferenceComponentLeft(points, mainInfo, 1.2f);
+                            .setReferenceComponentLeft(points, mainInfo, 1f);
                     break;
                 case "bottom":
                     ll.setInsets(mainInfo, "auto auto 0 auto");
-                    ll.setInsets(points, "auto auto 0 0")
-                            .setInsets(contractor, "auto auto 0 0");
+                    ll.setInsets(points, "auto auto 0 20")
+                            .setInsets(contractor, "auto auto 0 20");
                     ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
-                            .setReferenceComponentLeft(points, mainInfo, 1.2f);
+                            .setReferenceComponentLeft(points, mainInfo, 1f);
                     break;
             }
 
@@ -435,6 +432,13 @@ public class Player {
 
         private void setPlayerName(String playerName) {
             this.playerName = playerName;
+            String info = this.mainInfo.getText();
+            this.mainInfo.setText(playerName + " " + info);
+        }
+
+        private void addMidBid(int minBid) {
+            String info = this.mainInfo.getText();
+            this.mainInfo.setText( info + ", " + minBid);
         }
     }
 }
