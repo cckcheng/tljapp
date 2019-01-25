@@ -78,6 +78,9 @@ public class TuoLaJi {
 //        String s = "Player 1: " + "\uD83C\uDCC1";
         Display disp = Display.getInstance();
         disp.lockOrientation(false);
+        disp.requestFullScreen();
+        disp.setNoSleep(true);
+        disp.setScreenSaverEnabled(false);
 
 //        String title = "Bid Tractor";
         String title = "Langley TuoLaJi";

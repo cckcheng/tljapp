@@ -57,8 +57,8 @@ public class Card implements Comparable {
         return "V";
     }
 
-    public String suiteSign() {
-        switch (this.suite) {
+    public static String suiteSign(char suit) {
+        switch (suit) {
             case SPADE:
                 return "\u2660";
             case HEART:

@@ -128,6 +128,22 @@ public class Hand extends Component {
         this.upperList.clear();
         this.lowerList.clear();
         if (doPreSort) {
+            int idx = -1;
+            for (int x = 0; x < this.trumps.size(); x++) {
+                Card c = this.trumps.get(x);
+                if (c.suite != Card.JOKER) {
+                    idx = x;
+                    break;
+                }
+            }
+            if (idx >= 0) {
+                List<Card> subLst = this.trumps.subList(idx, this.trumps.size());
+                this.trumps = this.trumps.subList(0, idx);
+                for (Card c : subLst) {
+                    this.suites.get(this.suiteIndex.indexOf(c.suite)).add(c);
+                }
+            }
+
             Collections.sort(this.trumps, Collections.reverseOrder());
             Collections.sort(this.spades, Collections.reverseOrder());
             Collections.sort(this.hearts, Collections.reverseOrder());
@@ -333,7 +349,7 @@ public class Hand extends Component {
                 g.drawString("" + s.charAt(1), x0 + 20, y0);
             }
             g.setFont(fontSymbol);
-            g.drawString(c.suiteSign(), x0 + 2, y0 + fontRank.getHeight() - 5);
+            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontRank.getHeight() - 5);
         } else {
             g.setFont(fontSymbol);
             x0 += 5;
