@@ -321,6 +321,7 @@ public class Hand extends Component {
     int redColor = 0xff0000;
     int whiteColor = 0xffffff;
     static public Font fontRank = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_LARGE);
+    static public Font fontGeneral = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_MEDIUM);
     static public Font fontSymbol = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_SMALL);
 
     private void drawCard(Graphics g, Card c) {

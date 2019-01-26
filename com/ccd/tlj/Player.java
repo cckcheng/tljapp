@@ -14,6 +14,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.Painter;
 import com.codename1.ui.geom.Rectangle;
 import com.codename1.ui.layouts.LayeredLayout;
+import com.codename1.ui.util.UITimer;
 import com.codename1.util.Base64;
 import com.codename1.util.regex.StringReader;
 import java.io.IOException;
@@ -39,9 +40,11 @@ public class Player {
 
     static final int TLJ_PORT = 6688;
 //    static final int POINT_COLOR = 0xd60e90;
-    static final int POINT_COLOR = 0x4242f4;
+    static final int GREY_COLOR = 0x505050;
+    static final int POINT_COLOR = 0x3030ff;
     static final int TIMER_COLOR = 0xff00ff;
-    static final int CONTRACT_COLOR = 0xff0000;
+    static final int RED_COLOR = 0xff0000;
+    static final int BUTTON_COLOR = 0x47b2e8;
 
     static final int TIME_OUT_SECONDS = 15;
     private final String playerId;
@@ -84,6 +87,7 @@ public class Player {
     private MySocket mySocket = null;
 
     static final String actionJoinTable = "join_table";
+    static final String actionBid = "bid";
 
     public void connectServer() {
         if (!Socket.isSupported()) {
@@ -133,6 +137,7 @@ public class Player {
     private boolean tableOn = false;
     private int timeout = 30;   // 30 seconds
     private boolean isPlaying = false;
+    private int contractPoint = -1;
     private Hand hand;
     private Label gameInfo;
 
@@ -154,7 +159,7 @@ public class Player {
         int rank = parseInteger(data.get("rank"));
         int game = parseInteger(data.get("game"));
         int gameRank = parseInteger(data.get("gameRank"));
-        int contractPoint = parseInteger(data.get("contractPoint"));
+        this.contractPoint = parseInteger(data.get("contractPoint"));
         int defaultTimeout = parseInteger(data.get("timeout"));
         if (defaultTimeout > 0) this.timeout = defaultTimeout;
 
@@ -210,11 +215,11 @@ public class Player {
         parsePlayerInfo(pTop, "top");
 
         Label lbGeneral = new Label("Game " + game);
-        lbGeneral.getStyle().setFont(Hand.fontRank);
+        lbGeneral.getStyle().setFont(Hand.fontGeneral);
 //        String gmInfo = "205 NT 2; Partner: 1st CA";  // sample
         String gmInfo = " ";
         if (this.isPlaying) {
-            gmInfo = contractPoint + " ";
+            gmInfo = this.contractPoint + " ";
             if (trumpSuite == Card.JOKER) {
                 gmInfo += "NT ";
             } else {
@@ -223,7 +228,8 @@ public class Player {
             gmInfo += gameRank;
         }
         this.gameInfo = new Label(gmInfo);
-        this.gameInfo.getStyle().setFgColor(POINT_COLOR);
+        this.gameInfo.getStyle().setFgColor(0xebef07);
+        this.gameInfo.getStyle().setFont(Hand.fontRank);
 
         pane.add(hand);
         pane.add(bExit).add(lbGeneral).add(this.gameInfo);
@@ -239,7 +245,7 @@ public class Player {
         }
 
         PlayerInfo pp = this.playerMap.get(actionSeat);
-        if (pp != null) pp.showTimer(this.timeout);
+        if (pp != null) pp.showTimer(this.timeout, this.contractPoint);
 
         if (this.isPlaying) {
             int seatContractor = parseInteger(data.get("seatContractor"));
@@ -274,7 +280,8 @@ public class Player {
     private String bidToString(String bid) {
         if (bid == null || bid.isEmpty() || bid.equals("-")) return "";
         if (bid.equalsIgnoreCase("pass")) return "Pass";
-        return "" + parseInteger(bid);
+        this.contractPoint = parseInteger(bid);
+        return "" + this.contractPoint;
     }
 
     private void displayBidInfo(PlayerInfo pp, String bid) {
@@ -289,7 +296,7 @@ public class Player {
         if (pp != null) displayBidInfo(pp, bid);
 
         pp = this.playerMap.get(actionSeat);
-        if (pp != null) pp.showTimer(this.timeout);
+        if (pp != null) pp.showTimer(this.timeout, this.contractPoint);
     }
 
     private void setTrump(Map<String, Object> data) {
@@ -427,7 +434,37 @@ public class Player {
                 err.printStackTrace();
                 Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
             }
+
+            if (!closeRequested) {
+                // not expected, connect again
+                connectServer();
+            }
 //            Dialog.show("Alert", "Closed.", "OK", "");
+        }
+    }
+
+    class CountDown implements Runnable {
+
+        PlayerInfo pInfo;
+        Label timer;
+        int timeout;
+        CountDown(PlayerInfo pInfo, int timeout) {
+            this.pInfo = pInfo;
+            this.timer = pInfo.timer;
+            this.timeout = timeout;
+        }
+        public void run() {
+            this.timeout--;
+            if (this.timeout > 0) {
+                this.timer.setText(this.timeout + "");
+            } else {
+                this.timer.setText("");
+                FontImage.setMaterialIcon(timer, FontImage.MATERIAL_TIMER_OFF);
+                if (pInfo.actionButtons != null) {
+                    pInfo.actionButtons.setEnabled(false);
+                }
+                pInfo.countDownTimer.cancel();
+            }
         }
     }
 
@@ -440,6 +477,12 @@ public class Player {
         Label timer;   // count down timer
         List<Card> cards;   // cards played
         String playerName;
+        UITimer countDownTimer;
+        Container actionButtons;
+        Button btnBid;
+        Button btnPlus;
+        Button btnMinus;
+        Button btnPass;
 
         int seat;
         int rank;
@@ -451,18 +494,63 @@ public class Player {
             mainInfo = new Label(info);
 
             points = new Label("        ");
-            points.getStyle().setFgColor(POINT_COLOR);
             points.getStyle().setFont(Hand.fontRank);
 
 //            contractor = new Label("庄");
             contractor = new Label("     ");
-            contractor.getStyle().setFgColor(CONTRACT_COLOR);
+            contractor.getStyle().setFgColor(RED_COLOR);
             contractor.getStyle().setFont(Hand.fontRank);
 
             timer = new Label("    ");
             timer.getStyle().setFgColor(TIMER_COLOR);
             timer.getStyle().setFont(Hand.fontRank);
 //            timer.setHidden(true, true);    // setHidden Does not work
+
+            if (loc.equals("bottom")) {
+//                actionButtons = new Container(new FlowLayout(Component.LEFT), "bid_buttons");
+                actionButtons = new Container();
+                btnBid = new Button("", "bid");
+                btnPlus = new Button("");
+                btnMinus = new Button("");
+                FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_KEYBOARD_ARROW_UP);
+                FontImage.setMaterialIcon(btnMinus, FontImage.MATERIAL_KEYBOARD_ARROW_DOWN);
+                btnPass = new Button("Pass", "pass");
+
+                btnPlus.setUIID("plus");
+                btnMinus.setUIID("minus");
+                btnPlus.getStyle().setFont(Hand.fontRank);
+                btnMinus.getStyle().setFont(Hand.fontRank);
+
+                btnBid.getStyle().setFgColor(BUTTON_COLOR);
+                btnBid.getStyle().setFont(Hand.fontRank);
+                btnPass.getStyle().setFgColor(BUTTON_COLOR);
+                btnPass.getStyle().setFont(Hand.fontRank);
+
+                btnBid.addActionListener((e) -> {
+                    actionButtons.setEnabled(false);
+                    countDownTimer.cancel();
+                    mySocket.addRequest(actionBid, "\"bid\":" + btnBid.getText());
+                });
+                btnPass.addActionListener((e) -> {
+                    actionButtons.setEnabled(false);
+                    countDownTimer.cancel();
+                    mySocket.addRequest(actionBid, "\"bid\":\"pass\"");
+                });
+                btnPlus.addActionListener((e) -> {
+                    int point = parseInteger(btnBid.getText());
+                    if (point < this.maxBid) {
+                        point += 5;
+                        btnBid.setText("" + point);
+                    }
+                });
+                btnMinus.addActionListener((e) -> {
+                    int point = parseInteger(btnBid.getText());
+                    if (point > 0) {
+                        point -= 5;
+                        btnBid.setText("" + point);
+                    }
+                });
+            }
         }
 
         void addItems(Container pane) {
@@ -516,13 +604,15 @@ public class Player {
                             .setReferenceComponentTop(timer, mainInfo, 1f);
                     break;
                 case "bottom":
+                    pane.add(actionButtons);
+                    ll.setInsets(actionButtons, "auto auto 35% auto");
+
                     ll.setInsets(mainInfo, "auto auto 0 auto");
-                    ll.setInsets(points, "auto auto 35% 0")
-                            .setInsets(timer, "auto auto 35% 0")
+                    ll.setInsets(points, "auto auto 35% auto")
+                            .setInsets(timer, "auto 20 35% auto")
                             .setInsets(contractor, "auto auto 0 20");
                     ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
-                            .setReferenceComponentLeft(timer, mainInfo)
-                            .setReferenceComponentLeft(points, mainInfo);
+                            .setReferenceComponentRight(timer, actionButtons, 1f);
                     break;
             }
 
@@ -539,21 +629,41 @@ public class Player {
             this.mainInfo.setText( info + ", " + minBid);
         }
 
-        void showPoints(String points) {
+        void showPoints(String point) {
+            if (countDownTimer != null) countDownTimer.cancel();
 //            this.timer.setHidden(true, true); // setHidden does not work well
 //            this.points.setHidden(false, true);
             this.timer.setText("");
-//            FontImage.setMaterialIcon(timer, '\0');
-            FontImage.setMaterialIcon(timer, '0');
-            this.points.setText(points);
+            FontImage.setMaterialIcon(timer, '0');  // hide it
+            this.points.setText(point);
+            if (point.equalsIgnoreCase("pass")) {
+                this.points.getStyle().setFgColor(GREY_COLOR);
+            } else {
+                this.points.getStyle().setFgColor(POINT_COLOR);
+            }
+
+            if (this.actionButtons != null) {
+                this.actionButtons.removeAll();
+            }
         }
 
-        void showTimer(int timeout) {
+        int maxBid = -1;
+        void showTimer(int timeout, int contractPoint) {
 //            this.timer.setHidden(false, true);
 //            this.points.setHidden(true, true);
             this.points.setText("");
-            this.timer.setText(timeout + "s");
+            this.timer.setText(timeout + "");
             FontImage.setMaterialIcon(timer, FontImage.MATERIAL_TIMER);
+            countDownTimer = new UITimer(new CountDown(this, timeout));
+            countDownTimer.schedule(1000, true, mainForm);
+
+            if (this.location.equals("bottom")) {
+                this.maxBid = contractPoint - 5;
+                btnBid.setText("" + this.maxBid);
+                actionButtons.addAll(btnPlus, btnBid, btnMinus, new Label("   "), btnPass);
+                actionButtons.setEnabled(true);
+                actionButtons.repaint();
+            }
         }
 
         void setContractor(String txt) {
