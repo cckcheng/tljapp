@@ -5,6 +5,7 @@ import com.codename1.io.Log;
 import com.codename1.io.Socket;
 import com.codename1.io.SocketConnection;
 import com.codename1.ui.Button;
+import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.FontImage;
@@ -13,6 +14,8 @@ import com.codename1.ui.Graphics;
 import com.codename1.ui.Label;
 import com.codename1.ui.Painter;
 import com.codename1.ui.geom.Rectangle;
+import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.util.UITimer;
 import com.codename1.util.Base64;
@@ -132,6 +135,12 @@ public class Player {
         }
     }
 
+    public static boolean parseBoolean(Object obj) {
+        if (obj == null) return false;
+        String r = obj.toString();
+        return r.equalsIgnoreCase("yes") || r.equalsIgnoreCase("true");
+    }
+
     private List<PlayerInfo> infoLst = new ArrayList<>();
     private Map<Integer, PlayerInfo> playerMap = new HashMap<>();
     private boolean tableOn = false;
@@ -245,7 +254,7 @@ public class Player {
         }
 
         PlayerInfo pp = this.playerMap.get(actionSeat);
-        if (pp != null) pp.showTimer(this.timeout, this.contractPoint);
+        if (pp != null) pp.showTimer(this.timeout, this.contractPoint, false);
 
         if (this.isPlaying) {
             int seatContractor = parseInteger(data.get("seatContractor"));
@@ -296,7 +305,10 @@ public class Player {
         if (pp != null) displayBidInfo(pp, bid);
 
         pp = this.playerMap.get(actionSeat);
-        if (pp != null) pp.showTimer(this.timeout, this.contractPoint);
+        if (pp != null) {
+            boolean bidOver = parseBoolean(data.get("bidOver"));
+            pp.showTimer(this.timeout, this.contractPoint, bidOver);
+        }
     }
 
     private void setTrump(Map<String, Object> data) {
@@ -461,7 +473,7 @@ public class Player {
                 this.timer.setText("");
                 FontImage.setMaterialIcon(timer, FontImage.MATERIAL_TIMER_OFF);
                 if (pInfo.actionButtons != null) {
-                    pInfo.actionButtons.setEnabled(false);
+                    pInfo.actionButtons.setVisible(false);
                 }
                 pInfo.countDownTimer.cancel();
             }
@@ -507,9 +519,10 @@ public class Player {
 //            timer.setHidden(true, true);    // setHidden Does not work
 
             if (loc.equals("bottom")) {
+//                actionButtons = new Container();
 //                actionButtons = new Container(new FlowLayout(Component.LEFT), "bid_buttons");
-                actionButtons = new Container();
-                btnBid = new Button("", "bid");
+                actionButtons = new Container(BoxLayout.x(), "bid_buttons");
+                btnBid = new Button("200", "bid");
                 btnPlus = new Button("");
                 btnMinus = new Button("");
                 FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_KEYBOARD_ARROW_UP);
@@ -527,12 +540,12 @@ public class Player {
                 btnPass.getStyle().setFont(Hand.fontRank);
 
                 btnBid.addActionListener((e) -> {
-                    actionButtons.setEnabled(false);
+                    actionButtons.setVisible(false);
                     countDownTimer.cancel();
                     mySocket.addRequest(actionBid, "\"bid\":" + btnBid.getText());
                 });
                 btnPass.addActionListener((e) -> {
-                    actionButtons.setEnabled(false);
+                    actionButtons.setVisible(false);
                     countDownTimer.cancel();
                     mySocket.addRequest(actionBid, "\"bid\":\"pass\"");
                 });
@@ -550,6 +563,12 @@ public class Player {
                         btnBid.setText("" + point);
                     }
                 });
+                
+                actionButtons.addAll(btnPlus,btnBid,btnMinus, new Label("   "), btnPass);
+//                actionButtons.setFlatten(true);
+//                actionButtons.setScrollVisible(false);
+//                actionButtons.setHeight(Hand.fontRank.getHeight());
+//                actionButtons.setVisible(false);
             }
         }
 
@@ -605,7 +624,7 @@ public class Player {
                     break;
                 case "bottom":
                     pane.add(actionButtons);
-                    ll.setInsets(actionButtons, "auto auto 35% auto");
+                    ll.setInsets(actionButtons, "auto auto 35% 40%");
 
                     ll.setInsets(mainInfo, "auto auto 0 auto");
                     ll.setInsets(points, "auto auto 35% auto")
@@ -643,12 +662,17 @@ public class Player {
             }
 
             if (this.actionButtons != null) {
-                this.actionButtons.removeAll();
+//                this.actionButtons.removeAll();
+                this.actionButtons.setVisible(false);
             }
         }
 
         int maxBid = -1;
-        void showTimer(int timeout, int contractPoint) {
+        void showTimer(int timeout, int contractPoint, boolean bidOver) {
+            if(bidOver) {
+                this.contractor.setText(CONTRACTOR);
+                return;
+            }
 //            this.timer.setHidden(false, true);
 //            this.points.setHidden(true, true);
             this.points.setText("");
@@ -660,9 +684,11 @@ public class Player {
             if (this.location.equals("bottom")) {
                 this.maxBid = contractPoint - 5;
                 btnBid.setText("" + this.maxBid);
-                actionButtons.addAll(btnPlus, btnBid, btnMinus, new Label("   "), btnPass);
-                actionButtons.setEnabled(true);
-                actionButtons.repaint();
+                actionButtons.setVisible(true);
+//                actionButtons.addAll(btnPlus, btnBid, btnMinus, new Label("   "), btnPass);
+//                actionButtons.setEnabled(true);
+//                actionButtons.repaint();
+                actionButtons.setShouldCalcPreferredSize(true);
             }
         }
 
