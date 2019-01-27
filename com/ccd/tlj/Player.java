@@ -145,12 +145,13 @@ public class Player {
     private Map<Integer, PlayerInfo> playerMap = new HashMap<>();
     private boolean tableOn = false;
     private int timeout = 30;   // 30 seconds
-    private boolean isPlaying = false;
+    public boolean isPlaying = false;
     private int contractPoint = -1;
     private Hand hand;
     private Label gameInfo;
 
     private void showTable(Map<String, Object> data) {
+        mainForm.getContentPane().setVisible(false);
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 01");
         Container pane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
         pane.setLayout(new LayeredLayout());
@@ -172,7 +173,7 @@ public class Player {
         int defaultTimeout = parseInteger(data.get("timeout"));
         if (defaultTimeout > 0) this.timeout = defaultTimeout;
 
-        this.hand = new Hand();
+        this.hand = new Hand(this);
         addCardsToHand(hand, Card.SPADE, (List<Object>) data.get("S"));
         addCardsToHand(hand, Card.HEART, (List<Object>) data.get("H"));
         addCardsToHand(hand, Card.DIAMOND, (List<Object>) data.get("D"));
@@ -205,6 +206,7 @@ public class Player {
             this.tableOn = false;
             pane.removeAll();
             mainForm.setGlassPane(null);
+            mainForm.getContentPane().setVisible(true);
             mainForm.repaint();
             disconnect();
         });
@@ -519,21 +521,20 @@ public class Player {
 //            timer.setHidden(true, true);    // setHidden Does not work
 
             if (loc.equals("bottom")) {
-//                actionButtons = new Container();
-//                actionButtons = new Container(new FlowLayout(Component.LEFT), "bid_buttons");
-                actionButtons = new Container(BoxLayout.x(), "bid_buttons");
                 btnBid = new Button("200", "bid");
+//                btnBid = new Button("200");
                 btnPlus = new Button("");
                 btnMinus = new Button("");
                 FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_KEYBOARD_ARROW_UP);
                 FontImage.setMaterialIcon(btnMinus, FontImage.MATERIAL_KEYBOARD_ARROW_DOWN);
                 btnPass = new Button("Pass", "pass");
+//                btnPass = new Button("Pass");
 
                 btnPlus.setUIID("plus");
                 btnMinus.setUIID("minus");
                 btnPlus.getStyle().setFont(Hand.fontRank);
                 btnMinus.getStyle().setFont(Hand.fontRank);
-
+//
                 btnBid.getStyle().setFgColor(BUTTON_COLOR);
                 btnBid.getStyle().setFont(Hand.fontRank);
                 btnPass.getStyle().setFgColor(BUTTON_COLOR);
@@ -541,12 +542,12 @@ public class Player {
 
                 btnBid.addActionListener((e) -> {
                     actionButtons.setVisible(false);
-                    countDownTimer.cancel();
+                    if(countDownTimer != null) countDownTimer.cancel();
                     mySocket.addRequest(actionBid, "\"bid\":" + btnBid.getText());
                 });
                 btnPass.addActionListener((e) -> {
                     actionButtons.setVisible(false);
-                    countDownTimer.cancel();
+                    if(countDownTimer != null)countDownTimer.cancel();
                     mySocket.addRequest(actionBid, "\"bid\":\"pass\"");
                 });
                 btnPlus.addActionListener((e) -> {
@@ -564,11 +565,10 @@ public class Player {
                     }
                 });
                 
-                actionButtons.addAll(btnPlus,btnBid,btnMinus, new Label("   "), btnPass);
-//                actionButtons.setFlatten(true);
-//                actionButtons.setScrollVisible(false);
-//                actionButtons.setHeight(Hand.fontRank.getHeight());
-//                actionButtons.setVisible(false);
+                actionButtons = BoxLayout.encloseXNoGrow(btnPlus,new Label("   "),btnBid,
+                        new Label("   "),btnMinus,new Label("   "), btnPass);
+//                actionButtons = BoxLayout.encloseXNoGrow(btnPlus,btnBid,btnMinus, btnPass);
+//                actionButtons = BoxLayout.encloseX(btnPlus,btnBid,btnMinus, btnPass);
             }
         }
 
@@ -624,7 +624,8 @@ public class Player {
                     break;
                 case "bottom":
                     pane.add(actionButtons);
-                    ll.setInsets(actionButtons, "auto auto 35% 40%");
+//                    ll.setInsets(actionButtons, "auto auto 35% 40%");
+                    ll.setInsets(actionButtons, "auto auto 35% auto");
 
                     ll.setInsets(mainInfo, "auto auto 0 auto");
                     ll.setInsets(points, "auto auto 35% auto")
@@ -688,7 +689,7 @@ public class Player {
 //                actionButtons.addAll(btnPlus, btnBid, btnMinus, new Label("   "), btnPass);
 //                actionButtons.setEnabled(true);
 //                actionButtons.repaint();
-                actionButtons.setShouldCalcPreferredSize(true);
+//                actionButtons.setShouldCalcPreferredSize(true);
             }
         }
 

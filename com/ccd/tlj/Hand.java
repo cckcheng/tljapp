@@ -30,6 +30,8 @@ public class Hand extends Component {
     private List<Card> upperList = new ArrayList<>();
     private List<Card> lowerList = new ArrayList<>();
     private List<Card> selected = new ArrayList<>();
+    
+    private final Player player;
 
     int maxWidth = 1900;
     int xPitch = 60;
@@ -40,7 +42,7 @@ public class Hand extends Component {
     int popHeight = 20;
     int hReserved = 0;
 
-    Hand() {
+    Hand(Player player) {
         suites.add(this.spades);
         suites.add(this.hearts);
         suites.add(this.clubs);
@@ -50,6 +52,8 @@ public class Hand extends Component {
         suiteIndex.add(Card.HEART);
         suiteIndex.add(Card.CLUB);
         suiteIndex.add(Card.DIAMOND);
+        
+        this.player = player;
     }
 
 //    int xPR1 = 0;   // right player 1 coodinate
@@ -408,6 +412,7 @@ public class Hand extends Component {
 
     @Override
     public void pointerPressed(int x, int y) {
+        if(!this.player.isPlaying) return;
         int y0 = getY() + getHeight() - hReserved;
         int y1 = y0 - cardHeight;
         int y2 = y1 - cardHeight * 5 / 6;
@@ -427,6 +432,7 @@ public class Hand extends Component {
 
     @Override
     public void pointerDragged(int x[], int y[]) {
+        if(!this.player.isPlaying) return;
         int y0 = getY() + getHeight() - hReserved;
         int y1 = y0 - cardHeight;
         int y2 = y1 - cardHeight * 4 / 5;
@@ -548,6 +554,7 @@ public class Hand extends Component {
 
     @Override
     public void pointerReleased(int x, int y) {
+        if(!this.player.isPlaying) return;
         int y0 = getY() + getHeight() - hReserved;
         int y1 = y0 - cardHeight;
         int y2 = y1 - cardHeight * 4 / 5;

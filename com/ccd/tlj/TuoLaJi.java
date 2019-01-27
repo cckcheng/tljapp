@@ -195,7 +195,7 @@ public class TuoLaJi {
             player.setPlayerName(playerName);
         }
         player.connectServer();
-    }
+   }
 
     public void stop() {
         current = getCurrentForm();
