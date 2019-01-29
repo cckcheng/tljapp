@@ -521,18 +521,20 @@ public class Player {
 //            timer.setHidden(true, true);    // setHidden Does not work
 
             if (loc.equals("bottom")) {
-                btnBid = new Button("200", "bid");
+                btnBid = new Button(" 200 ", "bid");
 //                btnBid = new Button("200");
-                btnPlus = new Button("");
-                btnMinus = new Button("");
-                FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_KEYBOARD_ARROW_UP);
-                FontImage.setMaterialIcon(btnMinus, FontImage.MATERIAL_KEYBOARD_ARROW_DOWN);
+                btnPlus = new Button("", "plus");
+                btnMinus = new Button("", "minus");
+                FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_ARROW_UPWARD);
+                FontImage.setMaterialIcon(btnMinus, FontImage.MATERIAL_ARROW_DOWNWARD);
                 btnPass = new Button("Pass", "pass");
 //                btnPass = new Button("Pass");
 
-                btnPlus.setUIID("plus");
-                btnMinus.setUIID("minus");
+//                btnPlus.setUIID("plus");
+//                btnMinus.setUIID("minus");
+                btnPlus.getStyle().setFgColor(BUTTON_COLOR);
                 btnPlus.getStyle().setFont(Hand.fontRank);
+                btnMinus.getStyle().setFgColor(BUTTON_COLOR);
                 btnMinus.getStyle().setFont(Hand.fontRank);
 //
                 btnBid.getStyle().setFgColor(BUTTON_COLOR);
@@ -540,10 +542,11 @@ public class Player {
                 btnPass.getStyle().setFgColor(BUTTON_COLOR);
                 btnPass.getStyle().setFont(Hand.fontRank);
 
+                btnBid.setWidth(100);
                 btnBid.addActionListener((e) -> {
                     actionButtons.setVisible(false);
                     if(countDownTimer != null) countDownTimer.cancel();
-                    mySocket.addRequest(actionBid, "\"bid\":" + btnBid.getText());
+                    mySocket.addRequest(actionBid, "\"bid\":" + btnBid.getText().trim());
                 });
                 btnPass.addActionListener((e) -> {
                     actionButtons.setVisible(false);
@@ -554,14 +557,14 @@ public class Player {
                     int point = parseInteger(btnBid.getText());
                     if (point < this.maxBid) {
                         point += 5;
-                        btnBid.setText("" + point);
+                        btnBid.setText(" " + point + " ");
                     }
                 });
                 btnMinus.addActionListener((e) -> {
                     int point = parseInteger(btnBid.getText());
                     if (point > 0) {
                         point -= 5;
-                        btnBid.setText("" + point);
+                        btnBid.setText(" " + point + " ");
                     }
                 });
                 
@@ -684,7 +687,7 @@ public class Player {
 
             if (this.location.equals("bottom")) {
                 this.maxBid = contractPoint - 5;
-                btnBid.setText("" + this.maxBid);
+                btnBid.setText(" " + this.maxBid + " ");
                 actionButtons.setVisible(true);
 //                actionButtons.addAll(btnPlus, btnBid, btnMinus, new Label("   "), btnPass);
 //                actionButtons.setEnabled(true);
