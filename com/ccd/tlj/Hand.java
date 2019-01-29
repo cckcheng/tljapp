@@ -129,6 +129,7 @@ public class Hand extends Component {
     }
 
     public void sortCards(char trumpSuite, int gameRank, boolean doPreSort) {
+        this.setOpaque(false);
         this.upperList.clear();
         this.lowerList.clear();
         if (doPreSort) {
@@ -176,6 +177,8 @@ public class Hand extends Component {
             tmpCards.clear();
         }
         splitSuites(trumpSuite);
+
+        this.setOpaque(true);
     }
 
     private void splitSuites(char trumpSuite) {

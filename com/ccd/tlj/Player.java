@@ -5,7 +5,6 @@ import com.codename1.io.Log;
 import com.codename1.io.Socket;
 import com.codename1.io.SocketConnection;
 import com.codename1.ui.Button;
-import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.FontImage;
@@ -15,7 +14,6 @@ import com.codename1.ui.Label;
 import com.codename1.ui.Painter;
 import com.codename1.ui.geom.Rectangle;
 import com.codename1.ui.layouts.BoxLayout;
-import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.util.UITimer;
 import com.codename1.util.Base64;
@@ -229,14 +227,19 @@ public class Player {
         lbGeneral.getStyle().setFont(Hand.fontGeneral);
 //        String gmInfo = "205 NT 2; Partner: 1st CA";  // sample
         String gmInfo = " ";
+        int buryTime = parseInteger(data.get("burytime"));
         if (this.isPlaying) {
             gmInfo = this.contractPoint + " ";
-            if (trumpSuite == Card.JOKER) {
-                gmInfo += "NT ";
+            Object act = data.get("act");
+            if (act != null && act.toString().equalsIgnoreCase("dim")) {
             } else {
-                gmInfo += Card.suiteSign(trumpSuite);
+                if (trumpSuite == Card.JOKER) {
+                    gmInfo += "NT ";
+                } else {
+                    gmInfo += Card.suiteSign(trumpSuite);
+                }
+                gmInfo += gameRank;
             }
-            gmInfo += gameRank;
         }
         this.gameInfo = new Label(gmInfo);
         this.gameInfo.getStyle().setFgColor(0xebef07);
@@ -256,7 +259,13 @@ public class Player {
         }
 
         PlayerInfo pp = this.playerMap.get(actionSeat);
-        if (pp != null) pp.showTimer(this.timeout, this.contractPoint, false);
+        if (pp != null) {
+            if (buryTime > 1) {
+                pp.showTimer(buryTime, this.contractPoint, false);
+            } else {
+                pp.showTimer(this.timeout, this.contractPoint, false);
+            }
+        }
 
         if (this.isPlaying) {
             int seatContractor = parseInteger(data.get("seatContractor"));
@@ -291,8 +300,7 @@ public class Player {
     private String bidToString(String bid) {
         if (bid == null || bid.isEmpty() || bid.equals("-")) return "";
         if (bid.equalsIgnoreCase("pass")) return "Pass";
-        this.contractPoint = parseInteger(bid);
-        return "" + this.contractPoint;
+        return "" + parseInteger(bid);
     }
 
     private void displayBidInfo(PlayerInfo pp, String bid) {
@@ -302,6 +310,7 @@ public class Player {
     private void displayBid(Map<String, Object> data) {
         int seat = parseInteger(data.get("seat"));
         int actionSeat = parseInteger(data.get("nextActionSeat"));
+        this.contractPoint = parseInteger(data.get("contractPoint"));   // send contract point every time to avoid error
         String bid = data.get("bid").toString();
         PlayerInfo pp = this.playerMap.get(seat);
         if (pp != null) displayBidInfo(pp, bid);
@@ -568,8 +577,10 @@ public class Player {
                     }
                 });
                 
-                actionButtons = BoxLayout.encloseXNoGrow(btnPlus,new Label("   "),btnBid,
+                actionButtons = BoxLayout.encloseX(btnPlus, new Label("   "), btnBid,
                         new Label("   "),btnMinus,new Label("   "), btnPass);
+//                actionButtons = BoxLayout.encloseXNoGrow(btnPlus,new Label("   "),btnBid,
+//                        new Label("   "),btnMinus,new Label("   "), btnPass);
 //                actionButtons = BoxLayout.encloseXNoGrow(btnPlus,btnBid,btnMinus, btnPass);
 //                actionButtons = BoxLayout.encloseX(btnPlus,btnBid,btnMinus, btnPass);
             }
@@ -636,6 +647,8 @@ public class Player {
                             .setInsets(contractor, "auto auto 0 20");
                     ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
                             .setReferenceComponentRight(timer, actionButtons, 1f);
+
+                    actionButtons.setVisible(false);
                     break;
             }
 
@@ -675,7 +688,7 @@ public class Player {
         void showTimer(int timeout, int contractPoint, boolean bidOver) {
             if(bidOver) {
                 this.contractor.setText(CONTRACTOR);
-                return;
+//                return;
             }
 //            this.timer.setHidden(false, true);
 //            this.points.setHidden(true, true);
@@ -686,13 +699,13 @@ public class Player {
             countDownTimer.schedule(1000, true, mainForm);
 
             if (this.location.equals("bottom")) {
-                this.maxBid = contractPoint - 5;
-                btnBid.setText(" " + this.maxBid + " ");
-                actionButtons.setVisible(true);
-//                actionButtons.addAll(btnPlus, btnBid, btnMinus, new Label("   "), btnPass);
-//                actionButtons.setEnabled(true);
-//                actionButtons.repaint();
-//                actionButtons.setShouldCalcPreferredSize(true);
+                if (bidOver) {
+
+                } else {
+                    this.maxBid = contractPoint - 5;
+                    btnBid.setText("" + this.maxBid);
+                    actionButtons.setVisible(true);
+                }
             }
         }
 
