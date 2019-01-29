@@ -128,8 +128,7 @@ public class Hand extends Component {
         }
     }
 
-    public void sortCards(char trumpSuite, int gameRank, boolean doPreSort) {
-        this.setOpaque(false);
+    synchronized public void sortCards(char trumpSuite, int gameRank, boolean doPreSort) {
         this.upperList.clear();
         this.lowerList.clear();
         if (doPreSort) {
@@ -177,8 +176,6 @@ public class Hand extends Component {
             tmpCards.clear();
         }
         splitSuites(trumpSuite);
-
-        this.setOpaque(true);
     }
 
     private void splitSuites(char trumpSuite) {
@@ -381,7 +378,7 @@ public class Hand extends Component {
 
     boolean flip = false;
     @Override
-    public void paintBackground(Graphics g) {
+    synchronized public void paintBackground(Graphics g) {
         g.translate(-g.getTranslateX(), -g.getTranslateY());
 //        g.clearRect(0, 0, getWidth(), getY() + getHeight());
         if (flip) return;

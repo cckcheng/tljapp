@@ -349,6 +349,7 @@ public class Player {
         }
         gmInfo += gameRank;
         this.gameInfo.setText(gmInfo);
+        this.isPlaying = true;
     }
 
     Painter getPainter(String loc) {
