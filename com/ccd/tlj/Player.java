@@ -7,6 +7,7 @@ import com.codename1.io.SocketConnection;
 import com.codename1.ui.Button;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
+import com.codename1.ui.DynamicImage;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
 import com.codename1.ui.Graphics;
@@ -47,6 +48,7 @@ public class Player {
     static final int RED_COLOR = 0xff0000;
     static final int BUTTON_COLOR = 0x47b2e8;
 
+    private final ButtonImage backImage = new ButtonImage(80, 30, 0xbcbcbc);
     static final int TIME_OUT_SECONDS = 15;
     private final String playerId;
     private String playerName;
@@ -116,12 +118,26 @@ public class Player {
         }
     }
 
-    private void addCardsToHand(Hand hand, char suite, List<Object> lst) {
+    private List<Character> candidateTrumps = new ArrayList<>();
+    private void addCardsToHand(char suite, List<Object> lst) {
         if (lst.isEmpty()) return;
         for (Object d : lst) {
             int rank = parseInteger(d);
-            if (rank > 0) hand.addCard(new Card(suite, rank));
+            if (rank > 0) {
+                hand.addCard(new Card(suite, rank));
+                if (rank == this.playerRank || suite == Card.JOKER) {
+                    if (!candidateTrumps.contains(suite)) candidateTrumps.add(suite);
+                }
+            }
         }
+    }
+
+    private void addCards(Map<String, Object> data) {
+        addCardsToHand(Card.SPADE, (List<Object>) data.get("S"));
+        addCardsToHand(Card.HEART, (List<Object>) data.get("H"));
+        addCardsToHand(Card.DIAMOND, (List<Object>) data.get("D"));
+        addCardsToHand(Card.CLUB, (List<Object>) data.get("C"));
+        addCardsToHand(Card.JOKER, (List<Object>) data.get("T"));
     }
 
     public static int parseInteger(Object obj) {
@@ -145,6 +161,7 @@ public class Player {
     private int timeout = 30;   // 30 seconds
     public boolean isPlaying = false;
     private int contractPoint = -1;
+    private int playerRank;
     private Hand hand;
     private Label gameInfo;
 
@@ -164,7 +181,7 @@ public class Player {
         this.isPlaying = stage.equalsIgnoreCase(PLAYING_STAGE);
         int seat = parseInteger(data.get("seat"));
         int actionSeat = parseInteger(data.get("actionSeat"));
-        int rank = parseInteger(data.get("rank"));
+        this.playerRank = parseInteger(data.get("rank"));
         int game = parseInteger(data.get("game"));
         int gameRank = parseInteger(data.get("gameRank"));
         this.contractPoint = parseInteger(data.get("contractPoint"));
@@ -172,11 +189,7 @@ public class Player {
         if (defaultTimeout > 0) this.timeout = defaultTimeout;
 
         this.hand = new Hand(this);
-        addCardsToHand(hand, Card.SPADE, (List<Object>) data.get("S"));
-        addCardsToHand(hand, Card.HEART, (List<Object>) data.get("H"));
-        addCardsToHand(hand, Card.DIAMOND, (List<Object>) data.get("D"));
-        addCardsToHand(hand, Card.CLUB, (List<Object>) data.get("C"));
-        addCardsToHand(hand, Card.JOKER, (List<Object>) data.get("T"));
+        this.addCards(data);
 
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 03");
         char trumpSuite = Card.JOKER;
@@ -186,10 +199,10 @@ public class Player {
         if(gameRank>0) {
             hand.sortCards(trumpSuite, gameRank, true);
         } else {
-            hand.sortCards(trumpSuite, rank, true);
+            hand.sortCards(trumpSuite, playerRank, true);
         }
 
-        PlayerInfo p0 = new PlayerInfo("bottom", seat, rank);
+        PlayerInfo p0 = new PlayerInfo("bottom", seat, playerRank);
         this.infoLst.add(p0);
         this.playerMap.put(seat, p0);
         p0.setPlayerName(playerName);
@@ -322,14 +335,15 @@ public class Player {
         }
     }
 
+    private char currentTrump;
     private void setTrump(Map<String, Object> data) {
         String trump = data.get("trump").toString();
         if (trump.isEmpty()) return;
-        char trumpSuite = trump.charAt(0);
+        this.currentTrump = trump.charAt(0);
         int seat = parseInteger(data.get("seat"));
         int gameRank = parseInteger(data.get("gameRank"));
         int contractPoint = parseInteger(data.get("contractPoint"));
-        this.hand.sortCards(trumpSuite, gameRank, true);
+        this.hand.sortCards(currentTrump, gameRank, true);
         this.hand.repaint();
 
         for (int st : this.playerMap.keySet()) {
@@ -342,10 +356,10 @@ public class Player {
         }
 
         String gmInfo = contractPoint + " ";
-        if (trumpSuite == Card.JOKER) {
+        if (currentTrump == Card.JOKER) {
             gmInfo += "NT ";
         } else {
-            gmInfo += Card.suiteSign(trumpSuite);
+            gmInfo += Card.suiteSign(currentTrump);
         }
         gmInfo += gameRank;
         this.gameInfo.setText(gmInfo);
@@ -413,6 +427,14 @@ public class Player {
                     case "set_trump":
                         if (TuoLaJi.DEBUG_MODE) Log.p("set trump");
                         setTrump(data);
+                        break;
+                    case "add_remains":
+                        if (TuoLaJi.DEBUG_MODE) Log.p("add_remains");
+                        addCards(data);
+                        hand.sortCards(currentTrump, playerRank, true);
+                        hand.repaint();
+                        int buryTime = parseInteger(data.get("burytime"));
+                        infoLst.get(0).showTimer(buryTime, 100, true);
                         break;
                 }
             }
@@ -518,7 +540,7 @@ public class Player {
             mainInfo = new Label(info);
 
             points = new Label("        ");
-            points.getStyle().setFont(Hand.fontRank);
+            points.getAllStyles().setFont(Hand.fontRank);
 
 //            contractor = new Label("庄");
             contractor = new Label("     ");
@@ -526,33 +548,41 @@ public class Player {
             contractor.getStyle().setFont(Hand.fontRank);
 
             timer = new Label("    ");
-            timer.getStyle().setFgColor(TIMER_COLOR);
-            timer.getStyle().setFont(Hand.fontRank);
+            timer.getAllStyles().setFgColor(TIMER_COLOR);
+            timer.getAllStyles().setFont(Hand.fontRank);
 //            timer.setHidden(true, true);    // setHidden Does not work
 
             if (loc.equals("bottom")) {
-                btnBid = new Button(" 200 ", "bid");
-//                btnBid = new Button("200");
-                btnPlus = new Button("", "plus");
-                btnMinus = new Button("", "minus");
+                btnBid = new Button("200");
+                btnPlus = new Button("");
+                btnMinus = new Button("");
+                btnPass = new Button("Pass");
+
+//                btnBid = new Button(" 200 ", "bid");
+//                btnPlus = new Button("", "plus");
+//                btnMinus = new Button("", "minus");
+//                btnPass = new Button("Pass", "pass");
                 FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_ARROW_UPWARD);
                 FontImage.setMaterialIcon(btnMinus, FontImage.MATERIAL_ARROW_DOWNWARD);
-                btnPass = new Button("Pass", "pass");
-//                btnPass = new Button("Pass");
 
 //                btnPlus.setUIID("plus");
 //                btnMinus.setUIID("minus");
-                btnPlus.getStyle().setFgColor(BUTTON_COLOR);
-                btnPlus.getStyle().setFont(Hand.fontRank);
-                btnMinus.getStyle().setFgColor(BUTTON_COLOR);
-                btnMinus.getStyle().setFont(Hand.fontRank);
-//
-                btnBid.getStyle().setFgColor(BUTTON_COLOR);
-                btnBid.getStyle().setFont(Hand.fontRank);
-                btnPass.getStyle().setFgColor(BUTTON_COLOR);
-                btnPass.getStyle().setFont(Hand.fontRank);
 
-                btnBid.setWidth(100);
+//                btnPlus.getStyle().setFgColor(BUTTON_COLOR);
+//                btnPlus.getStyle().setFont(Hand.fontRank);
+//                btnMinus.getStyle().setFgColor(BUTTON_COLOR);
+//                btnMinus.getStyle().setFont(Hand.fontRank);
+////
+//                btnBid.getStyle().setFgColor(BUTTON_COLOR);
+//                btnBid.getStyle().setFont(Hand.fontRank);
+//
+//                btnPass.getStyle().setFgColor(BUTTON_COLOR);
+//                btnPass.getStyle().setFont(Hand.fontRank);
+
+                btnBid.getAllStyles().setFont(Hand.fontRank);
+                btnBid.getAllStyles().setBgImage(backImage);
+                btnPass.getAllStyles().setBgImage(backImage);
+
                 btnBid.addActionListener((e) -> {
                     actionButtons.setVisible(false);
                     if(countDownTimer != null) countDownTimer.cancel();
@@ -567,23 +597,26 @@ public class Player {
                     int point = parseInteger(btnBid.getText());
                     if (point < this.maxBid) {
                         point += 5;
-                        btnBid.setText(" " + point + " ");
+                        btnBid.setText("" + point);
+//                        btnBid.setText(" " + point + " ");
                     }
                 });
                 btnMinus.addActionListener((e) -> {
                     int point = parseInteger(btnBid.getText());
                     if (point > 0) {
                         point -= 5;
-                        btnBid.setText(" " + point + " ");
+                        btnBid.setText("" + point);
+//                        btnBid.setText(" " + point + " ");
                     }
                 });
-                
-                actionButtons = BoxLayout.encloseX(btnPlus, new Label("   "), btnBid,
-                        new Label("   "),btnMinus,new Label("   "), btnPass);
-//                actionButtons = BoxLayout.encloseXNoGrow(btnPlus,new Label("   "),btnBid,
-//                        new Label("   "),btnMinus,new Label("   "), btnPass);
-//                actionButtons = BoxLayout.encloseXNoGrow(btnPlus,btnBid,btnMinus, btnPass);
-//                actionButtons = BoxLayout.encloseX(btnPlus,btnBid,btnMinus, btnPass);
+
+                if (candidateTrumps.isEmpty()) {
+                    actionButtons = BoxLayout.encloseXNoGrow(btnPass);
+                } else {
+                    actionButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
+                }
+//                actionButtons = BoxLayout.encloseXNoGrow(btnPlus, new Label("   "), btnBid,
+//                        new Label("   "), btnMinus, new Label("   "), new Label("   "), btnPass, test);
             }
         }
 
@@ -644,10 +677,10 @@ public class Player {
 
                     ll.setInsets(mainInfo, "auto auto 0 auto");
                     ll.setInsets(points, "auto auto 35% auto")
-                            .setInsets(timer, "auto 20 35% auto")
+                            .setInsets(timer, "auto auto 0 45%")
                             .setInsets(contractor, "auto auto 0 20");
                     ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
-                            .setReferenceComponentRight(timer, actionButtons, 1f);
+                            .setReferenceComponentBottom(timer, actionButtons, 1f);
 
                     actionButtons.setVisible(false);
                     break;
@@ -701,12 +734,20 @@ public class Player {
 
             if (this.location.equals("bottom")) {
                 if (bidOver) {
-
+                    actionButtons.removeAll();
+                    actionButtons.add(new Label("请选将"));
+                    for (char c : candidateTrumps) {
+                        if (c == Card.JOKER) {
+                            actionButtons.add(new Button("NT"));
+                        } else {
+                            actionButtons.add(new Button(Card.suiteSign(c)));
+                        }
+                    }
                 } else {
                     this.maxBid = contractPoint - 5;
                     btnBid.setText("" + this.maxBid);
-                    actionButtons.setVisible(true);
                 }
+                actionButtons.setVisible(true);
             }
         }
 
@@ -715,5 +756,21 @@ public class Player {
             this.points.setText("");
             this.contractor.setText(txt);
         }
+    }
+
+    class ButtonImage extends DynamicImage {
+        int bgColor = 0x00ffff;
+
+        ButtonImage(int w, int h, int bgColor) {
+            super(w, h);
+            this.bgColor = bgColor;
+        }
+
+        @Override
+        protected void drawImageImpl(Graphics g, Object nativeGraphics, int x, int y, int w, int h) {
+            g.setColor(this.bgColor);
+            g.fillRoundRect(x, y, w, h, 35, 35);
+        }
+
     }
 }

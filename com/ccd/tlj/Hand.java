@@ -102,7 +102,7 @@ public class Hand extends Component {
                 this.clubs.add(c);
                 break;
             default:
-                this.trumps.add(c);
+                this.trumps.add(0, c);
                 break;
         }
     }
