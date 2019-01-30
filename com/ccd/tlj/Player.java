@@ -97,16 +97,10 @@ public class Player {
             Dialog.show("Alert", "Socket is not supported", "OK", "");
             return;
         }
-//        if (this.mySocket != null) {
-//            if (!mySocket.isConnected()) {
-//                mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
-//                Socket.connect(TLJ_HOST, TLJ_PORT, mySocket);
-//            }
-//        } else {
-            this.mySocket = new MySocket();
-            mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
-            Socket.connect(TLJ_HOST, TLJ_PORT, mySocket);
-//        }
+
+        this.mySocket = new MySocket();
+        mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
+        Socket.connect(TLJ_HOST, TLJ_PORT, mySocket);
     }
 
     public void disconnect() {
@@ -164,14 +158,15 @@ public class Player {
     private int playerRank;
     private Hand hand;
     private Label gameInfo;
+    private Container tablePane;
 
     private void showTable(Map<String, Object> data) {
         mainForm.getContentPane().setVisible(false);
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 01");
-        Container pane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
-        pane.setLayout(new LayeredLayout());
+        tablePane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
+        tablePane.setLayout(new LayeredLayout());
         if (this.tableOn) {
-            pane.removeAll();
+            tablePane.removeAll();
         }
 
         infoLst.clear();
@@ -215,7 +210,7 @@ public class Player {
         bExit.setUIID("myExit");
         bExit.addActionListener((e) -> {
             this.tableOn = false;
-            pane.removeAll();
+            tablePane.removeAll();
             mainForm.setGlassPane(null);
             mainForm.getContentPane().setVisible(true);
             mainForm.repaint();
@@ -258,9 +253,9 @@ public class Player {
         this.gameInfo.getStyle().setFgColor(0xebef07);
         this.gameInfo.getStyle().setFont(Hand.fontRank);
 
-        pane.add(hand);
-        pane.add(bExit).add(lbGeneral).add(this.gameInfo);
-        LayeredLayout ll = (LayeredLayout) pane.getLayout();
+        tablePane.add(hand);
+        tablePane.add(bExit).add(lbGeneral).add(this.gameInfo);
+        LayeredLayout ll = (LayeredLayout) tablePane.getLayout();
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
         ll.setInsets(lbGeneral, "0 auto auto 0")
                 .setInsets(this.gameInfo, "0 auto auto 0");
@@ -268,7 +263,7 @@ public class Player {
 
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 05");
         for (PlayerInfo info : infoLst) {
-            info.addItems(pane);
+            info.addItems(tablePane);
         }
 
         PlayerInfo pp = this.playerMap.get(actionSeat);
@@ -382,6 +377,7 @@ public class Player {
         return data;
     }
 
+    static int serverWaitCycle = 10; // 10 times
     class MySocket extends SocketConnection {
 
         private boolean closeRequested = false;
@@ -445,6 +441,12 @@ public class Player {
 //            if (isConnected()) closeRequested = true;
             main.enableButtons();
             Dialog.show("Error", message, "OK", "");
+            if (tableOn) {
+                tablePane.removeAll();
+                mainForm.setGlassPane(null);
+                mainForm.getContentPane().setVisible(true);
+                mainForm.repaint();
+            }
 //            mySocket = null;    // reset connection
         }
 
@@ -452,6 +454,8 @@ public class Player {
         public void connectionEstablished(InputStream is, OutputStream os) {
 //            closeRequested = false;
             byte[] buffer = new byte[4096];
+            int count = 0;
+            boolean startCount = false;
             try {
                 if (TuoLaJi.DEBUG_MODE) Log.p("connected!");
                 while (isConnected() && !closeRequested) {
@@ -464,13 +468,18 @@ public class Player {
                             request = Base64.encode(request.getBytes());
                             os.write(confusedData(request).getBytes());
                         }
+                        startCount = true;
                     }
                     int n = is.available();
                     if (n > 0) {
+                        startCount = false;
+                        count = 0;
                         n = is.read(buffer, 0, 4096);
                         if (n < 0) break;
                         processReceived(new String(buffer, 0, n));
                     } else {
+                        if (startCount) count++;
+                        if (count > serverWaitCycle) break;
                         Thread.sleep(500);
                     }
                 }
