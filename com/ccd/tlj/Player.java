@@ -546,6 +546,7 @@ public class Player {
                 FontImage.setMaterialIcon(timer, FontImage.MATERIAL_TIMER_OFF);
                 if (pInfo.actionButtons != null) {
                     pInfo.actionButtons.setVisible(false);
+                    pInfo.actionButtons.setEnabled(false);
                 }
                 pInfo.countDownTimer.cancel();
                 if (mySocket != null) mySocket.setCheckConnection();
@@ -627,11 +628,14 @@ public class Player {
 
                 btnBid.addActionListener((e) -> {
                     actionButtons.setVisible(false);
+                    actionButtons.setEnabled(false);
+
                     cancelTimer();
                     mySocket.addRequest(actionBid, "\"bid\":" + btnBid.getText().trim());
                 });
                 btnPass.addActionListener((e) -> {
                     actionButtons.setVisible(false);
+                    actionButtons.setEnabled(false);
                     cancelTimer();
                     mySocket.addRequest(actionBid, "\"bid\":\"pass\"");
                 });
@@ -661,6 +665,7 @@ public class Player {
                     }
                     instruction.setText("");
                     actionButtons.setVisible(false);
+                    actionButtons.setEnabled(false);
                     cancelTimer();
                     mySocket.addRequest(action, "\"cards\":\"" + Card.cardsToString(cards) + "\"");
                     hand.removeCards(cards);
@@ -744,6 +749,7 @@ public class Player {
                             .setReferenceComponentBottom(timer, actionButtons, 1f);
 
                     actionButtons.setVisible(false);
+                    actionButtons.setEnabled(false);
                     break;
             }
 
@@ -779,6 +785,7 @@ public class Player {
 
             if (this.actionButtons != null) {
                 this.actionButtons.setVisible(false);
+                this.actionButtons.setEnabled(false);
             }
         }
 
@@ -809,6 +816,8 @@ public class Player {
                         actionButtons.add(btn);
                         btn.addActionListener((e) -> {
                             actionButtons.setVisible(false);
+                            actionButtons.setEnabled(false);
+
                             cancelTimer();
                             mySocket.addRequest(actionSetTrump, "\"trump\":\"" + c + "\"");
                             actionButtons.removeAll();
@@ -824,6 +833,7 @@ public class Player {
                     btnPlay.setText("Play");
                 }
                 actionButtons.setVisible(true);
+                actionButtons.setEnabled(true);
             }
         }
 
