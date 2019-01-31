@@ -107,6 +107,89 @@ public class Hand extends Component {
         }
     }
 
+    private void removeCard(Card c) {
+        if (this.upperList.contains(c)) {
+            this.upperList.remove(c);
+        } else {
+            this.lowerList.remove(c);
+        }
+
+        switch (c.suite) {
+            case Card.SPADE:
+                this.spades.remove(c);
+                break;
+            case Card.HEART:
+                this.hearts.remove(c);
+                break;
+            case Card.DIAMOND:
+                this.diamonds.remove(c);
+                break;
+            case Card.CLUB:
+                this.clubs.remove(c);
+                break;
+            default:
+                this.trumps.remove(c);
+                break;
+        }
+    }
+
+    private void removeFromList(List<Card> lst, int rank) {
+        Card m = null;
+        for (Card c : lst) {
+            if (c.rank == rank) {
+                m = c;
+                break;
+            }
+        }
+        if (m != null) lst.remove(m);
+    }
+
+    private void findAndRemove(String s) {
+        s = s.trim();
+        if (s.length() < 2) return;
+        char suite = s.charAt(0);
+        int rank = Integer.parseInt(s.substring(1));
+
+        Card m = null;
+        for (Card c : this.upperList) {
+            if (c.suite == suite && c.rank == rank) {
+                m = c;
+                break;
+            }
+        }
+        if (m != null) {
+            this.upperList.remove(m);
+        } else {
+            for (Card c : this.lowerList) {
+                if (c.suite == suite && c.rank == rank) {
+                    m = c;
+                    break;
+                }
+            }
+            if (m != null) {
+                this.lowerList.remove(m);
+            }
+        }
+
+        switch (suite) {
+            case Card.SPADE:
+                removeFromList(this.spades, rank);
+                break;
+            case Card.HEART:
+                removeFromList(this.hearts, rank);
+                break;
+            case Card.DIAMOND:
+                removeFromList(this.diamonds, rank);
+                break;
+            case Card.CLUB:
+                removeFromList(this.clubs, rank);
+                break;
+            default:
+                removeFromList(this.trumps, rank);
+                break;
+        }
+    }
+
     private void makeLists1_3(int idx, boolean singleOnTop) {
         // list0 - 1 suite ( and trumps if singleOnTop = true)
         // list1 - (trumps if singleOnTop = true) + 3 suites
@@ -125,6 +208,30 @@ public class Hand extends Component {
             list1.addAll(this.suites.get(nextIdx));
             nextIdx++;
             count--;
+        }
+    }
+
+    synchronized public List<Card> getSelectedCards() {
+        return this.selected;
+    }
+
+    synchronized public void removeCards(List<Card> cards) {
+        for (Card c : cards) {
+            this.removeCard(c);
+        }
+    }
+
+    synchronized public void removeCards(String cards) {
+        if (cards == null || cards.isEmpty()) return;
+        if (cards == null || cards.isEmpty()) return;
+        int x = cards.indexOf(',');
+        while (x > 0) {
+            findAndRemove(cards.substring(0, x));
+            cards = cards.substring(x + 1);
+            x = cards.indexOf(',');
+        }
+        if (!cards.isEmpty()) {
+            findAndRemove(cards);
         }
     }
 

@@ -1,5 +1,7 @@
 package com.ccd.tlj;
 
+import java.util.List;
+
 /**
  *
  * @author ccheng
@@ -57,6 +59,16 @@ public class Card implements Comparable {
         return "V";
     }
 
+    public static String cardsToString(List<Card> cards) {
+        if (cards == null || cards.isEmpty()) return "";
+        String ret = "";
+        for (Card c : cards) {
+            ret += "," + c.suite + c.rank;
+        }
+
+        return ret.substring(1);
+    }
+
     public static String suiteSign(char suit) {
         switch (suit) {
             case SPADE:
@@ -71,6 +83,13 @@ public class Card implements Comparable {
 
         return "" + JOKER;
     }
+
+//    @Override
+//    public boolean equals(Object obj) {
+//        if (obj == null) return false;
+//        Card otherCard = (Card) obj;
+//        return this.suite == otherCard.suite && this.rank == otherCard.rank;
+//    }
 
     @Override
     public int compareTo(Object o) {
