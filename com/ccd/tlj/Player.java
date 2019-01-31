@@ -241,7 +241,7 @@ public class Player {
         lbGeneral.getStyle().setFont(Hand.fontGeneral);
 //        String gmInfo = "205 NT 2; Partner: 1st CA";  // sample
         String gmInfo = " ";
-        int buryTime = parseInteger(data.get("burytime"));
+        int actTime = parseInteger(data.get("acttime"));
         String act = "";
         Object actObj = data.get("act");
         if (actObj != null) act = actObj.toString();
@@ -275,8 +275,8 @@ public class Player {
 
         PlayerInfo pp = this.playerMap.get(actionSeat);
         if (pp != null) {
-            if (buryTime > 1) {
-                pp.showTimer(buryTime, this.contractPoint, "bury");
+            if (actTime > 1) {
+                pp.showTimer(actTime, this.contractPoint, "bury");
             } else {
                 if (act.equalsIgnoreCase("dim")) {
                     pp.showTimer(this.timeout, this.contractPoint, "bidOver");
@@ -343,7 +343,8 @@ public class Player {
         pp = this.playerMap.get(actionSeat);
         if (pp != null) {
             boolean bidOver = parseBoolean(data.get("bidOver"));
-            pp.showTimer(this.timeout, this.contractPoint, bidOver ? "bidOver" : "bid");
+            int actTime = parseInteger(data.get("acttime"));
+            pp.showTimer(actTime > 1 ? actTime : this.timeout, this.contractPoint, bidOver ? "bidOver" : "bid");
         }
     }
 
@@ -354,7 +355,7 @@ public class Player {
         this.currentTrump = trump.charAt(0);
         int seat = parseInteger(data.get("seat"));
         int gameRank = parseInteger(data.get("gameRank"));
-        int burytime = parseInteger(data.get("burytime"));
+        int actTime = parseInteger(data.get("acttime"));
         int contractPoint = parseInteger(data.get("contractPoint"));
         this.hand.sortCards(currentTrump, gameRank, true);
         this.hand.repaint();
@@ -364,7 +365,7 @@ public class Player {
             if (st == seat) {
                 pp.setContractor(CONTRACTOR);
                 if (seat != this.currentSeat) {
-                    pp.showTimer(burytime, contractPoint, "bury");
+                    pp.showTimer(actTime, contractPoint, "bury");
                 }
             } else {
                 pp.points.setText("");
@@ -455,8 +456,8 @@ public class Player {
                         addCards(data);
                         hand.sortCards(currentTrump, playerRank, true);
                         hand.repaint();
-                        int buryTime = parseInteger(data.get("burytime"));
-                        infoLst.get(0).showTimer(buryTime, 100, "bury");
+                        int actTime = parseInteger(data.get("acttime"));
+                        infoLst.get(0).showTimer(actTime, 100, "bury");
                         break;
                 }
             }
@@ -820,14 +821,14 @@ public class Player {
 
                             cancelTimer();
                             mySocket.addRequest(actionSetTrump, "\"trump\":\"" + c + "\"");
-                            actionButtons.removeAll();
-                            actionButtons.add(btnPlay);
                         });
                     }
                 } else if (act.equals("bid")) {
                     this.maxBid = contractPoint - 5;
                     btnBid.setText("" + this.maxBid);
                 } else if (act.equals("bury")) {
+                    actionButtons.removeAll();
+                    actionButtons.add(btnPlay);
                     btnPlay.setText("Bury");
                 } else {
                     btnPlay.setText("Play");
