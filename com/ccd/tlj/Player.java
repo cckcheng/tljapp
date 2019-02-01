@@ -48,7 +48,7 @@ public class Player {
     static final int RED_COLOR = 0xff0000;
     static final int BUTTON_COLOR = 0x47b2e8;
 
-    private final ButtonImage backImage = new ButtonImage(80, 30, 0xbcbcbc);
+    private final ButtonImage backImage = new ButtonImage(0xbcbcbc);
     static final int TIME_OUT_SECONDS = 15;
     private final String playerId;
     private String playerName;
@@ -458,6 +458,8 @@ public class Player {
                         hand.repaint();
                         int actTime = parseInteger(data.get("acttime"));
                         infoLst.get(0).showTimer(actTime, 100, "bury");
+                    case "play":
+                        if (TuoLaJi.DEBUG_MODE) Log.p("play");
                         break;
                 }
             }
@@ -480,7 +482,6 @@ public class Player {
 
         @Override
         public void connectionEstablished(InputStream is, OutputStream os) {
-//            closeRequested = false;
             byte[] buffer = new byte[4096];
             int count = 0;
             try {
@@ -524,7 +525,6 @@ public class Player {
                 // not expected, connect again
                 connectServer();
             }
-//            Dialog.show("Alert", "Closed.", "OK", "");
         }
     }
 
@@ -559,7 +559,7 @@ public class Player {
 
         final String location;    // top, bottom, left up, left down, right up, right down
         Label mainInfo;
-        Label instruction;
+        UserHelp userHelp;
         Label points;
         Label contractor;   // for contractor and partner
         Label timer;   // count down timer
@@ -581,12 +581,11 @@ public class Player {
             this.rank = rank;
             String info = "#" + seat + "," + rankToString(rank);
             mainInfo = new Label(info);
-            instruction = new Label("   ");
+            userHelp = new UserHelp();
 
             points = new Label("        ");
             points.getAllStyles().setFont(Hand.fontRank);
 
-//            contractor = new Label("庄");
             contractor = new Label("     ");
             contractor.getStyle().setFgColor(RED_COLOR);
             contractor.getStyle().setFont(Hand.fontRank);
@@ -661,10 +660,10 @@ public class Player {
                     String action = btnPlay.getText().toLowerCase();
                     List<Card> cards = hand.getSelectedCards();
                     if (action.equals("bury") && cards.size() != 6) {
-                        instruction.setText("Please select exactly 6 cards");
+                        userHelp.showHelp(userHelp.BURY_CARDS);
                         return;
                     }
-                    instruction.setText("");
+                    userHelp.clear();
                     actionButtons.setVisible(false);
                     actionButtons.setEnabled(false);
                     cancelTimer();
@@ -681,8 +680,6 @@ public class Player {
                         actionButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
                     }
                 }
-//                actionButtons = BoxLayout.encloseXNoGrow(btnPlus, new Label("   "), btnBid,
-//                        new Label("   "), btnMinus, new Label("   "), new Label("   "), btnPass, test);
             }
         }
 
@@ -737,17 +734,18 @@ public class Player {
                             .setReferenceComponentTop(timer, mainInfo, 1f);
                     break;
                 case "bottom":
-                    pane.add(actionButtons).add(instruction);
-//                    ll.setInsets(actionButtons, "auto auto 35% 40%");
+                    pane.add(actionButtons).add(userHelp);
                     ll.setInsets(actionButtons, "auto auto 35% auto");
 
-                    ll.setInsets(instruction, "30% auto auto auto");
+//                    ll.setInsets(userHelp, "25% auto auto auto");
+                    ll.setInsets(userHelp, "auto auto 0 auto");
                     ll.setInsets(mainInfo, "auto auto 0 auto");
                     ll.setInsets(points, "auto auto 35% auto")
-                            .setInsets(timer, "auto auto 0 45%")
+                            .setInsets(timer, "auto auto 0 auto")
                             .setInsets(contractor, "auto auto 0 20");
                     ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
-                            .setReferenceComponentBottom(timer, actionButtons, 1f);
+                            .setReferenceComponentBottom(timer, actionButtons, 1f)
+                            .setReferenceComponentBottom(userHelp, timer, 1f);
 
                     actionButtons.setVisible(false);
                     actionButtons.setEnabled(false);
@@ -792,6 +790,7 @@ public class Player {
 
         int maxBid = -1;
         void showTimer(int timeout, int contractPoint, String act) {
+            userHelp.clear();
             cancelTimer();  // cancel the running timer if any
             if (act.equals("bidOver")) {
                 this.contractor.setText(CONTRACTOR);
@@ -806,7 +805,7 @@ public class Player {
             if (this.location.equals("bottom")) {
                 if (act.equals("bidOver")) {
                     actionButtons.removeAll();
-                    actionButtons.add(new Label("请选将"));
+                    userHelp.showHelp(userHelp.SET_TRUMP);
                     for (char c : candidateTrumps) {
                         Button btn = new Button();
                         if (c == Card.JOKER) {
@@ -846,19 +845,49 @@ public class Player {
         }
     }
 
+    class UserHelp extends Container {
+        Label engLabel = new Label();
+        Label chnLabel = new Label();
+
+        final int SET_TRUMP = 10;
+        final int BURY_CARDS = 20;
+        UserHelp() {
+            this.setLayout(new BoxLayout(BoxLayout.Y_AXIS_BOTTOM_LAST));
+            this.add(engLabel);
+            this.add(chnLabel);
+        }
+
+        void clear() {
+            engLabel.setText("");
+            chnLabel.setText("");
+        }
+
+        void showHelp(int category) {
+            switch (category) {
+                case SET_TRUMP:
+                    engLabel.setText("Set Trump");
+                    chnLabel.setText("请选将牌");
+                    break;
+                case BURY_CARDS:
+                    engLabel.setText("Please select exactly six cards");
+                    chnLabel.setText("请选择6张底牌");
+                    break;
+            }
+        }
+    }
+
     class ButtonImage extends DynamicImage {
         int bgColor = 0x00ffff;
 
-        ButtonImage(int w, int h, int bgColor) {
-            super(w, h);
+        ButtonImage(int bgColor) {
             this.bgColor = bgColor;
         }
 
         @Override
         protected void drawImageImpl(Graphics g, Object nativeGraphics, int x, int y, int w, int h) {
+//            Log.p("x,y,w,h: " + x + "," + y + "," + w + "," + h);
             g.setColor(this.bgColor);
-            g.fillRoundRect(x, y, w, h, 35, 35);
+            g.fillRoundRect(x, y, w, h, 60, 60);
         }
-
     }
 }
