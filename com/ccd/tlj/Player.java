@@ -137,6 +137,16 @@ public class Player {
         addCardsToHand(Card.JOKER, (List<Object>) data.get("T"));
     }
 
+    private void buryAndDefinePartner(Map<String, Object> data) {
+        Object obj = data.get("cards");
+        if (obj == null) return;
+        String strCards = data.get("cards").toString().trim();
+        if (strCards.isEmpty()) return;
+        hand.removeCards(strCards);
+
+        // TO DO
+    }
+
     public static int parseInteger(Object obj) {
         if (obj == null) return -1;
         try {
@@ -458,6 +468,10 @@ public class Player {
                         hand.repaint();
                         int actTime = parseInteger(data.get("acttime"));
                         infoLst.get(0).showTimer(actTime, 100, "bury");
+                    case "bury":
+                        if (TuoLaJi.DEBUG_MODE) Log.p("bury");
+                        buryAndDefinePartner(data);
+                        break;
                     case "play":
                         if (TuoLaJi.DEBUG_MODE) Log.p("play");
                         break;
@@ -668,7 +682,6 @@ public class Player {
                     actionButtons.setEnabled(false);
                     cancelTimer();
                     mySocket.addRequest(action, "\"cards\":\"" + Card.cardsToString(cards) + "\"");
-                    hand.removeCards(cards);
                 });
 
                 if (isPlaying) {

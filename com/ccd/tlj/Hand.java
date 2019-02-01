@@ -223,7 +223,6 @@ public class Hand extends Component {
 
     synchronized public void removeCards(String cards) {
         if (cards == null || cards.isEmpty()) return;
-        if (cards == null || cards.isEmpty()) return;
         int x = cards.indexOf(',');
         while (x > 0) {
             findAndRemove(cards.substring(0, x));
