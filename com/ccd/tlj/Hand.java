@@ -55,6 +55,7 @@ public class Hand extends Component {
         suiteIndex.add(Card.DIAMOND);
         
         this.player = player;
+        this.setFlatten(true);
     }
 
 //    int xPR1 = 0;   // right player 1 coodinate
