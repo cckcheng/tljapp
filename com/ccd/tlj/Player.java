@@ -197,7 +197,7 @@ public class Player {
     private Container tablePane;
 
     private void showTable(Map<String, Object> data) {
-//        mainForm.getContentPane().setVisible(false);
+        mainForm.getContentPane().setVisible(false);
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 01");
         tablePane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
         tablePane.setLayout(new LayeredLayout());
@@ -248,7 +248,7 @@ public class Player {
             cancelTimers();
             tablePane.removeAll();
             mainForm.setGlassPane(null);
-//            mainForm.getContentPane().setVisible(true);
+            mainForm.getContentPane().setVisible(true);
             mainForm.repaint();
             disconnect();
         });
@@ -385,7 +385,7 @@ public class Player {
         int actTime = parseInteger(data.get("acttime"));
         int contractPoint = parseInteger(data.get("contractPoint"));
         this.hand.sortCards(currentTrump, gameRank, true);
-        this.hand.repaint();
+//        this.hand.repaint();
 
         for (int st : this.playerMap.keySet()) {
             PlayerInfo pp = this.playerMap.get(st);

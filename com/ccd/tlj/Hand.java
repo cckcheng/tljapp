@@ -55,7 +55,6 @@ public class Hand extends Component {
         suiteIndex.add(Card.DIAMOND);
         
         this.player = player;
-        this.setFlatten(true);
     }
 
 //    int xPR1 = 0;   // right player 1 coodinate
@@ -69,6 +68,11 @@ public class Hand extends Component {
 //    int xPopp = 0;   // oppisite player coodinate
 //    int yPopp = 0;   // opposite player coodinate
 
+    public void cancelRepaint() {
+        // this is no effect!!
+        this.cancelRepaints();
+    }
+    
     private void init() {
         int w = getWidth();
         int h = getHeight();
@@ -222,6 +226,8 @@ public class Hand extends Component {
         for (Card c : cards) {
             this.removeCard(c);
         }
+        
+        this.repaint();
     }
 
     synchronized public void removeCards(String cards) {
@@ -235,6 +241,7 @@ public class Hand extends Component {
         if (!cards.isEmpty()) {
             findAndRemove(cards);
         }
+        this.repaint();
     }
 
     synchronized public void sortCards(char trumpSuite, int gameRank, boolean doPreSort) {
@@ -286,6 +293,8 @@ public class Hand extends Component {
             tmpCards.clear();
         }
         splitSuites(trumpSuite);
+        
+        this.repaint();
     }
 
     private void splitSuites(char trumpSuite) {
