@@ -26,6 +26,14 @@ public class Card implements Comparable {
         this.rank = rank;
     }
 
+    public static Card create(String s) {
+        s = s.trim();
+        if (s.length() < 2) return null;
+        char suite = s.charAt(0);
+        int rank = Integer.parseInt(s.substring(1));
+        return new Card(suite, rank);
+    }
+
     public int trumpRank(char trumpSuite, int gameRank) {
         if (this.rank == gameRank) {
             return this.suite == trumpSuite ? 15 : 14;

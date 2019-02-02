@@ -129,12 +129,34 @@ public class Player {
         }
     }
 
-    private void addCards(Map<String, Object> data) {
+    synchronized private void addCards(Map<String, Object> data) {
         addCardsToHand(Card.SPADE, (List<Object>) data.get("S"));
         addCardsToHand(Card.HEART, (List<Object>) data.get("H"));
         addCardsToHand(Card.DIAMOND, (List<Object>) data.get("D"));
         addCardsToHand(Card.CLUB, (List<Object>) data.get("C"));
         addCardsToHand(Card.JOKER, (List<Object>) data.get("T"));
+    }
+
+    synchronized private void addRemains(Map<String, Object> data) {
+        Object obj = data.get("cards");
+        if (obj == null) return;
+        String cards = obj.toString();
+        if (cards.isEmpty()) return;
+        int x = cards.indexOf(',');
+        while (x > 0) {
+            String s = cards.substring(0, x);
+            hand.addCard(Card.create(s));
+            cards = cards.substring(x + 1);
+            x = cards.indexOf(',');
+        }
+
+        if (!cards.isEmpty()) {
+            hand.addCard(Card.create(cards));
+        }
+
+        hand.sortCards(currentTrump, playerRank, true);
+        int actTime = parseInteger(data.get("acttime"));
+        infoLst.get(0).showTimer(actTime, 100, "bury");
     }
 
     private void buryAndDefinePartner(Map<String, Object> data) {
@@ -185,7 +207,6 @@ public class Player {
 
         infoLst.clear();
 
-        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 02");
         String stage = data.get("stage").toString();
         this.isPlaying = stage.equalsIgnoreCase(PLAYING_STAGE);
         currentSeat = parseInteger(data.get("seat"));
@@ -201,7 +222,6 @@ public class Player {
         candidateTrumps.clear();
         this.addCards(data);
 
-        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 03");
         char trumpSuite = Card.JOKER;
         String trump = data.get("trump").toString();
         if (!trump.isEmpty()) trumpSuite = trump.charAt(0);
@@ -233,7 +253,6 @@ public class Player {
             disconnect();
         });
 
-        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 04");
         List<Object> players = (List<Object>) data.get("players");
         Map<String, Object> pR1 = (Map<String, Object>) players.get(0);
         Map<String, Object> pR2 = (Map<String, Object>) players.get(1);
@@ -278,7 +297,6 @@ public class Player {
                 .setInsets(this.gameInfo, "0 auto auto 0");
         ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
 
-        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 05");
         for (PlayerInfo info : infoLst) {
             info.addItems(tablePane);
         }
@@ -311,7 +329,6 @@ public class Player {
 //            g.drawRoundRect(x0 - 1, y0 - 1, 50, 80, 10, 10);
 //        });
         mainForm.repaint();
-        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 06");
         this.tableOn = true;
         main.enableButtons();
 
@@ -359,7 +376,7 @@ public class Player {
     }
 
     private char currentTrump;
-    private void setTrump(Map<String, Object> data) {
+    synchronized private void setTrump(Map<String, Object> data) {
         String trump = data.get("trump").toString();
         if (trump.isEmpty()) return;
         this.currentTrump = trump.charAt(0);
@@ -463,11 +480,8 @@ public class Player {
                         break;
                     case "add_remains":
                         if (TuoLaJi.DEBUG_MODE) Log.p("add_remains");
-                        addCards(data);
-                        hand.sortCards(currentTrump, playerRank, true);
-                        hand.repaint();
-                        int actTime = parseInteger(data.get("acttime"));
-                        infoLst.get(0).showTimer(actTime, 100, "bury");
+                        addRemains(data);
+                        break;
                     case "bury":
                         if (TuoLaJi.DEBUG_MODE) Log.p("bury");
                         buryAndDefinePartner(data);
@@ -813,7 +827,7 @@ public class Player {
             this.timer.setText(timeout + "");
             FontImage.setMaterialIcon(timer, FontImage.MATERIAL_TIMER);
             countDownTimer = new UITimer(new CountDown(this, timeout));
-            countDownTimer.schedule(1000, true, mainForm);
+            countDownTimer.schedule(950, true, mainForm);   // slightly less to 1 sec
 
             if (this.location.equals("bottom")) {
                 if (act.equals("bidOver")) {

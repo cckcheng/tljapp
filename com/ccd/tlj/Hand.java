@@ -1,5 +1,6 @@
 package com.ccd.tlj;
 
+import com.codename1.io.Log;
 import com.codename1.ui.Component;
 import com.codename1.ui.Font;
 import com.codename1.ui.Graphics;
@@ -88,6 +89,7 @@ public class Hand extends Component {
     }
 
     public void addCard(Card c) {
+        if (c == null) return;
         switch (c.suite) {
             case Card.SPADE:
                 this.spades.add(c);
@@ -235,6 +237,7 @@ public class Hand extends Component {
     }
 
     synchronized public void sortCards(char trumpSuite, int gameRank, boolean doPreSort) {
+        Log.p("sortCards");
         this.upperList.clear();
         this.lowerList.clear();
         if (doPreSort) {
@@ -482,12 +485,11 @@ public class Hand extends Component {
     }
 */
 
-    boolean flip = false;
     @Override
     synchronized public void paintBackground(Graphics g) {
+        Log.p(this.upperList.size() + ":" + this.lowerList.size());
         g.translate(-g.getTranslateX(), -g.getTranslateY());
 //        g.clearRect(0, 0, getWidth(), getY() + getHeight());
-        if (flip) return;
         init();
 
         g.setColor(TuoLaJi.BACKGROUND_COLOR);
