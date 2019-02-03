@@ -226,7 +226,7 @@ public class Hand extends Component {
         for (Card c : cards) {
             this.removeCard(c);
         }
-        
+        this.selected.clear();
         this.repaint();
     }
 
@@ -240,6 +240,7 @@ public class Hand extends Component {
         }
         if (!cards.isEmpty()) {
             findAndRemove(cards);
+            this.selected.clear();
         }
         this.repaint();
     }
@@ -497,7 +498,7 @@ public class Hand extends Component {
 
     @Override
     synchronized public void paintBackground(Graphics g) {
-        Log.p(this.upperList.size() + ":" + this.lowerList.size());
+//        Log.p(this.upperList.size() + ":" + this.lowerList.size());
         g.translate(-g.getTranslateX(), -g.getTranslateY());
 //        g.clearRect(0, 0, getWidth(), getY() + getHeight());
         init();
