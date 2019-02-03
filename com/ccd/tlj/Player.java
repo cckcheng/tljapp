@@ -170,7 +170,7 @@ public class Player {
 
     private String partnerDef(String def) {
         if(def.isEmpty()) return " ";
-        String part = "No Partner";
+        String part = "1 vs 5";
         if(def.length() >= 3){
             char seq = def.charAt(2);
             part = Card.suiteSign(def.charAt(0)) + def.charAt(1);
@@ -322,7 +322,7 @@ public class Player {
         this.gameInfo.getStyle().setFgColor(0xebef07);
         this.gameInfo.getStyle().setFont(Hand.fontRank);
         this.partnerInfo = new Label(ptInfo);
-        this.partnerInfo.getStyle().setFgColor(RED_COLOR);
+        this.partnerInfo.getStyle().setFgColor(0xcc0055);
         this.partnerInfo.getStyle().setFont(Hand.fontRank);
 
         tablePane.add(hand);
@@ -938,7 +938,8 @@ public class Player {
                     addCardButton(Card.HEART, rnk, btnGroup);
                     addCardButton(Card.DIAMOND, rnk, btnGroup);
                     addCardButton(Card.CLUB, rnk, btnGroup);
-                    Button btn = new Button("No");
+                    Button btn = new Button("1vs5");
+                    btn.setCapsText(false);
                     btn.addActionListener((e)->{
                         actionButtons.setVisible(false);
                         actionButtons.setEnabled(false);
