@@ -168,17 +168,12 @@ public class Player {
         infoLst.get(0).showTimer(this.timeout, 100, "partner");
     }
 
-    private void definePartner(Map<String, Object> data) {
-        int seat = parseInteger(data.get("seat"));
-        PlayerInfo pp = this.playerMap.get(seat);
-        if (pp != null) pp.showTimer(timeout, 0, "play");
-        String def = trimmedString(data.get("def"));
-        String gmInfo = this.gameInfo.getText();
-        if(def.equals("0")) {
-            this.gameInfo.setText(gmInfo + " No Partner");
-        } else if (def.length()>=3){
+    private String partnerDef(String def) {
+        if(def.isEmpty()) return " ";
+        String part = "No Partner";
+        if(def.length() >= 3){
             char seq = def.charAt(2);
-            String part = Card.suiteSign(def.charAt(0)) + def.charAt(1);
+            part = Card.suiteSign(def.charAt(0)) + def.charAt(1);
             switch(seq) {
                 case '0':
                     part = " 1st " + part;
@@ -193,8 +188,17 @@ public class Player {
                     part = " 4th " + part;
                     break;
             }
-            this.gameInfo.setText(gmInfo + part);
+            part = "Parter:" + part;
         }
+        return part;
+    }
+    
+    private void definePartner(Map<String, Object> data) {
+        int seat = parseInteger(data.get("seat"));
+        PlayerInfo pp = this.playerMap.get(seat);
+        if (pp != null) pp.showTimer(timeout, 0, "play");
+        String def = trimmedString(data.get("def"));
+        this.partnerInfo.setText(partnerDef(def));
     }
 
     public static int parseInteger(Object obj) {
@@ -222,6 +226,7 @@ public class Player {
     private int currentSeat;
     private Hand hand;
     private Label gameInfo;
+    private Label partnerInfo;
     private Container tablePane;
 
     private void showTable(Map<String, Object> data) {
@@ -298,6 +303,7 @@ public class Player {
         lbGeneral.getStyle().setFont(Hand.fontGeneral);
 //        String gmInfo = "205 NT 2; Partner: 1st CA";  // sample
         String gmInfo = " ";
+        String ptInfo = " ";
         int actTime = parseInteger(data.get("acttime"));
         String act = trimmedString(data.get("act"));
         if (this.isPlaying) {
@@ -310,18 +316,24 @@ public class Player {
                 }
                 gmInfo += gameRank;
             }
+            ptInfo = this.partnerDef(trimmedString(data.get("def")));
         }
         this.gameInfo = new Label(gmInfo);
         this.gameInfo.getStyle().setFgColor(0xebef07);
         this.gameInfo.getStyle().setFont(Hand.fontRank);
+        this.partnerInfo = new Label(ptInfo);
+        this.partnerInfo.getStyle().setFgColor(RED_COLOR);
+        this.partnerInfo.getStyle().setFont(Hand.fontRank);
 
         tablePane.add(hand);
-        tablePane.add(bExit).add(lbGeneral).add(this.gameInfo);
+        tablePane.add(bExit).add(lbGeneral).add(this.gameInfo).add(this.partnerInfo);
         LayeredLayout ll = (LayeredLayout) tablePane.getLayout();
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
         ll.setInsets(lbGeneral, "0 auto auto 0")
+                .setInsets(this.partnerInfo, "0 0 auto auto")
                 .setInsets(this.gameInfo, "0 auto auto 0");
         ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
+        ll.setReferenceComponentTop(this.partnerInfo, bExit, 1f);
 
         for (PlayerInfo info : infoLst) {
             info.addItems(tablePane);
@@ -345,6 +357,8 @@ public class Player {
             int seatPartner = parseInteger(data.get("seatPartner"));
             pp = this.playerMap.get(seatPartner);
             if (pp != null) pp.setContractor(PARTNER);
+            
+            this.currentTrump = trumpSuite;
         }
 //        mainForm.setGlassPane((g, rect) -> {
 //            int x0 = lbL1Player.getAbsoluteX() + 5;
@@ -445,6 +459,7 @@ public class Player {
                 }
             } else {
                 pp.points.setText("");
+                pp.needChangeActions = true;
             }
         }
 
@@ -870,6 +885,7 @@ public class Player {
             cancelTimer();  // cancel the running timer if any
             if (act.equals("dim")) {
                 this.contractor.setText(CONTRACTOR);
+                needChangeActions = true;
             }
 
             this.points.setText("");
@@ -949,7 +965,8 @@ public class Player {
 
         private void addCardButton(char suite, String rnk, ButtonGroup btnGroup) {
             if(suite != currentTrump) {
-                Button btn = new Button(Card.suiteSign(suite) + rnk);
+                Button btn = new Button(Card.suiteSign(suite) + rnk, "suite" + suite);
+                actionButtons.add(new Label("   "));
                 actionButtons.add(btn);
                 btn.addActionListener((e)->{
                     if(!btnGroup.isSelected()) {
@@ -970,6 +987,7 @@ public class Player {
             // txt could be Contractor or Partner
             this.points.setText("");
             this.contractor.setText(txt);
+            this.needChangeActions = true;
         }
     }
 
