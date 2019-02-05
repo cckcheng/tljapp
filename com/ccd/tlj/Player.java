@@ -277,9 +277,16 @@ public class Player {
         this.infoLst.add(p0);
         this.playerMap.put(currentSeat, p0);
         p0.setPlayerName(playerName);
-        int minBid = parseInteger(data.get("minBid"));
-        if (minBid > 0) p0.addMidBid(minBid);
-        if (!this.isPlaying) displayBidInfo(p0, data.get("bid").toString());
+        if (!this.isPlaying) {
+            int minBid = parseInteger(data.get("minBid"));
+            if (minBid > 0) p0.addMidBid(minBid);
+            displayBidInfo(p0, trimmedString(data.get("bid")));
+        } else {
+            List<Card> lst = Card.fromString(trimmedString(data.get("cards")));
+            if (lst != null) {
+                p0.cards.addAll(lst);
+            }
+        }
 
         Button bExit = new Button("Exit");
         FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
@@ -390,7 +397,14 @@ public class Player {
     private void parsePlayerInfo(Map<String, Object> rawData, String location) {
         int seat = parseInteger(rawData.get("seat"));
         PlayerInfo pp = new PlayerInfo(location, seat, parseInteger(rawData.get("rank")));
-        if (!this.isPlaying) displayBidInfo(pp, rawData.get("bid").toString());
+        if (!this.isPlaying) {
+            displayBidInfo(pp, trimmedString(rawData.get("bid")));
+        } else {
+            List<Card> lst = Card.fromString(trimmedString(rawData.get("cards")));
+            if (lst != null) {
+                pp.cards.addAll(lst);
+            }
+        }
         this.infoLst.add(pp);
         this.playerMap.put(seat, pp);
     }
@@ -422,6 +436,17 @@ public class Player {
     }
 
     private void displayCards(PlayerInfo pp, String cards) {
+        List<Card> lst = Card.fromString(cards);
+        if (lst != null) {
+            pp.cards.addAll(lst);
+            if (pp.location.equals("bottom")) {
+                hand.removeCards(cards);
+                if (pp.actionButtons != null) {
+                    pp.actionButtons.setVisible(false);
+                    pp.actionButtons.setEnabled(false);
+                }
+            }
+        }
         pp.cancelTimer();
     }
     
@@ -438,11 +463,18 @@ public class Player {
             String cards = trimmedString(data.get("cards"));
             PlayerInfo pp = this.playerMap.get(seat);
             if (pp != null) displayCards(pp, cards);
+        } else {
+            for (PlayerInfo pp : this.infoLst) {
+                pp.cards.clear();
+            }
         }
-        PlayerInfo pp = this.playerMap.get(actionSeat);
-        if (pp != null) {
-            int actTime = parseInteger(data.get("acttime"));
-            pp.showTimer(actTime > 1 ? actTime : this.timeout, this.contractPoint, "play");
+
+        if (actionSeat > 0) {
+            PlayerInfo pp = this.playerMap.get(actionSeat);
+            if (pp != null) {
+                int actTime = parseInteger(data.get("acttime"));
+                pp.showTimer(actTime > 1 ? actTime : this.timeout, this.contractPoint, "play");
+            }
         }
     }
 
@@ -662,7 +694,7 @@ public class Player {
         Label points;
         Label contractor;   // for contractor and partner
         Label timer;   // count down timer
-        List<Card> cards;   // cards played
+        List<Card> cards = new ArrayList<>();   // cards played
         String playerName;
         UITimer countDownTimer;
         Container actionButtons;
@@ -675,17 +707,16 @@ public class Player {
         int seat;
         int rank;
         PlayerInfo(String loc, int seat, int rank) {
-            this.cards = new ArrayList<Card>();
-            this.cards.add(new Card(Card.JOKER, Card.BigJokerRank));
-            this.cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
-            this.cards.add(new Card('H', 8));
-            this.cards.add(new Card('H', 8));
-            this.cards.add(new Card('H', 7));
-            this.cards.add(new Card('H', 7));
-            this.cards.add(new Card('H', 6));
-            this.cards.add(new Card('H', 6));
-            this.cards.add(new Card('H', 5));
-            this.cards.add(new Card('H', 5));
+//            this.cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+//            this.cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
+//            this.cards.add(new Card('H', 8));
+//            this.cards.add(new Card('H', 8));
+//            this.cards.add(new Card('H', 7));
+//            this.cards.add(new Card('H', 7));
+//            this.cards.add(new Card('H', 6));
+//            this.cards.add(new Card('H', 6));
+//            this.cards.add(new Card('H', 5));
+//            this.cards.add(new Card('H', 5));
             this.location = loc;
             this.seat = seat;
             this.rank = rank;
@@ -784,18 +815,11 @@ public class Player {
         }
 
         int posX() {
-//            return points.getAbsoluteX();
             return mainInfo.getAbsoluteX();
         }
 
         int posY() {
-//            return points.getAbsoluteY();
-            return mainInfo.getAbsoluteY();
-        }
-
-        int posH() {
-//            return points.getAbsoluteY();
-            return mainInfo.getHeight();
+            return mainInfo.getAbsoluteY() + mainInfo.getHeight();
         }
 
         void addItems(Container pane) {

@@ -548,21 +548,20 @@ public class Hand extends Component {
                 if (pp.cards == null) continue;
                 int dWidth = displayWidth(pp.cards.size());
                 int yp = pp.posY();
-                int hp = pp.posH();
                 switch (pp.location) {
                     case "top":
-                        g.translate((this.maxWidth - dWidth) / 2, yp + hp);
+                        g.translate((this.maxWidth - dWidth) / 2, yp);
                         break;
                     case "bottom":
                         g.translate((this.maxWidth - dWidth) / 2, y1 - cardHeight - 10);
                         break;
                     case "left up":
                     case "left down":
-                        g.translate(x, yp + hp);
+                        g.translate(x, yp);
                         break;
                     case "right up":
                     case "right down":
-                        g.translate(getX() + getWidth() - dWidth, yp + hp);
+                        g.translate(getX() + getWidth() - dWidth - 10, yp);
                         break;
                 }
                 for (Card c : pp.cards) {

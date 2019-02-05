@@ -1,5 +1,6 @@
 package com.ccd.tlj;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -75,6 +76,25 @@ public class Card implements Comparable {
         }
 
         return ret.substring(1);
+    }
+
+    public static List<Card> fromString(String cards) {
+        if (cards == null || cards.isEmpty()) return null;
+
+        List<Card> lst = new ArrayList<>();
+        while (true) {
+            int x = cards.indexOf(',');
+            if (x < 0) {
+                Card c = Card.create(cards);
+                if (c != null) lst.add(c);
+                break;
+            } else {
+                Card c = Card.create(cards.substring(0, x));
+                if (c != null) lst.add(c);
+                cards = cards.substring(x + 1);
+            }
+        }
+        return lst;
     }
 
     public static String suiteSign(char suit) {
