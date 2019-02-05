@@ -40,7 +40,11 @@ public class Hand extends Component {
     int cardWidth = 100;
     int cardHeight = 160;
 
-    int popHeight = 20;
+    int sPitch = 50;
+    int sCardWidth = 90;
+    int sCardHeight = 150;
+
+    int popHeight = 30;
     int hReserved = 0;
 
     Hand(Player player) {
@@ -84,6 +88,10 @@ public class Hand extends Component {
 
         this.hReserved = this.yPitch * 2 + 10;
         this.maxWidth = w;
+
+        this.sCardHeight = (int) (this.cardHeight * 0.9);
+        this.sCardWidth = (int) (this.cardWidth * 0.9);
+        this.sPitch = (int) (this.xPitch * 0.7);
 
 //        this.xPL1 = this.xPL2 = getX() + 5;
 //        this.xPR1 = this.xPR2 = getX() + w - 50;
@@ -441,6 +449,11 @@ public class Hand extends Component {
         cards.removeAll(tmpTrumps);
     }
 
+    private int displayWidth(int cardNum) {
+        // calculate small cards total display width
+        return (cardNum - 1) * this.sPitch + this.sCardWidth;
+    }
+
     int blackColor = 0x000000;
     int redColor = 0xff0000;
     int whiteColor = 0xffffff;
@@ -448,16 +461,17 @@ public class Hand extends Component {
     static public Font fontGeneral = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_MEDIUM);
     static public Font fontSymbol = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_SMALL);
 
-    private void drawCard(Graphics g, Card c) {
+    private void drawCard(Graphics g, Card c, int cardW, int cardH, boolean selfHand) {
         int x0 = 5;
-        int y0 = -cardHeight;
-        if (this.selected.contains(c)) {
+//        int y0 = -cardH;
+        int y0 = 0;
+        if (selfHand && this.selected.contains(c)) {
             y0 -= popHeight;
         }
         g.setColor(blackColor);
-        g.drawRoundRect(x0 - 1, y0 - 1, cardWidth + 2, cardHeight + 2, 10, 10);
+        g.drawRoundRect(x0 - 1, y0 - 1, cardW + 2, cardH + 2, 10, 10);
         g.setColor(whiteColor);
-        g.fillRoundRect(x0, y0, cardWidth, cardHeight, 10, 10);
+        g.fillRoundRect(x0, y0, cardW, cardH, 10, 10);
         if (c.suite == Card.SPADE || c.suite == Card.CLUB || c.rank == Card.SmallJokerRank) {
             g.setColor(blackColor);
         } else {
@@ -478,11 +492,12 @@ public class Hand extends Component {
         } else {
             g.setFont(fontSymbol);
             x0 += 5;
+            int py = cardH / 5 - 2;
             g.drawString("J", x0, y0);
-            g.drawString("O", x0, y0 + yPitch);
-            g.drawString("K", x0, y0 + yPitch * 2);
-            g.drawString("E", x0, y0 + yPitch * 3);
-            g.drawString("R", x0, y0 + yPitch * 4);
+            g.drawString("O", x0, y0 + py);
+            g.drawString("K", x0, y0 + py * 2);
+            g.drawString("E", x0, y0 + py * 3);
+            g.drawString("R", x0, y0 + py * 4);
         }
     }
     /*
@@ -505,7 +520,7 @@ public class Hand extends Component {
 
         g.setColor(TuoLaJi.BACKGROUND_COLOR);
         int x = getX();
-        int y0 = getY() + getHeight() - hReserved;
+        int y0 = getY() + getHeight() - hReserved - cardHeight;
         int y1 = y0 - cardHeight * 5 / 6;
 
         g.fillRect(0, 0, getX() + getWidth(), getY() + getHeight());
@@ -514,7 +529,7 @@ public class Hand extends Component {
         int px = this.xPitch;
         if (this.upperList.size() > MAX_CARDS) px = this.maxWidth / this.upperList.size();
         for (Card c : this.upperList) {
-            drawCard(g, c);
+            drawCard(g, c, cardWidth, cardHeight, true);
             g.translate(px, 0);
         }
         g.translate(-g.getTranslateX(), -g.getTranslateY());
@@ -523,10 +538,40 @@ public class Hand extends Component {
         px = this.xPitch;
         if (this.lowerList.size() > MAX_CARDS) px = this.maxWidth / this.lowerList.size();
         for (Card c : this.lowerList) {
-            drawCard(g, c);
+            drawCard(g, c, cardWidth, cardHeight, true);
             g.translate(px, 0);
         }
         g.translate(-g.getTranslateX(), -g.getTranslateY());
+
+        if (this.player.isPlaying) {
+            for (Player.PlayerInfo pp : this.player.infoLst) {
+                if (pp.cards == null) continue;
+                int dWidth = displayWidth(pp.cards.size());
+                int yp = pp.posY();
+                int hp = pp.posH();
+                switch (pp.location) {
+                    case "top":
+                        g.translate((this.maxWidth - dWidth) / 2, yp + hp);
+                        break;
+                    case "bottom":
+                        g.translate((this.maxWidth - dWidth) / 2, y1 - cardHeight - 10);
+                        break;
+                    case "left up":
+                    case "left down":
+                        g.translate(x, yp + hp);
+                        break;
+                    case "right up":
+                    case "right down":
+                        g.translate(getX() + getWidth() - dWidth, yp + hp);
+                        break;
+                }
+                for (Card c : pp.cards) {
+                    drawCard(g, c, sCardWidth, sCardHeight, false);
+                    g.translate(this.sPitch, 0);
+                }
+                g.translate(-g.getTranslateX(), -g.getTranslateY());
+            }
+        }
     }
 
     @Override

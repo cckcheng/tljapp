@@ -201,6 +201,14 @@ public class Player {
         this.partnerInfo.setText(partnerDef(def));
     }
 
+    private boolean isValid(List<Card> cards, UserHelp uh) {
+        if (cards.isEmpty()) {
+            uh.showHelp(uh.NO_CARD_SELECTED);
+            return false;
+        }
+        return true;
+    }
+
     public static int parseInteger(Object obj) {
         if (obj == null) return -1;
         try {
@@ -216,8 +224,8 @@ public class Player {
         return r.equalsIgnoreCase("yes") || r.equalsIgnoreCase("true");
     }
 
-    private List<PlayerInfo> infoLst = new ArrayList<>();
-    private Map<Integer, PlayerInfo> playerMap = new HashMap<>();
+    public final List<PlayerInfo> infoLst = new ArrayList<>();
+    public Map<Integer, PlayerInfo> playerMap = new HashMap<>();
     private boolean tableOn = false;
     private int timeout = 30;   // 30 seconds
     public boolean isPlaying = false;
@@ -322,8 +330,8 @@ public class Player {
         this.gameInfo.getStyle().setFgColor(0xebef07);
         this.gameInfo.getStyle().setFont(Hand.fontRank);
         this.partnerInfo = new Label(ptInfo);
-        this.partnerInfo.getStyle().setFgColor(0xcc0055);
-        this.partnerInfo.getStyle().setFont(Hand.fontRank);
+        this.partnerInfo.getStyle().setFgColor(0xaa0077);
+        this.partnerInfo.getStyle().setFont(Hand.fontGeneral);
 
         tablePane.add(hand);
         tablePane.add(bExit).add(lbGeneral).add(this.gameInfo).add(this.partnerInfo);
@@ -667,6 +675,17 @@ public class Player {
         int seat;
         int rank;
         PlayerInfo(String loc, int seat, int rank) {
+            this.cards = new ArrayList<Card>();
+            this.cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+            this.cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
+            this.cards.add(new Card('H', 8));
+            this.cards.add(new Card('H', 8));
+            this.cards.add(new Card('H', 7));
+            this.cards.add(new Card('H', 7));
+            this.cards.add(new Card('H', 6));
+            this.cards.add(new Card('H', 6));
+            this.cards.add(new Card('H', 5));
+            this.cards.add(new Card('H', 5));
             this.location = loc;
             this.seat = seat;
             this.rank = rank;
@@ -692,27 +711,11 @@ public class Player {
                 btnMinus = new Button("");
                 btnPass = new Button("Pass");
 
-//                btnBid = new Button(" 200 ", "bid");
-//                btnPlus = new Button("", "plus");
-//                btnMinus = new Button("", "minus");
-//                btnPass = new Button("Pass", "pass");
                 FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_ARROW_UPWARD);
                 FontImage.setMaterialIcon(btnMinus, FontImage.MATERIAL_ARROW_DOWNWARD);
 
-//                btnPlus.setUIID("plus");
-//                btnMinus.setUIID("minus");
-
-//                btnPlus.getStyle().setFgColor(BUTTON_COLOR);
-//                btnPlus.getStyle().setFont(Hand.fontRank);
-//                btnMinus.getStyle().setFgColor(BUTTON_COLOR);
-//                btnMinus.getStyle().setFont(Hand.fontRank);
-////
-//                btnBid.getStyle().setFgColor(BUTTON_COLOR);
-//                btnBid.getStyle().setFont(Hand.fontRank);
-//
-//                btnPass.getStyle().setFgColor(BUTTON_COLOR);
-//                btnPass.getStyle().setFont(Hand.fontRank);
-
+///
+//                btnBid.getAllStyles().setFgColor(BUTTON_COLOR);
                 btnBid.getAllStyles().setFont(Hand.fontRank);
                 btnBid.getAllStyles().setBgImage(backImage);
                 btnPass.getAllStyles().setBgImage(backImage);
@@ -749,10 +752,17 @@ public class Player {
                 btnPlay.getAllStyles().setBgImage(backImage);
                 btnPlay.addActionListener((e) -> {
                     String action = btnPlay.getText().toLowerCase();
+                    if (action.contains("bury")) action = "bury";
+                    else if (action.contains("play")) action = "play";
                     List<Card> cards = hand.getSelectedCards();
-                    if (action.equals("bury") && cards.size() != 6) {
+                    if (action.contains("bury") && cards.size() != 6) {
                         userHelp.showHelp(userHelp.BURY_CARDS);
                         return;
+                    }
+                    if (action.equals("play")) {
+                        if (!isValid(cards, userHelp)) {
+                            return;
+                        }
                     }
                     userHelp.clear();
                     actionButtons.setVisible(false);
@@ -773,13 +783,28 @@ public class Player {
             }
         }
 
+        int posX() {
+//            return points.getAbsoluteX();
+            return mainInfo.getAbsoluteX();
+        }
+
+        int posY() {
+//            return points.getAbsoluteY();
+            return mainInfo.getAbsoluteY();
+        }
+
+        int posH() {
+//            return points.getAbsoluteY();
+            return mainInfo.getHeight();
+        }
+
         void addItems(Container pane) {
             pane.add(mainInfo).add(points).add(timer).add(contractor);
             LayeredLayout ll = (LayeredLayout) pane.getLayout();
             
             switch (this.location) {
                 case "left up":
-                    ll.setInsets(mainInfo, "20% auto auto 0");  //top right bottom left
+                    ll.setInsets(mainInfo, "15% auto auto 0");  //top right bottom left
                     ll.setInsets(points, "0 auto auto 20")
                             .setInsets(timer, "0 auto auto 20")
                             .setInsets(contractor, "19% auto auto 20");
@@ -788,7 +813,7 @@ public class Player {
                             .setReferenceComponentTop(points, mainInfo, 1f);
                     break;
                 case "left down":
-                    ll.setInsets(mainInfo, "40% auto auto 0");
+                    ll.setInsets(mainInfo, "35% auto auto 0");
                     ll.setInsets(points, "0 auto auto 20")
                             .setInsets(timer, "0 auto auto 20")
                             .setInsets(contractor, "39% auto auto 20");
@@ -797,7 +822,7 @@ public class Player {
                             .setReferenceComponentTop(points, mainInfo, 1f);
                     break;
                 case "right up":
-                    ll.setInsets(mainInfo, "20% 0 auto auto");
+                    ll.setInsets(mainInfo, "15% 0 auto auto");
                     ll.setInsets(points, "0 20 auto auto")
                             .setInsets(timer, "0 20 auto auto")
                             .setInsets(contractor, "19% 20 auto auto");
@@ -806,7 +831,7 @@ public class Player {
                             .setReferenceComponentTop(points, mainInfo, 1f);
                     break;
                 case "right down":
-                    ll.setInsets(mainInfo, "40% 0 auto auto");
+                    ll.setInsets(mainInfo, "35% 0 auto auto");
                     ll.setInsets(points, "0 20 auto auto")
                             .setInsets(timer, "0 20 auto auto")
                             .setInsets(contractor, "39% 20 auto auto");
@@ -827,7 +852,6 @@ public class Player {
                     pane.add(actionButtons).add(userHelp);
                     ll.setInsets(actionButtons, "auto auto 35% auto");
 
-//                    ll.setInsets(userHelp, "25% auto auto auto");
                     ll.setInsets(userHelp, "auto auto 0 auto");
                     ll.setInsets(mainInfo, "auto auto 0 auto");
                     ll.setInsets(points, "auto auto 35% auto")
@@ -921,7 +945,7 @@ public class Player {
                 } else if (act.equals("bury")) {
                     actionButtons.removeAll();
                     actionButtons.add(btnPlay);
-                    btnPlay.setText("Bury");
+                    btnPlay.setText("埋底Bury");
                     needChangeActions = true;                    
                 } else if (act.equals("partner")) {
                     userHelp.showHelp(userHelp.SET_PARTNER);
@@ -938,6 +962,7 @@ public class Player {
                     addCardButton(Card.HEART, rnk, btnGroup);
                     addCardButton(Card.DIAMOND, rnk, btnGroup);
                     addCardButton(Card.CLUB, rnk, btnGroup);
+//                    Button btn = new Button("1vs5", "nopartner");
                     Button btn = new Button("1vs5");
                     btn.setCapsText(false);
                     btn.addActionListener((e)->{
@@ -999,6 +1024,12 @@ public class Player {
         final int SET_TRUMP = 10;
         final int BURY_CARDS = 20;
         final int SET_PARTNER = 25;
+        final int PLAY_PAIR = 31;
+        final int PLAY_TRIPS = 32;
+        final int PLAY_TRACTOR = 33;
+        final int PLAY_SAME_SUIT = 35;
+        final int NO_CARD_SELECTED = 30;
+
         UserHelp() {
             this.setLayout(new BoxLayout(BoxLayout.Y_AXIS_BOTTOM_LAST));
             this.add(engLabel);
@@ -1022,7 +1053,27 @@ public class Player {
                     break;
                 case SET_PARTNER:
                     engLabel.setText("Who plays this card will be your partner");
-                    chnLabel.setText("找朋友");
+                    chnLabel.setText("找朋友(需指定第几张，包括自己)");
+                    break;
+                case NO_CARD_SELECTED:
+                    engLabel.setText("Please select card(s) to play");
+                    chnLabel.setText("请先选定要出的牌");
+                    break;
+                case PLAY_SAME_SUIT:
+                    engLabel.setText("Must play same suite");
+                    chnLabel.setText("必须出相同花色");
+                    break;
+                case PLAY_PAIR:
+                    engLabel.setText("Must play pair");
+                    chnLabel.setText("必须出对");
+                    break;
+                case PLAY_TRIPS:
+                    engLabel.setText("Must play trips");
+                    chnLabel.setText("必须出三张");
+                    break;
+                case PLAY_TRACTOR:
+                    engLabel.setText("Must play connected pairs");
+                    chnLabel.setText("必须出拖拉机");
                     break;
             }
         }
