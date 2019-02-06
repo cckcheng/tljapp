@@ -45,6 +45,7 @@ public class Player {
     static final int TLJ_PORT = 6688;
 //    static final int POINT_COLOR = 0xd60e90;
     static final int GREY_COLOR = 0x505050;
+    static final int INFO_COLOR = 0xa1ebfc;
     static final int POINT_COLOR = 0x3030ff;
     static final int TIMER_COLOR = 0xff00ff;
     static final int RED_COLOR = 0xff0000;
@@ -235,6 +236,7 @@ public class Player {
     private Hand hand;
     private Label gameInfo;
     private Label partnerInfo;
+    private Label pointsInfo;
     private Container tablePane;
 
     private void showTable(Map<String, Object> data) {
@@ -286,6 +288,14 @@ public class Player {
             if (lst != null) {
                 p0.cards.addAll(lst);
             }
+            int point1 = parseInteger(data.get("pt1")); // points earned by player itself
+            if (point1 != -1) {
+                if (point1 == 0) {
+                    p0.contractor.setText("");
+                } else {
+                    p0.contractor.setText(point1 + "分");
+                }
+            }
         }
 
         Button bExit = new Button("Exit");
@@ -319,6 +329,7 @@ public class Player {
 //        String gmInfo = "205 NT 2; Partner: 1st CA";  // sample
         String gmInfo = " ";
         String ptInfo = " ";
+        String pointInfo = " ";
         int actTime = parseInteger(data.get("acttime"));
         String act = trimmedString(data.get("act"));
         if (this.isPlaying) {
@@ -332,20 +343,27 @@ public class Player {
                 gmInfo += gameRank;
             }
             ptInfo = this.partnerDef(trimmedString(data.get("def")));
+            int points = parseInteger(data.get("pt0"));
+            pointInfo = points + "分";
         }
         this.gameInfo = new Label(gmInfo);
         this.gameInfo.getStyle().setFgColor(0xebef07);
         this.gameInfo.getStyle().setFont(Hand.fontRank);
         this.partnerInfo = new Label(ptInfo);
-        this.partnerInfo.getStyle().setFgColor(0xaa0077);
+        this.partnerInfo.getStyle().setFgColor(INFO_COLOR);
         this.partnerInfo.getStyle().setFont(Hand.fontGeneral);
 
+        this.pointsInfo = new Label(pointInfo);
+        this.pointsInfo.getStyle().setFgColor(POINT_COLOR);
+        this.pointsInfo.getStyle().setFont(Hand.fontRank);
+
         tablePane.add(hand);
-        tablePane.add(bExit).add(lbGeneral).add(this.gameInfo).add(this.partnerInfo);
+        tablePane.add(bExit).add(lbGeneral).add(this.gameInfo).add(this.partnerInfo).add(this.pointsInfo);
         LayeredLayout ll = (LayeredLayout) tablePane.getLayout();
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
         ll.setInsets(lbGeneral, "0 auto auto 0")
                 .setInsets(this.partnerInfo, "0 0 auto auto")
+                .setInsets(this.pointsInfo, "0 auto auto 25%")
                 .setInsets(this.gameInfo, "0 auto auto 0");
         ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
         ll.setReferenceComponentTop(this.partnerInfo, bExit, 1f);
@@ -371,7 +389,13 @@ public class Player {
             if (pp != null) pp.setContractor(CONTRACTOR);
             int seatPartner = parseInteger(data.get("seatPartner"));
             pp = this.playerMap.get(seatPartner);
-            if (pp != null) pp.setContractor(PARTNER);
+            if (pp != null) {
+                if (pp.isContractSide) {
+                    pp.setContractor(CONTRACTOR + "," + PARTNER);
+                } else {
+                    pp.setContractor(PARTNER);
+                }
+            }
             
             this.currentTrump = trumpSuite;
         }
@@ -404,6 +428,15 @@ public class Player {
             if (lst != null) {
                 pp.cards.addAll(lst);
             }
+            int point1 = parseInteger(rawData.get("pt1")); // points earned by player itself
+            if (point1 != -1) {
+                if (point1 == 0) {
+                    pp.contractor.setText("");
+                } else {
+                    pp.contractor.setText(point1 + "分");
+                }
+            }
+
         }
         this.infoLst.add(pp);
         this.playerMap.put(seat, pp);
@@ -462,7 +495,28 @@ public class Player {
         if(seat > 0) {
             String cards = trimmedString(data.get("cards"));
             PlayerInfo pp = this.playerMap.get(seat);
-            if (pp != null) displayCards(pp, cards);
+            if (pp != null) {
+                displayCards(pp, cards);
+                int points = parseInteger(data.get("pt0")); // total points by non-contract players
+                if (points != -1) {
+                    this.pointsInfo.setText(points + "分");
+                }
+
+                boolean isPartner = parseBoolean(data.get("isPartner"));
+                if (isPartner) {
+                    if (pp.isContractSide) {
+                        pp.setContractor(CONTRACTOR + "," + PARTNER);
+                    } else {
+                        pp.setContractor(PARTNER);
+                    }
+                }
+                if (!pp.isContractSide) {
+                    int point1 = parseInteger(data.get("pt1")); // points earned by player itself
+                    if (point1 != -1) {
+                        pp.contractor.setText(point1 + "分");
+                    }
+                }
+            }
         } else {
             for (PlayerInfo pp : this.infoLst) {
                 pp.cards.clear();
@@ -706,6 +760,9 @@ public class Player {
 
         int seat;
         int rank;
+
+        boolean isContractSide = false;
+
         PlayerInfo(String loc, int seat, int rank) {
 //            this.cards.add(new Card(Card.JOKER, Card.BigJokerRank));
 //            this.cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
@@ -728,8 +785,8 @@ public class Player {
             points.getAllStyles().setFont(Hand.fontRank);
 
             contractor = new Label("     ");
-            contractor.getStyle().setFgColor(RED_COLOR);
-            contractor.getStyle().setFont(Hand.fontRank);
+            contractor.getAllStyles().setFgColor(POINT_COLOR);
+            contractor.getAllStyles().setFont(Hand.fontRank);
 
             timer = new Label("    ");
             timer.getAllStyles().setFgColor(TIMER_COLOR);
@@ -831,7 +888,7 @@ public class Player {
                     ll.setInsets(mainInfo, "15% auto auto 0");  //top right bottom left
                     ll.setInsets(points, "0 auto auto 20")
                             .setInsets(timer, "0 auto auto 20")
-                            .setInsets(contractor, "19% auto auto 20");
+                            .setInsets(contractor, "14% auto auto 20");
                     ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
                             .setReferenceComponentTop(timer, mainInfo, 1f)
                             .setReferenceComponentTop(points, mainInfo, 1f);
@@ -840,7 +897,7 @@ public class Player {
                     ll.setInsets(mainInfo, "35% auto auto 0");
                     ll.setInsets(points, "0 auto auto 20")
                             .setInsets(timer, "0 auto auto 20")
-                            .setInsets(contractor, "39% auto auto 20");
+                            .setInsets(contractor, "34% auto auto 20");
                     ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
                             .setReferenceComponentTop(timer, mainInfo, 1f)
                             .setReferenceComponentTop(points, mainInfo, 1f);
@@ -849,7 +906,7 @@ public class Player {
                     ll.setInsets(mainInfo, "15% 0 auto auto");
                     ll.setInsets(points, "0 20 auto auto")
                             .setInsets(timer, "0 20 auto auto")
-                            .setInsets(contractor, "19% 20 auto auto");
+                            .setInsets(contractor, "14% 20 auto auto");
                     ll.setReferenceComponentRight(contractor, mainInfo, 1f)
                             .setReferenceComponentTop(timer, mainInfo, 1f)
                             .setReferenceComponentTop(points, mainInfo, 1f);
@@ -858,7 +915,7 @@ public class Player {
                     ll.setInsets(mainInfo, "35% 0 auto auto");
                     ll.setInsets(points, "0 20 auto auto")
                             .setInsets(timer, "0 20 auto auto")
-                            .setInsets(contractor, "39% 20 auto auto");
+                            .setInsets(contractor, "34% 20 auto auto");
                     ll.setReferenceComponentRight(contractor, mainInfo, 1f)
                             .setReferenceComponentTop(timer, mainInfo, 1f)
                             .setReferenceComponentTop(points, mainInfo, 1f);
@@ -874,7 +931,7 @@ public class Player {
                     break;
                 case "bottom":
                     pane.add(actionButtons).add(userHelp);
-                    ll.setInsets(actionButtons, "auto auto 35% auto");
+                    ll.setInsets(actionButtons, "auto auto 33% auto");
 
                     ll.setInsets(userHelp, "auto auto 0 auto");
                     ll.setInsets(mainInfo, "auto auto 0 auto");
@@ -932,7 +989,7 @@ public class Player {
             userHelp.clear();
             cancelTimer();  // cancel the running timer if any
             if (act.equals("dim")) {
-                this.contractor.setText(CONTRACTOR);
+                this.setContractor(CONTRACTOR);
                 needChangeActions = true;
             }
 
@@ -1033,11 +1090,11 @@ public class Player {
         }
 
         void setContractor(String txt) {
-//            cancelTimer();
             // txt could be Contractor or Partner
             this.points.setText("");
+            this.contractor.getAllStyles().setFgColor(RED_COLOR);
             this.contractor.setText(txt);
-            this.needChangeActions = true;
+            this.isContractSide = true;
         }
     }
 

@@ -24,7 +24,7 @@ import com.codename1.ui.util.UITimer;
  */
 public class TuoLaJi {
 
-    static public boolean DEBUG_MODE = false;
+    static public boolean DEBUG_MODE = true;
 
     static public int BACKGROUND_COLOR = DEBUG_MODE ? 0xffffff : 0x008000;
     private Form current;
