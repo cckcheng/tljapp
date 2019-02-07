@@ -256,7 +256,7 @@ public class Player {
         int actionSeat = parseInteger(data.get("next"));
         this.playerRank = parseInteger(data.get("rank"));
         int game = parseInteger(data.get("game"));
-        int gameRank = parseInteger(data.get("gameRank"));
+        this.gameRank = parseInteger(data.get("gameRank"));
         this.contractPoint = parseInteger(data.get("contract"));
         int defaultTimeout = parseInteger(data.get("timeout"));
         if (defaultTimeout > 0) this.timeout = defaultTimeout;
@@ -284,7 +284,7 @@ public class Player {
             if (minBid > 0) p0.addMidBid(minBid);
             displayBidInfo(p0, trimmedString(data.get("bid")));
         } else {
-            List<Card> lst = Card.fromString(trimmedString(data.get("cards")));
+            List<Card> lst = Card.fromString(trimmedString(data.get("cards")), this.currentTrump, this.gameRank);
             if (lst != null) {
                 p0.cards.addAll(lst);
             }
@@ -424,7 +424,7 @@ public class Player {
         if (!this.isPlaying) {
             displayBidInfo(pp, trimmedString(rawData.get("bid")));
         } else {
-            List<Card> lst = Card.fromString(trimmedString(rawData.get("cards")));
+            List<Card> lst = Card.fromString(trimmedString(rawData.get("cards")), this.currentTrump, this.gameRank);
             if (lst != null) {
                 pp.cards.addAll(lst);
             }
@@ -469,7 +469,7 @@ public class Player {
     }
 
     private void displayCards(PlayerInfo pp, String cards) {
-        List<Card> lst = Card.fromString(cards);
+        List<Card> lst = Card.fromString(cards, this.currentTrump, this.gameRank);
         if (lst != null) {
             pp.cards.addAll(lst);
             if (pp.location.equals("bottom")) {
@@ -533,15 +533,16 @@ public class Player {
     }
 
     private char currentTrump;
+    private int gameRank;
     synchronized private void setTrump(Map<String, Object> data) {
         String trump = data.get("trump").toString();
         if (trump.isEmpty()) return;
         this.currentTrump = trump.charAt(0);
         int seat = parseInteger(data.get("seat"));
-        int gameRank = parseInteger(data.get("gameRank"));
+        this.gameRank = parseInteger(data.get("gameRank"));
         int actTime = parseInteger(data.get("acttime"));
         int contractPoint = parseInteger(data.get("contract"));
-        this.hand.sortCards(currentTrump, gameRank, true);
+        this.hand.sortCards(currentTrump, this.gameRank, true);
 //        this.hand.repaint();
 
         for (int st : this.playerMap.keySet()) {

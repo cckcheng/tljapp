@@ -91,7 +91,7 @@ public class Hand extends Component {
 
         this.sCardHeight = (int) (this.cardHeight * 0.9);
         this.sCardWidth = (int) (this.cardWidth * 0.9);
-        this.sPitch = (int) (this.xPitch * 0.7);
+        this.sPitch = (int) (this.xPitch * 0.8);
 
 //        this.xPL1 = this.xPL2 = getX() + 5;
 //        this.xPR1 = this.xPR2 = getX() + w - 50;

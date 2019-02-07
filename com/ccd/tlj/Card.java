@@ -1,6 +1,7 @@
 package com.ccd.tlj;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -78,7 +79,7 @@ public class Card implements Comparable {
         return ret.substring(1);
     }
 
-    public static List<Card> fromString(String cards) {
+    public static List<Card> fromString(String cards, char trump, int gameRank) {
         if (cards == null || cards.isEmpty()) return null;
 
         List<Card> lst = new ArrayList<>();
@@ -94,6 +95,20 @@ public class Card implements Comparable {
                 cards = cards.substring(x + 1);
             }
         }
+        Collections.sort(lst, (Card a, Card b) -> {
+            boolean aTrump = a.suite == trump || a.rank == gameRank || a.suite == Card.JOKER;
+            boolean bTrump = b.suite == trump || b.rank == gameRank || b.suite == Card.JOKER;
+
+            if (aTrump && bTrump) {
+                return b.trumpRank(trump, gameRank) - a.trumpRank(trump, gameRank);
+            } else if (aTrump) {
+                return -1;
+            } else if (bTrump) {
+                return 1;
+            }
+
+            return b.compareTo(a);
+        });
         return lst;
     }
 
