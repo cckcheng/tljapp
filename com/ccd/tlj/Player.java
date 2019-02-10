@@ -240,7 +240,7 @@ public class Player {
     private Container tablePane;
 
     private void showTable(Map<String, Object> data) {
-        mainForm.getContentPane().setVisible(false);
+//        mainForm.getContentPane().setVisible(false);
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 01");
         tablePane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
         tablePane.setLayout(new LayeredLayout());
@@ -293,7 +293,7 @@ public class Player {
                 if (point1 == 0) {
                     p0.contractor.setText("");
                 } else {
-                    p0.contractor.setText(point1 + "分");
+                    p0.contractor.setText(point1 + "");
                 }
             }
         }
@@ -433,7 +433,7 @@ public class Player {
                 if (point1 == 0) {
                     pp.contractor.setText("");
                 } else {
-                    pp.contractor.setText(point1 + "分");
+                    pp.contractor.setText(point1 + "");
                 }
             }
 
@@ -491,16 +491,31 @@ public class Player {
     private void playCards(Map<String, Object> data) {
         int seat = parseInteger(data.get("seat"));
         int actionSeat = parseInteger(data.get("next"));
-        
+        int points = parseInteger(data.get("pt0")); // total points by non-contract players
+        if (points != -1) {
+            this.pointsInfo.setText(points + "分");
+        }
+
+        int pointSeat = parseInteger(data.get("pseat"));
+        if (pointSeat > 0) {
+            PlayerInfo pp = this.playerMap.get(pointSeat);
+            if (pp != null && !pp.isContractSide) {
+                int point = parseInteger(data.get("pt")); // points earned by player itself
+                if (point != -1) {
+                    if (point == 0) {
+                        pp.contractor.setText("");
+                    } else {
+                        pp.contractor.setText(point + "");
+                    }
+                }
+            }
+        }
+
         if(seat > 0) {
             String cards = trimmedString(data.get("cards"));
             PlayerInfo pp = this.playerMap.get(seat);
             if (pp != null) {
                 displayCards(pp, cards);
-                int points = parseInteger(data.get("pt0")); // total points by non-contract players
-                if (points != -1) {
-                    this.pointsInfo.setText(points + "分");
-                }
 
                 boolean isPartner = parseBoolean(data.get("isPartner"));
                 if (isPartner) {
@@ -513,7 +528,11 @@ public class Player {
                 if (!pp.isContractSide) {
                     int point1 = parseInteger(data.get("pt1")); // points earned by player itself
                     if (point1 != -1) {
-                        pp.contractor.setText(point1 + "分");
+                        if (point1 == 0) {
+                            pp.contractor.setText("");
+                        } else {
+                            pp.contractor.setText(point1 + "");
+                        }
                     }
                 }
             }
@@ -622,6 +641,7 @@ public class Player {
                 String subMsg = msg.substring(0, idx);
                 msg = msg.substring(idx + 1);
                 idx = msg.indexOf("\n");
+                if (subMsg.trim().isEmpty()) continue;
                 Map<String, Object> data = parser.parseJSON(new StringReader(subMsg));
                 final String action = data.get("action").toString();
 
@@ -703,7 +723,7 @@ public class Player {
                 os.close();
                 is.close();
             } catch (Exception err) {
-                err.printStackTrace();
+//                err.printStackTrace();
                 Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
             }
 
