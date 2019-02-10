@@ -513,7 +513,11 @@ public class Player {
                 if (!pp.isContractSide) {
                     int point1 = parseInteger(data.get("pt1")); // points earned by player itself
                     if (point1 != -1) {
-                        pp.contractor.setText(point1 + "分");
+                        if (point1 == 0) {
+                            pp.contractor.setText("");
+                        } else {
+                            pp.contractor.setText(point1 + "分");
+                        }
                     }
                 }
             }
