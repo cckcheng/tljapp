@@ -35,14 +35,12 @@ import java.util.Map;
  */
 public class Player {
 
-    static final String TLJ_HOST = TuoLaJi.DEBUG_MODE ? "172.16.107.204" : "tlj.webhop.me";
     static final String BIDDING_STAGE = "bid";
     static final String PLAYING_STAGE = "play";
 
     static final String CONTRACTOR = "庄";
     static final String PARTNER = "帮";
 
-    static final int TLJ_PORT = 6688;
 //    static final int POINT_COLOR = 0xd60e90;
     static final int GREY_COLOR = 0x505050;
     static final int INFO_COLOR = 0xa1ebfc;
@@ -69,27 +67,6 @@ public class Player {
         this.playerName = playerName;
     }
 
-    public static String rankToString(int rank) {
-        if (rank <= 10) return "R" + rank;
-        switch (rank) {
-            case 11:
-                return "J";
-            case 12:
-                return "Q";
-            case 13:
-                return "K";
-            case 14:
-                return "A";
-        }
-
-        String s = "A";
-        while (rank > 14) {
-            s += "+";
-            rank--;
-        }
-        return s;
-    }
-
     private MySocket mySocket = null;
 
     static final String actionJoinTable = "join";
@@ -107,7 +84,7 @@ public class Player {
 
         this.mySocket = new MySocket();
         mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
-        Socket.connect(TLJ_HOST, TLJ_PORT, mySocket);
+        Socket.connect(Card.TLJ_HOST, Card.TLJ_PORT, mySocket);
     }
 
     public void disconnect() {
@@ -810,7 +787,7 @@ public class Player {
             this.location = loc;
             this.seat = seat;
             this.rank = rank;
-            String info = "#" + seat + "," + rankToString(rank);
+            String info = "#" + seat + "," + Card.rankToString(rank);
             mainInfo = new Label(info);
             userHelp = new UserHelp();
 
@@ -1070,7 +1047,7 @@ public class Player {
                     RadioButton rb4 = new RadioButton("4th");
                     ButtonGroup btnGroup = new ButtonGroup(rb1,rb2,rb3,rb4);
                     actionButtons.addAll(rb1,rb2,rb3,rb4);
-                    String rnk = rankToString(playerRank);
+                    String rnk = Card.rankToString(playerRank);
                     rnk = rnk.equals("A") ? "K" : "A";
                     addCardButton(Card.SPADE, rnk, btnGroup);
                     addCardButton(Card.HEART, rnk, btnGroup);
