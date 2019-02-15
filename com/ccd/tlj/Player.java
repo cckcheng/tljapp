@@ -52,7 +52,7 @@ public class Player {
     static final int BUTTON_COLOR = 0x47b2e8;
 
     private final ButtonImage backImage = new ButtonImage(0xbcbcbc);
-    static final int TIME_OUT_SECONDS = 15;
+    static final int TIME_OUT_SECONDS = 25;
     private final String playerId;
     private String playerName;
     private final Form mainForm;
@@ -675,15 +675,21 @@ public class Player {
         public void connectionError(int errorCode, String message) {
 //            if (isConnected()) closeRequested = true;
             main.enableButtons();
-            Dialog.show("Error", message, "OK", "");
+            mySocket = null;    // reset connection
+//            Dialog.show("Error", message, "OK", "");
             if (tableOn) {
                 cancelTimers();
-//                tablePane.removeAll();
+                try {
+                    //                tablePane.removeAll();
 //                mainForm.setGlassPane(null);
 ////                mainForm.getContentPane().setVisible(true);
 //                mainForm.repaint();
+                    Thread.sleep(10000);
+                } catch (InterruptedException ex) {
+
+                }
+                connectServer();
             }
-            mySocket = null;    // reset connection
         }
 
         @Override
@@ -724,7 +730,7 @@ public class Player {
                 is.close();
             } catch (Exception err) {
 //                err.printStackTrace();
-                Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
+//                Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
             }
 
             if (!closeRequested) {

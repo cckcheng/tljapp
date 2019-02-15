@@ -121,7 +121,8 @@ public class Card implements Comparable {
             case DIAMOND:
                 return "\u2666";
             case CLUB:
-                return "\u2663";
+//                return "\u2663";
+                return "\u2667";
         }
 
         return "" + JOKER;
