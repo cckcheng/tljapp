@@ -250,50 +250,55 @@ public class Player {
 
         infoLst.clear();
 
-        String stage = data.get("stage").toString();
+        String stage = trimmedString(data.get("stage"));
         this.isPlaying = stage.equalsIgnoreCase(PLAYING_STAGE);
         currentSeat = parseInteger(data.get("seat"));
         int actionSeat = parseInteger(data.get("next"));
         this.playerRank = parseInteger(data.get("rank"));
         int game = parseInteger(data.get("game"));
-        this.gameRank = parseInteger(data.get("gameRank"));
-        this.contractPoint = parseInteger(data.get("contract"));
         int defaultTimeout = parseInteger(data.get("timeout"));
         if (defaultTimeout > 0) this.timeout = defaultTimeout;
-
         this.hand = new Hand(this);
-        candidateTrumps.clear();
-        this.addCards(data);
-
-        char trumpSuite = Card.JOKER;
-        String trump = data.get("trump").toString();
-        if (!trump.isEmpty()) trumpSuite = trump.charAt(0);
-        
-        if(gameRank>0) {
-            hand.sortCards(trumpSuite, gameRank, true);
-        } else {
-            hand.sortCards(trumpSuite, playerRank, true);
-        }
 
         PlayerInfo p0 = new PlayerInfo("bottom", currentSeat, playerRank);
         this.infoLst.add(p0);
         this.playerMap.put(currentSeat, p0);
         p0.setPlayerName(playerName);
-        if (!this.isPlaying) {
-            int minBid = parseInteger(data.get("minBid"));
-            if (minBid > 0) p0.addMidBid(minBid);
-            displayBidInfo(p0, trimmedString(data.get("bid")));
-        } else {
-            List<Card> lst = Card.fromString(trimmedString(data.get("cards")), this.currentTrump, this.gameRank);
-            if (lst != null) {
-                p0.cards.addAll(lst);
+        char trumpSuite = Card.JOKER;
+
+        String info = trimmedString(data.get("info"));
+        if (info.isEmpty()) {
+            candidateTrumps.clear();
+            this.addCards(data);
+
+            this.gameRank = parseInteger(data.get("gameRank"));
+            this.contractPoint = parseInteger(data.get("contract"));
+
+            String trump = data.get("trump").toString();
+            if (!trump.isEmpty()) trumpSuite = trump.charAt(0);
+
+            if (gameRank > 0) {
+                hand.sortCards(trumpSuite, gameRank, true);
+            } else {
+                hand.sortCards(trumpSuite, playerRank, true);
             }
-            int point1 = parseInteger(data.get("pt1")); // points earned by player itself
-            if (point1 != -1) {
-                if (point1 == 0) {
-                    p0.contractor.setText("");
-                } else {
-                    p0.contractor.setText(point1 + "");
+
+            if (!this.isPlaying) {
+                int minBid = parseInteger(data.get("minBid"));
+                if (minBid > 0) p0.addMidBid(minBid);
+                displayBidInfo(p0, trimmedString(data.get("bid")));
+            } else {
+                List<Card> lst = Card.fromString(trimmedString(data.get("cards")), this.currentTrump, this.gameRank);
+                if (lst != null) {
+                    p0.cards.addAll(lst);
+                }
+                int point1 = parseInteger(data.get("pt1")); // points earned by player itself
+                if (point1 != -1) {
+                    if (point1 == 0) {
+                        p0.contractor.setText("");
+                    } else {
+                        p0.contractor.setText(point1 + "");
+                    }
                 }
             }
         }
@@ -326,7 +331,7 @@ public class Player {
 
         Label lbGeneral = new Label("Game " + game);
         lbGeneral.getStyle().setFont(Hand.fontGeneral);
-//        String gmInfo = "205 NT 2; Partner: 1st CA";  // sample
+
         String gmInfo = " ";
         String ptInfo = " ";
         String pointInfo = " ";
@@ -368,8 +373,8 @@ public class Player {
         ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
         ll.setReferenceComponentTop(this.partnerInfo, bExit, 1f);
 
-        for (PlayerInfo info : infoLst) {
-            info.addItems(tablePane);
+        for (PlayerInfo pp : infoLst) {
+            pp.addItems(tablePane);
         }
 
         PlayerInfo pp = this.playerMap.get(actionSeat);
@@ -674,7 +679,8 @@ public class Player {
         @Override
         public void connectionError(int errorCode, String message) {
 //            if (isConnected()) closeRequested = true;
-            main.enableButtons();
+//            main.enableButtons();
+            main.onConnectionError();
             mySocket = null;    // reset connection
 //            Dialog.show("Error", message, "OK", "");
             if (tableOn) {
