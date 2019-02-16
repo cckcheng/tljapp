@@ -68,14 +68,24 @@ public class TuoLaJi {
         this.connTimer.cancel();
     }
 
+    public void onConnectionError() {
+        if (this.btnPlay != null) {
+            this.btnPlay.setText("Network Error");
+            new UITimer(new Runnable() {
+                @Override
+                public void run() {
+                    enableButtons();
+                }
+            }).schedule(3000, false, this.formMain);
+        }
+    }
+
     public void start() {
         if(current != null){
             current.show();
             return;
         }
 
-//        String s = "Hi World: " + Character.toChars(0x1F0B4);
-//        String s = "Player 1: " + "\uD83C\uDCC1";
         Display disp = Display.getInstance();
         disp.lockOrientation(false);
         disp.requestFullScreen();
@@ -133,7 +143,7 @@ public class TuoLaJi {
             } else {
                 pName.stopEditing();
                 Storage.getInstance().writeObject("playerName", playerName);
-                startGame(mainForm, playerId, playerName);
+                startGame(playerId, playerName);
                 bPlay.setEnabled(false);
                 bPlay.setText("Connecting...");
                 connTimer.schedule(Player.TIME_OUT_SECONDS * 1000, false, mainForm);
@@ -188,7 +198,7 @@ public class TuoLaJi {
 
     private Player player = null;
 
-    private void startGame(Form mainForm, String playerId, String playerName) {
+    private void startGame(String playerId, String playerName) {
         if (this.player == null) {
             player = new Player(playerId, playerName, this);
         } else {

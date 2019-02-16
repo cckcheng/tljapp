@@ -35,14 +35,12 @@ import java.util.Map;
  */
 public class Player {
 
-    static final String TLJ_HOST = TuoLaJi.DEBUG_MODE ? "172.16.107.204" : "tlj.webhop.me";
     static final String BIDDING_STAGE = "bid";
     static final String PLAYING_STAGE = "play";
 
     static final String CONTRACTOR = "庄";
     static final String PARTNER = "帮";
 
-    static final int TLJ_PORT = 6688;
 //    static final int POINT_COLOR = 0xd60e90;
     static final int GREY_COLOR = 0x505050;
     static final int INFO_COLOR = 0xa1ebfc;
@@ -52,7 +50,7 @@ public class Player {
     static final int BUTTON_COLOR = 0x47b2e8;
 
     private final ButtonImage backImage = new ButtonImage(0xbcbcbc);
-    static final int TIME_OUT_SECONDS = 15;
+    static final int TIME_OUT_SECONDS = 25;
     private final String playerId;
     private String playerName;
     private final Form mainForm;
@@ -67,27 +65,6 @@ public class Player {
 
     public void setPlayerName(String playerName) {
         this.playerName = playerName;
-    }
-
-    public static String rankToString(int rank) {
-        if (rank <= 10) return "R" + rank;
-        switch (rank) {
-            case 11:
-                return "J";
-            case 12:
-                return "Q";
-            case 13:
-                return "K";
-            case 14:
-                return "A";
-        }
-
-        String s = "A";
-        while (rank > 14) {
-            s += "+";
-            rank--;
-        }
-        return s;
     }
 
     private MySocket mySocket = null;
@@ -107,7 +84,7 @@ public class Player {
 
         this.mySocket = new MySocket();
         mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
-        Socket.connect(TLJ_HOST, TLJ_PORT, mySocket);
+        Socket.connect(Card.TLJ_HOST, Card.TLJ_PORT, mySocket);
     }
 
     public void disconnect() {
@@ -240,7 +217,7 @@ public class Player {
     private Container tablePane;
 
     private void showTable(Map<String, Object> data) {
-        mainForm.getContentPane().setVisible(false);
+//        mainForm.getContentPane().setVisible(false);
         if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 01");
         tablePane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
         tablePane.setLayout(new LayeredLayout());
@@ -250,14 +227,12 @@ public class Player {
 
         infoLst.clear();
 
-        String stage = data.get("stage").toString();
+        String stage = trimmedString(data.get("stage"));
         this.isPlaying = stage.equalsIgnoreCase(PLAYING_STAGE);
         currentSeat = parseInteger(data.get("seat"));
         int actionSeat = parseInteger(data.get("next"));
         this.playerRank = parseInteger(data.get("rank"));
         int game = parseInteger(data.get("game"));
-        this.gameRank = parseInteger(data.get("gameRank"));
-        this.contractPoint = parseInteger(data.get("contract"));
         int defaultTimeout = parseInteger(data.get("timeout"));
         if (defaultTimeout > 0) this.timeout = defaultTimeout;
 
@@ -265,35 +240,42 @@ public class Player {
         candidateTrumps.clear();
         this.addCards(data);
 
-        char trumpSuite = Card.JOKER;
-        String trump = data.get("trump").toString();
-        if (!trump.isEmpty()) trumpSuite = trump.charAt(0);
-        
-        if(gameRank>0) {
-            hand.sortCards(trumpSuite, gameRank, true);
-        } else {
-            hand.sortCards(trumpSuite, playerRank, true);
-        }
-
         PlayerInfo p0 = new PlayerInfo("bottom", currentSeat, playerRank);
         this.infoLst.add(p0);
         this.playerMap.put(currentSeat, p0);
         p0.setPlayerName(playerName);
-        if (!this.isPlaying) {
-            int minBid = parseInteger(data.get("minBid"));
-            if (minBid > 0) p0.addMidBid(minBid);
-            displayBidInfo(p0, trimmedString(data.get("bid")));
-        } else {
-            List<Card> lst = Card.fromString(trimmedString(data.get("cards")), this.currentTrump, this.gameRank);
-            if (lst != null) {
-                p0.cards.addAll(lst);
+        char trumpSuite = Card.JOKER;
+
+        String info = trimmedString(data.get("info"));
+        if (info.isEmpty()) {
+            this.gameRank = parseInteger(data.get("gameRank"));
+            this.contractPoint = parseInteger(data.get("contract"));
+
+            String trump = data.get("trump").toString();
+            if (!trump.isEmpty()) trumpSuite = trump.charAt(0);
+
+            if (gameRank > 0) {
+                hand.sortCards(trumpSuite, gameRank, true);
+            } else {
+                hand.sortCards(trumpSuite, playerRank, true);
             }
-            int point1 = parseInteger(data.get("pt1")); // points earned by player itself
-            if (point1 != -1) {
-                if (point1 == 0) {
-                    p0.contractor.setText("");
-                } else {
-                    p0.contractor.setText(point1 + "分");
+
+            if (!this.isPlaying) {
+                int minBid = parseInteger(data.get("minBid"));
+                if (minBid > 0) p0.addMidBid(minBid);
+                displayBidInfo(p0, trimmedString(data.get("bid")));
+            } else {
+                List<Card> lst = Card.fromString(trimmedString(data.get("cards")), this.currentTrump, this.gameRank);
+                if (lst != null) {
+                    p0.cards.addAll(lst);
+                }
+                int point1 = parseInteger(data.get("pt1")); // points earned by player itself
+                if (point1 != -1) {
+                    if (point1 == 0) {
+                        p0.contractor.setText("");
+                    } else {
+                        p0.contractor.setText(point1 + "");
+                    }
                 }
             }
         }
@@ -326,7 +308,7 @@ public class Player {
 
         Label lbGeneral = new Label("Game " + game);
         lbGeneral.getStyle().setFont(Hand.fontGeneral);
-//        String gmInfo = "205 NT 2; Partner: 1st CA";  // sample
+
         String gmInfo = " ";
         String ptInfo = " ";
         String pointInfo = " ";
@@ -368,8 +350,8 @@ public class Player {
         ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
         ll.setReferenceComponentTop(this.partnerInfo, bExit, 1f);
 
-        for (PlayerInfo info : infoLst) {
-            info.addItems(tablePane);
+        for (PlayerInfo pp : infoLst) {
+            pp.addItems(tablePane);
         }
 
         PlayerInfo pp = this.playerMap.get(actionSeat);
@@ -433,7 +415,7 @@ public class Player {
                 if (point1 == 0) {
                     pp.contractor.setText("");
                 } else {
-                    pp.contractor.setText(point1 + "分");
+                    pp.contractor.setText(point1 + "");
                 }
             }
 
@@ -488,19 +470,73 @@ public class Player {
         return obj.toString().trim();
     }
     
+    private void gameSummary(Map<String, Object> data) {
+        int points = parseInteger(data.get("pt0"));
+        if (points != -1) {
+            this.pointsInfo.setText(points + "分");
+        }
+        final String summary = trimmedString(data.get("summary"));
+        int seat = parseInteger(data.get("seat"));  // the contractor
+        for (PlayerInfo pp : this.infoLst) {
+            pp.cards.clear();
+            if (pp.seat == seat) {
+                String cards = trimmedString(data.get("hole"));
+                List<Card> lst = Card.fromString(cards, this.currentTrump, this.gameRank);
+                pp.cards.addAll(lst);
+            }
+        }
+        hand.repaint();
+
+        if (!summary.isEmpty()) {
+            mainForm.setGlassPane((g, rect) -> {
+                g.setColor(INFO_COLOR);
+                int x = 200;
+                int y = 200;
+                int idx = -1;
+                String str = summary;
+                while (!str.isEmpty()) {
+                    idx = str.indexOf("\n");
+                    if (idx >= 0) {
+                        g.drawString(str.substring(0, idx), x, y);
+                    } else {
+                        g.drawString(str, x, y);
+                        break;
+                    }
+                    y += Hand.fontGeneral.getHeight();
+                    str = str.substring(idx + 1);
+                }
+            });
+        }
+    }
+
     private void playCards(Map<String, Object> data) {
         int seat = parseInteger(data.get("seat"));
         int actionSeat = parseInteger(data.get("next"));
-        
+        int points = parseInteger(data.get("pt0")); // total points by non-contract players
+        if (points != -1) {
+            this.pointsInfo.setText(points + "分");
+        }
+
+        int pointSeat = parseInteger(data.get("pseat"));
+        if (pointSeat > 0) {
+            PlayerInfo pp = this.playerMap.get(pointSeat);
+            if (pp != null && !pp.isContractSide) {
+                int point = parseInteger(data.get("pt")); // points earned by player itself
+                if (point != -1) {
+                    if (point == 0) {
+                        pp.contractor.setText("");
+                    } else {
+                        pp.contractor.setText(point + "");
+                    }
+                }
+            }
+        }
+
         if(seat > 0) {
             String cards = trimmedString(data.get("cards"));
             PlayerInfo pp = this.playerMap.get(seat);
             if (pp != null) {
                 displayCards(pp, cards);
-                int points = parseInteger(data.get("pt0")); // total points by non-contract players
-                if (points != -1) {
-                    this.pointsInfo.setText(points + "分");
-                }
 
                 boolean isPartner = parseBoolean(data.get("isPartner"));
                 if (isPartner) {
@@ -516,7 +552,7 @@ public class Player {
                         if (point1 == 0) {
                             pp.contractor.setText("");
                         } else {
-                            pp.contractor.setText(point1 + "分");
+                            pp.contractor.setText(point1 + "");
                         }
                     }
                 }
@@ -626,6 +662,7 @@ public class Player {
                 String subMsg = msg.substring(0, idx);
                 msg = msg.substring(idx + 1);
                 idx = msg.indexOf("\n");
+                if (subMsg.trim().isEmpty()) continue;
                 Map<String, Object> data = parser.parseJSON(new StringReader(subMsg));
                 final String action = data.get("action").toString();
 
@@ -651,6 +688,13 @@ public class Player {
                     case "play":
                         playCards(data);
                         break;
+                    case "gameover":
+                        try {
+                            Thread.sleep(2000);
+                        } catch (Exception e) {
+                        }
+                        gameSummary(data);
+                        break;
                 }
             }
         }
@@ -658,16 +702,23 @@ public class Player {
         @Override
         public void connectionError(int errorCode, String message) {
 //            if (isConnected()) closeRequested = true;
-            main.enableButtons();
-            Dialog.show("Error", message, "OK", "");
+//            main.enableButtons();
+            main.onConnectionError();
+            mySocket = null;    // reset connection
+//            Dialog.show("Error", message, "OK", "");
             if (tableOn) {
                 cancelTimers();
-//                tablePane.removeAll();
+                try {
+                    //                tablePane.removeAll();
 //                mainForm.setGlassPane(null);
 ////                mainForm.getContentPane().setVisible(true);
 //                mainForm.repaint();
+                    Thread.sleep(10000);
+                } catch (InterruptedException ex) {
+
+                }
+                connectServer();
             }
-            mySocket = null;    // reset connection
         }
 
         @Override
@@ -707,8 +758,8 @@ public class Player {
                 os.close();
                 is.close();
             } catch (Exception err) {
-                err.printStackTrace();
-                Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
+//                err.printStackTrace();
+//                Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
             }
 
             if (!closeRequested) {
@@ -782,7 +833,7 @@ public class Player {
             this.location = loc;
             this.seat = seat;
             this.rank = rank;
-            String info = "#" + seat + "," + rankToString(rank);
+            String info = "#" + seat + "," + Card.rankToString(rank);
             mainInfo = new Label(info);
             userHelp = new UserHelp();
 
@@ -1042,7 +1093,7 @@ public class Player {
                     RadioButton rb4 = new RadioButton("4th");
                     ButtonGroup btnGroup = new ButtonGroup(rb1,rb2,rb3,rb4);
                     actionButtons.addAll(rb1,rb2,rb3,rb4);
-                    String rnk = rankToString(playerRank);
+                    String rnk = Card.rankToString(playerRank);
                     rnk = rnk.equals("A") ? "K" : "A";
                     addCardButton(Card.SPADE, rnk, btnGroup);
                     addCardButton(Card.HEART, rnk, btnGroup);
