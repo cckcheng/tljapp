@@ -475,16 +475,36 @@ public class Player {
         if (points != -1) {
             this.pointsInfo.setText(points + "分");
         }
-        String summary = trimmedString(data.get("summary"));
+        final String summary = trimmedString(data.get("summary"));
         int seat = parseInteger(data.get("seat"));  // the contractor
-        PlayerInfo pp = this.playerMap.get(seat);
-        if (pp != null) {
-            String cards = trimmedString(data.get("hole"));
-            displayCards(pp, cards);
+        for (PlayerInfo pp : this.infoLst) {
+            pp.cards.clear();
+            if (pp.seat == seat) {
+                String cards = trimmedString(data.get("hole"));
+                List<Card> lst = Card.fromString(cards, this.currentTrump, this.gameRank);
+                pp.cards.addAll(lst);
+            }
         }
+        hand.repaint();
+
         if (!summary.isEmpty()) {
             mainForm.setGlassPane((g, rect) -> {
-                g.drawString(summary, 200, 200);
+                g.setColor(INFO_COLOR);
+                int x = 200;
+                int y = 200;
+                int idx = -1;
+                String str = summary;
+                while (!str.isEmpty()) {
+                    idx = str.indexOf("\n");
+                    if (idx >= 0) {
+                        g.drawString(str.substring(0, idx), x, y);
+                    } else {
+                        g.drawString(str, x, y);
+                        break;
+                    }
+                    y += Hand.fontGeneral.getHeight();
+                    str = str.substring(idx + 1);
+                }
             });
         }
     }
