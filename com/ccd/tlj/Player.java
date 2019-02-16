@@ -235,7 +235,10 @@ public class Player {
         int game = parseInteger(data.get("game"));
         int defaultTimeout = parseInteger(data.get("timeout"));
         if (defaultTimeout > 0) this.timeout = defaultTimeout;
+
         this.hand = new Hand(this);
+        candidateTrumps.clear();
+        this.addCards(data);
 
         PlayerInfo p0 = new PlayerInfo("bottom", currentSeat, playerRank);
         this.infoLst.add(p0);
@@ -245,9 +248,6 @@ public class Player {
 
         String info = trimmedString(data.get("info"));
         if (info.isEmpty()) {
-            candidateTrumps.clear();
-            this.addCards(data);
-
             this.gameRank = parseInteger(data.get("gameRank"));
             this.contractPoint = parseInteger(data.get("contract"));
 
@@ -470,6 +470,25 @@ public class Player {
         return obj.toString().trim();
     }
     
+    private void gameSummary(Map<String, Object> data) {
+        int points = parseInteger(data.get("pt0"));
+        if (points != -1) {
+            this.pointsInfo.setText(points + "分");
+        }
+        String summary = trimmedString(data.get("summary"));
+        int seat = parseInteger(data.get("seat"));  // the contractor
+        PlayerInfo pp = this.playerMap.get(seat);
+        if (pp != null) {
+            String cards = trimmedString(data.get("hole"));
+            displayCards(pp, cards);
+        }
+        if (!summary.isEmpty()) {
+            mainForm.setGlassPane((g, rect) -> {
+                g.drawString(summary, 200, 200);
+            });
+        }
+    }
+
     private void playCards(Map<String, Object> data) {
         int seat = parseInteger(data.get("seat"));
         int actionSeat = parseInteger(data.get("next"));
@@ -648,6 +667,13 @@ public class Player {
                         break;
                     case "play":
                         playCards(data);
+                        break;
+                    case "gameover":
+                        try {
+                            Thread.sleep(2000);
+                        } catch (Exception e) {
+                        }
+                        gameSummary(data);
                         break;
                 }
             }
