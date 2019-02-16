@@ -19,6 +19,7 @@ public class Hand extends Component {
     static final int TOTAL_SUITES = 4;
     static final int MAX_CARDS = 28; // maximum cards per line to display
 
+    private boolean isReady = false;
     private List<Card> trumps = new ArrayList<>();
     private List<Card> spades = new ArrayList<>();
     private List<Card> hearts = new ArrayList<>();
@@ -31,8 +32,9 @@ public class Hand extends Component {
     private List<Card> upperList = new ArrayList<>();
     private List<Card> lowerList = new ArrayList<>();
     private List<Card> selected = new ArrayList<>();
-    
+
     private final Player player;
+    public final Object lock = new Object();
 
     int maxWidth = 1900;
     int xPitch = 60;
@@ -57,7 +59,7 @@ public class Hand extends Component {
         suiteIndex.add(Card.HEART);
         suiteIndex.add(Card.CLUB);
         suiteIndex.add(Card.DIAMOND);
-        
+
         this.player = player;
     }
 
@@ -76,7 +78,11 @@ public class Hand extends Component {
         // this is no effect!!
         this.cancelRepaints();
     }
-    
+
+    public void setIsReady(boolean isReady) {
+        this.isReady = isReady;
+    }
+
     private void init() {
         int w = getWidth();
         int h = getHeight();
@@ -226,83 +232,94 @@ public class Hand extends Component {
         }
     }
 
-    synchronized public List<Card> getSelectedCards() {
-        return this.selected;
+    public List<Card> getSelectedCards() {
+        synchronized (lock) {
+            return this.selected;
+        }
     }
 
-    synchronized public void removeCards(List<Card> cards) {
-        for (Card c : cards) {
-            this.removeCard(c);
-        }
-        this.selected.clear();
-        this.repaint();
-    }
-
-    synchronized public void removeCards(String cards) {
-        if (cards == null || cards.isEmpty()) return;
-        int x = cards.indexOf(',');
-        while (x > 0) {
-            findAndRemove(cards.substring(0, x));
-            cards = cards.substring(x + 1);
-            x = cards.indexOf(',');
-        }
-        if (!cards.isEmpty()) {
-            findAndRemove(cards);
+    public void removeCards(List<Card> cards) {
+        synchronized (lock) {
+            for (Card c : cards) {
+                this.removeCard(c);
+            }
             this.selected.clear();
         }
         this.repaint();
     }
 
-    synchronized public void sortCards(char trumpSuite, int gameRank, boolean doPreSort) {
+    public void removeCards(String cards) {
+        synchronized (lock) {
+            if (cards == null || cards.isEmpty()) {
+                return;
+            }
+            int x = cards.indexOf(',');
+            while (x > 0) {
+                findAndRemove(cards.substring(0, x));
+                cards = cards.substring(x + 1);
+                x = cards.indexOf(',');
+            }
+            if (!cards.isEmpty()) {
+                findAndRemove(cards);
+                this.selected.clear();
+            }
+        }
+        this.repaint();
+    }
+
+    public void sortCards(char trumpSuite, int gameRank, boolean doPreSort) {
         Log.p("sortCards");
-        this.upperList.clear();
-        this.lowerList.clear();
-        if (doPreSort) {
-            int idx = -1;
-            for (int x = 0; x < this.trumps.size(); x++) {
-                Card c = this.trumps.get(x);
-                if (c.suite != Card.JOKER) {
-                    idx = x;
-                    break;
+        synchronized (lock) {
+            this.upperList.clear();
+            this.lowerList.clear();
+            if (doPreSort) {
+                int idx = -1;
+                for (int x = 0; x < this.trumps.size(); x++) {
+                    Card c = this.trumps.get(x);
+                    if (c.suite != Card.JOKER) {
+                        idx = x;
+                        break;
+                    }
                 }
-            }
-            if (idx >= 0) {
-                List<Card> subLst = this.trumps.subList(idx, this.trumps.size());
-                this.trumps = this.trumps.subList(0, idx);
-                for (Card c : subLst) {
-                    this.suites.get(this.suiteIndex.indexOf(c.suite)).add(c);
+                if (idx >= 0) {
+                    List<Card> subLst = this.trumps.subList(idx, this.trumps.size());
+                    this.trumps = this.trumps.subList(0, idx);
+                    for (Card c : subLst) {
+                        this.suites.get(this.suiteIndex.indexOf(c.suite)).add(c);
+                    }
                 }
+
+                Collections.sort(this.trumps, Collections.reverseOrder());
+                Collections.sort(this.spades, Collections.reverseOrder());
+                Collections.sort(this.hearts, Collections.reverseOrder());
+                Collections.sort(this.diamonds, Collections.reverseOrder());
+                Collections.sort(this.clubs, Collections.reverseOrder());
             }
 
-            Collections.sort(this.trumps, Collections.reverseOrder());
-            Collections.sort(this.spades, Collections.reverseOrder());
-            Collections.sort(this.hearts, Collections.reverseOrder());
-            Collections.sort(this.diamonds, Collections.reverseOrder());
-            Collections.sort(this.clubs, Collections.reverseOrder());
-        }
+            if (gameRank == 0) {
+                splitSuites(trumpSuite);
+                return;
+            }
 
-        if (gameRank == 0) {
+            int idx0 = 0;
+            if (trumpSuite != Card.JOKER) {
+                idx0 = this.suiteIndex.indexOf(trumpSuite);
+            }
+
+            for (int count = TOTAL_SUITES, idx = idx0; count > 0; count--, idx++) {
+                if (idx == TOTAL_SUITES) {
+                    idx = 0;
+                }
+                moveTrumpCards(this.suites.get(idx), gameRank);
+            }
+
+            if (trumpSuite != Card.JOKER) {
+                List<Card> tmpCards = this.suites.get(idx0);
+                this.trumps.addAll(tmpCards);
+                tmpCards.clear();
+            }
             splitSuites(trumpSuite);
-            return;
         }
-
-        int idx0 = 0;
-        if (trumpSuite != Card.JOKER) {
-            idx0 = this.suiteIndex.indexOf(trumpSuite);
-        }
-
-        for (int count = TOTAL_SUITES, idx = idx0; count > 0; count--, idx++) {
-            if (idx == TOTAL_SUITES) idx = 0;
-            moveTrumpCards(this.suites.get(idx), gameRank);
-        }
-
-        if (trumpSuite != Card.JOKER) {
-            List<Card> tmpCards = this.suites.get(idx0);
-            this.trumps.addAll(tmpCards);
-            tmpCards.clear();
-        }
-        splitSuites(trumpSuite);
-        
         this.repaint();
     }
 
@@ -512,63 +529,74 @@ public class Hand extends Component {
 */
 
     @Override
-    synchronized public void paintBackground(Graphics g) {
+    public void paintBackground(Graphics g) {
+        if (!this.isReady) {
+            return;
+        }
+        synchronized (lock) {
 //        Log.p(this.upperList.size() + ":" + this.lowerList.size());
-        g.translate(-g.getTranslateX(), -g.getTranslateY());
+            g.translate(-g.getTranslateX(), -g.getTranslateY());
 //        g.clearRect(0, 0, getWidth(), getY() + getHeight());
-        init();
+            init();
 
-        g.setColor(TuoLaJi.BACKGROUND_COLOR);
-        int x = getX();
-        int y0 = getY() + getHeight() - hReserved - cardHeight;
-        int y1 = y0 - cardHeight * 5 / 6;
+            g.setColor(TuoLaJi.BACKGROUND_COLOR);
+            int x = getX();
+            int y0 = getY() + getHeight() - hReserved - cardHeight;
+            int y1 = y0 - cardHeight * 5 / 6;
 
-        g.fillRect(0, 0, getX() + getWidth(), getY() + getHeight());
+            g.fillRect(0, 0, getX() + getWidth(), getY() + getHeight());
 
-        g.translate(x, y1);
-        int px = this.xPitch;
-        if (this.upperList.size() > MAX_CARDS) px = this.maxWidth / this.upperList.size();
-        for (Card c : this.upperList) {
-            drawCard(g, c, cardWidth, cardHeight, true);
-            g.translate(px, 0);
-        }
-        g.translate(-g.getTranslateX(), -g.getTranslateY());
+            g.translate(x, y1);
+            int px = this.xPitch;
+            if (this.upperList.size() > MAX_CARDS) {
+                px = this.maxWidth / this.upperList.size();
+            }
+            for (Card c : this.upperList) {
+                drawCard(g, c, cardWidth, cardHeight, true);
+                g.translate(px, 0);
+            }
+            g.translate(-g.getTranslateX(), -g.getTranslateY());
 
-        g.translate(x, y0);
-        px = this.xPitch;
-        if (this.lowerList.size() > MAX_CARDS) px = this.maxWidth / this.lowerList.size();
-        for (Card c : this.lowerList) {
-            drawCard(g, c, cardWidth, cardHeight, true);
-            g.translate(px, 0);
-        }
-        g.translate(-g.getTranslateX(), -g.getTranslateY());
+            g.translate(x, y0);
+            px = this.xPitch;
+            if (this.lowerList.size() > MAX_CARDS) {
+                px = this.maxWidth / this.lowerList.size();
+            }
+            for (Card c : this.lowerList) {
+                drawCard(g, c, cardWidth, cardHeight, true);
+                g.translate(px, 0);
+            }
+            g.translate(-g.getTranslateX(), -g.getTranslateY());
 
-        if (this.player.isPlaying) {
-            for (Player.PlayerInfo pp : this.player.infoLst) {
-                if (pp.cards == null) continue;
-                int dWidth = displayWidth(pp.cards.size());
-                int yp = pp.posY();
-                switch (pp.location) {
-                    case "top":
-                        g.translate((this.maxWidth - dWidth) / 2, yp);
-                        break;
-                    case "bottom":
-                        g.translate((this.maxWidth - dWidth) / 2, y1 - cardHeight - 10);
-                        break;
-                    case "left up":
-                    case "left down":
-                        g.translate(x, yp);
-                        break;
-                    case "right up":
-                    case "right down":
-                        g.translate(getX() + getWidth() - dWidth - 10, yp);
-                        break;
+            if (this.player.isPlaying) {
+                for (Player.PlayerInfo pp : this.player.infoLst) {
+                    if (pp.cards == null) {
+                        continue;
+                    }
+                    int dWidth = displayWidth(pp.cards.size());
+                    int yp = pp.posY();
+                    switch (pp.location) {
+                        case "top":
+                            g.translate((this.maxWidth - dWidth) / 2, yp);
+                            break;
+                        case "bottom":
+                            g.translate((this.maxWidth - dWidth) / 2, y1 - cardHeight - 10);
+                            break;
+                        case "left up":
+                        case "left down":
+                            g.translate(x, yp);
+                            break;
+                        case "right up":
+                        case "right down":
+                            g.translate(getX() + getWidth() - dWidth - 10, yp);
+                            break;
+                    }
+                    for (Card c : pp.cards) {
+                        drawCard(g, c, sCardWidth, sCardHeight, false);
+                        g.translate(this.sPitch, 0);
+                    }
+                    g.translate(-g.getTranslateX(), -g.getTranslateY());
                 }
-                for (Card c : pp.cards) {
-                    drawCard(g, c, sCardWidth, sCardHeight, false);
-                    g.translate(this.sPitch, 0);
-                }
-                g.translate(-g.getTranslateX(), -g.getTranslateY());
             }
         }
     }
@@ -656,7 +684,7 @@ public class Hand extends Component {
         this.startX = x;
         this.startY = y;
     }
-    
+
     @Override
     public void pointerReleased(int x, int y) {
         if (this.startX < 0) return;
