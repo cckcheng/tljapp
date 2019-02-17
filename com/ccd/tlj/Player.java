@@ -83,7 +83,8 @@ public class Player {
         }
 
         this.mySocket = new MySocket();
-        mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId + "\"");
+        mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId
+                + "\",\"name\":\"" + this.playerName + "\"");
         Socket.connect(Card.TLJ_HOST, Card.TLJ_PORT, mySocket);
     }
 
@@ -516,8 +517,8 @@ public class Player {
             mainForm.setGlassPane((g, rect) -> {
                 g.setColor(INFO_COLOR);
                 g.setFont(Hand.fontGeneral);
-                int x = 200;
-                int y = 200;
+                int x = 300;
+                int y = 160;
                 int idx = -1;
                 String str = summary;
                 while (!str.isEmpty()) {
@@ -696,6 +697,9 @@ public class Player {
 
                 switch (action) {
                     case "init":
+                        if (hand != null) {
+                            hand.setIsReady(false);
+                        }
                         showTable(data);
                         break;
                     case "bid":
