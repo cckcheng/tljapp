@@ -226,6 +226,7 @@ public class Player {
         tablePane.setLayout(new LayeredLayout());
         if (this.tableOn) {
             tablePane.removeAll();
+            mainForm.setGlassPane(null);
         }
 
         infoLst.clear();
