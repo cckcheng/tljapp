@@ -351,7 +351,7 @@ public class Player {
                 } else {
                     gmInfo += Card.suiteSign(trumpSuite);
                 }
-                gmInfo += gameRank;
+                gmInfo += Card.rankToString(gameRank);
             }
             ptInfo = this.partnerDef(trimmedString(data.get("def")));
             int points = parseInteger(data.get("pt0"));
@@ -635,7 +635,7 @@ public class Player {
         } else {
             gmInfo += Card.suiteSign(currentTrump);
         }
-        gmInfo += gameRank;
+        gmInfo += Card.rankToString(gameRank);
         this.gameInfo.setText(gmInfo);
         this.isPlaying = true;
     }
@@ -849,7 +849,7 @@ public class Player {
             this.location = loc;
             this.seat = seat;
             this.rank = rank;
-            String info = "#" + seat + "," + Card.rankToString(rank);
+            String info = "#" + seat + "," + Card.rankToString(rank, "R");
             mainInfo = new Label(info);
             userHelp = new UserHelp();
 
