@@ -84,7 +84,8 @@ public class Player {
 
         this.mySocket = new MySocket();
         mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId
-                + "\",\"name\":\"" + this.playerName + "\"");
+                + "\",\"name\":\"" + this.playerName + "\""
+                + ",\"ver\":\"" + main.version + "\"");
         Socket.connect(Card.TLJ_HOST, Card.TLJ_PORT, mySocket);
     }
 
@@ -221,7 +222,7 @@ public class Player {
 
     private void showTable(Map<String, Object> data) {
 //        mainForm.getContentPane().setVisible(false);
-        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: 01");
+        if (Card.DEBUG_MODE) Log.p("Show table: 01");
         tablePane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
         tablePane.setLayout(new LayeredLayout());
         if (this.tableOn) {
@@ -231,7 +232,7 @@ public class Player {
 
         infoLst.clear();
 
-        if (TuoLaJi.DEBUG_MODE) {
+        if (Card.DEBUG_MODE) {
             Log.p("Show table: 02");
         }
         String stage = trimmedString(data.get("stage"));
@@ -242,18 +243,18 @@ public class Player {
         int game = parseInteger(data.get("game"));
         int defaultTimeout = parseInteger(data.get("timeout"));
         if (defaultTimeout > 0) this.timeout = defaultTimeout;
-        if (TuoLaJi.DEBUG_MODE) {
+        if (Card.DEBUG_MODE) {
             Log.p("Show table: 03");
         }
 
         this.hand = new Hand(this);
         candidateTrumps.clear();
-        if (TuoLaJi.DEBUG_MODE) {
+        if (Card.DEBUG_MODE) {
             Log.p("Show table: 31");
         }
         this.addCards(data);
 
-        if (TuoLaJi.DEBUG_MODE) {
+        if (Card.DEBUG_MODE) {
             Log.p("Show table: 32");
         }
 
@@ -263,12 +264,12 @@ public class Player {
         p0.setPlayerName(playerName);
         char trumpSuite = Card.JOKER;
 
-        if (TuoLaJi.DEBUG_MODE) {
+        if (Card.DEBUG_MODE) {
             Log.p("Show table: 04");
         }
         String info = trimmedString(data.get("info"));
         if (info.isEmpty()) {
-            if (TuoLaJi.DEBUG_MODE) {
+            if (Card.DEBUG_MODE) {
                 Log.p("Show table: 05");
             }
             this.gameRank = parseInteger(data.get("gameRank"));
@@ -304,7 +305,7 @@ public class Player {
         } else {
             p0.userHelp.showInfo(info);
         }
-        if (TuoLaJi.DEBUG_MODE) {
+        if (Card.DEBUG_MODE) {
             Log.p("Show table: 06");
         }
 
@@ -414,7 +415,7 @@ public class Player {
         this.tableOn = true;
         main.enableButtons();
 
-        if (TuoLaJi.DEBUG_MODE) Log.p("Show table: done");
+        if (Card.DEBUG_MODE) Log.p("Show table: done");
     }
 
     private void cancelTimers() {
@@ -664,7 +665,7 @@ public class Player {
 
         public void closeConnection() {
             this.closeRequested = true;
-            if (TuoLaJi.DEBUG_MODE) Log.p("this.closeRequested: " + this.closeRequested);
+            if (Card.DEBUG_MODE) Log.p("this.closeRequested: " + this.closeRequested);
         }
 
         public void setCheckConnection() {
@@ -684,7 +685,7 @@ public class Player {
                 msg = confusedData(msg);
                 msg = new String(Base64.decode(msg.getBytes()));
             }
-//            if (TuoLaJi.DEBUG_MODE)
+//            if (Card.DEBUG_MODE)
                 Log.p("Received: " + msg);
             JSONParser parser = new JSONParser();
             int idx = msg.indexOf("\n");
@@ -759,11 +760,11 @@ public class Player {
             byte[] buffer = new byte[4096];
             int count = 0;
             try {
-                if (TuoLaJi.DEBUG_MODE) Log.p("connected!");
+                if (Card.DEBUG_MODE) Log.p("connected!");
                 while (isConnected() && !closeRequested) {
                     if (!pendingRequests.isEmpty()) {
                         String request = pendingRequests.remove(0);
-                        if (TuoLaJi.DEBUG_MODE) {
+                        if (Card.DEBUG_MODE) {
                             os.write(request.getBytes());
                             Log.p("send request: " + request);
                         } else {

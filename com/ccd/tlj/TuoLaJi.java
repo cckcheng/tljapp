@@ -3,8 +3,10 @@ package com.ccd.tlj;
 
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
+import com.codename1.ui.BrowserComponent;
 import com.codename1.ui.Button;
 import static com.codename1.ui.CN.*;
+import com.codename1.ui.Command;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.FontImage;
@@ -13,6 +15,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.Resources;
@@ -25,9 +28,7 @@ import com.codename1.util.StringUtil;
  */
 public class TuoLaJi {
 
-    static public boolean DEBUG_MODE = true;
-
-    static public int BACKGROUND_COLOR = DEBUG_MODE ? 0xffffff : 0x008000;
+    static public int BACKGROUND_COLOR = Card.DEBUG_MODE ? 0xffffff : 0x008000;
     private Form current;
     private Resources theme;
 
@@ -81,6 +82,9 @@ public class TuoLaJi {
         }
     }
 
+    public String version = "1.02";
+//        String title = "Bid Tractor";
+    String title = "Langley TuoLaJi";
     public void start() {
         if(current != null){
             current.show();
@@ -92,10 +96,8 @@ public class TuoLaJi {
         disp.requestFullScreen();
         disp.setNoSleep(true);
         disp.setScreenSaverEnabled(false);
+        this.version = disp.getProperty("AppVersion", this.version);
 
-//        String title = "Bid Tractor";
-        String title = "Langley TuoLaJi";
-//        String title = "";
         BoxLayout layout = BoxLayout.y();
         Form mainForm = new Form(title, layout);
         this.formMain = mainForm;
@@ -124,13 +126,14 @@ public class TuoLaJi {
             pName.setText(sObj.toString());
         }
 
+        Command okCmd = new Command("OK");
         Button bPlay = new Button("Play");
         this.btnPlay = bPlay;
         this.connTimer = new UITimer(new Runnable() {
             @Override
             public void run() {
                 if (bPlay.isEnabled()) return;
-                Dialog.show("Error", "Failed to connect, please try again later.", "OK", "");
+                Dialog.show("Error", "Failed to connect, please try again later.", okCmd);
                 bPlay.setEnabled(true);
                 bPlay.setText("Play");
             }
@@ -140,7 +143,7 @@ public class TuoLaJi {
         bPlay.addActionListener((e) -> {
             String playerName = pName.getText().trim();
             if (playerName.isEmpty()) {
-                Dialog.show("Name Required", "Please input your name", "OK", "");
+                Dialog.show("Name Required", "Please input your name", okCmd);
             } else {
                 pName.stopEditing();
                 playerName = StringUtil.replaceAll(playerName, "\"", "");
@@ -154,18 +157,15 @@ public class TuoLaJi {
             }
         });
 
+        BrowserComponent browser = new BrowserComponent();
+        browser.setURL(Card.HELP_URL);
+        Dialog helpDlg = new Dialog(BorderLayout.center());
+        helpDlg.add(BorderLayout.CENTER, browser);
+        helpDlg.setDisposeWhenPointerOutOfBounds(true);
         Button bHelp = new Button("Help");
         FontImage.setMaterialIcon(bHelp, FontImage.MATERIAL_HELP);
-//        bHelp.getStyle().setBorder(Border.createGrooveBorder(5));
-//        bHelp.getStyle().setBgTransparency(127);
-//        bHelp.getStyle().setBgColor(0x8000);
-//        bHelp.getStyle().setBackgroundType(Style.BACKGROUND_IMAGE_SCALED);
-//        bHelp.getStyle().setBackgroundType(Style.BACKGROUND_GRADIENT_LINEAR_HORIZONTAL);
         bHelp.addActionListener((e) -> {
-//            String s = "China中国";
-//            String d = Base64.encode(s.getBytes());
-//            Dialog.show("Help", s + "|" + d + ":" + (new String(Base64.decode(d.getBytes()))), "OK", "");
-            Dialog.show("Help", "To Be Available", "OK", "");
+            helpDlg.show(0, 0, 100, 100);
         });
 
         Button bExit = new Button("Exit");
@@ -176,9 +176,17 @@ public class TuoLaJi {
             }
             Display.getInstance().exitApplication();
         });
-        mainForm.add(pName)
-                .add(bPlay)
+
+        Button bAbout = new Button("About");
+        FontImage.setMaterialIcon(bAbout, FontImage.MATERIAL_INFO_OUTLINE);
+        bAbout.addActionListener((e) -> {
+            Dialog.show("About", this.title + "\nVersion " + this.version, okCmd);
+        });
+
+        mainForm.add(pName);
+        mainForm.add(bPlay)
                 .add(bHelp)
+                .add(bAbout)
                 .add(bExit);
 
         mainForm.show();
