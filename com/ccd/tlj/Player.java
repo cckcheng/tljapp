@@ -648,14 +648,6 @@ public class Player {
         return p;
     }
 
-    public static String confusedData(String data) {
-        data = data.replace('j', '#');
-        data = data.replace('L', 'j');
-        data = data.replace('T', 'L');
-        data = data.replace('#', 'T');
-        return data;
-    }
-
     static int serverWaitCycle = 10; // 10 times
     class MySocket extends SocketConnection {
 
@@ -682,7 +674,7 @@ public class Player {
 
         private void processReceived(String msg) throws IOException {
             if(!msg.startsWith("{")) {
-                msg = confusedData(msg);
+                msg = Card.confusedData(msg);
                 msg = new String(Base64.decode(msg.getBytes()));
             }
 //            if (Card.DEBUG_MODE)
@@ -769,7 +761,7 @@ public class Player {
                             Log.p("send request: " + request);
                         } else {
                             request = Base64.encode(request.getBytes());
-                            os.write(confusedData(request).getBytes());
+                            os.write(Card.confusedData(request).getBytes());
                         }
                         checkConnection = true;
                     }

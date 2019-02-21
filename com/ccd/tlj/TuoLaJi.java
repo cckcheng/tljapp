@@ -1,9 +1,9 @@
 package com.ccd.tlj;
 
 
+import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
-import com.codename1.ui.BrowserComponent;
 import com.codename1.ui.Button;
 import static com.codename1.ui.CN.*;
 import com.codename1.ui.Command;
@@ -157,10 +157,13 @@ public class TuoLaJi {
             }
         });
 
-        BrowserComponent browser = new BrowserComponent();
-        browser.setURL(Card.HELP_URL);
+//        BrowserComponent browser = new BrowserComponent();    // not work
+//        WebBrowser browser = new WebBrowser();    // not work
+//        browser.setURL(Card.HELP_URL);
+        SpanLabel helpContent = new SpanLabel();
+        helpContent.setText("TuoLaJi is a very popular Chinese card game.\nMore help\nmorehelp");
         Dialog helpDlg = new Dialog(BorderLayout.center());
-        helpDlg.add(BorderLayout.CENTER, browser);
+        helpDlg.add(BorderLayout.CENTER, helpContent);
         helpDlg.setDisposeWhenPointerOutOfBounds(true);
         Button bHelp = new Button("Help");
         FontImage.setMaterialIcon(bHelp, FontImage.MATERIAL_HELP);
