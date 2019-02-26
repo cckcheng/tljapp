@@ -8,6 +8,7 @@ import com.codename1.ui.Button;
 import com.codename1.ui.ButtonGroup;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
+import com.codename1.ui.Display;
 import com.codename1.ui.DynamicImage;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
@@ -1072,6 +1073,10 @@ public class Player {
             countDownTimer.schedule(950, true, mainForm);   // slightly less to 1 sec
 
             if (this.location.equals("bottom")) {
+                if (Display.getInstance().isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM)) {
+                    Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
+                }
+
                 if (act.equals("dim")) {
                     actionButtons.removeAll();
                     userHelp.showHelp(userHelp.SET_TRUMP);

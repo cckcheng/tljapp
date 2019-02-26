@@ -96,6 +96,7 @@ public class TuoLaJi {
         disp.requestFullScreen();
         disp.setNoSleep(true);
         disp.setScreenSaverEnabled(false);
+        disp.setBuiltinSoundsEnabled(true);
         this.version = disp.getProperty("AppVersion", this.version);
 
         BoxLayout layout = BoxLayout.y();
@@ -114,7 +115,7 @@ public class TuoLaJi {
         lbTitle.getStyle().setFont(Hand.fontRank);
         mainForm.add(lbTitle);
 
-        String playerId = getPlayerID();
+        String playerId = getPlayerID(disp);
         if (playerId == null) {
             Dialog.show("Error", "Failed to generate Player ID", "OK", "");
             return;
@@ -183,6 +184,8 @@ public class TuoLaJi {
         Button bAbout = new Button("About");
         FontImage.setMaterialIcon(bAbout, FontImage.MATERIAL_INFO_OUTLINE);
         bAbout.addActionListener((e) -> {
+            disp.vibrate(2);
+            disp.playBuiltinSound(Display.SOUND_TYPE_WARNING);
             Dialog.show("About", this.title + "\nVersion " + this.version, okCmd);
         });
 
@@ -195,9 +198,17 @@ public class TuoLaJi {
         mainForm.show();
     }
 
-    private String getPlayerID() {
+    private String getPlayerID(Display disp) {
         String playerId = null;
         try {
+//        List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+// WifiManager wimanager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+//    String macAddress = wimanager.getConnectionInfo().getMacAddress();
+            String msisdn = disp.getMsisdn();
+            if (msisdn != null) return msisdn;
+            String udid = disp.getUdid();
+            if (udid != null) return udid;
+
             Storage storage = Storage.getInstance();
             Object pId = storage.readObject("playerId");
             if (pId == null || !pId.toString().startsWith("TLJ")) {
