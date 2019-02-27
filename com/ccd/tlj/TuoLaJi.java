@@ -174,6 +174,8 @@ public class TuoLaJi {
         SpanLabel helpContent = new SpanLabel();
         helpContent.setTextBlockAlign(Component.LEFT);
         helpContent.setText(onlineHelp);
+        helpContent.setScrollableY(true);
+        helpContent.setScrollVisible(true);
 //        helpContent.setText("TuoLaJi is a very popular Chinese card game.\nMore help\nmorehelp");
         Dialog helpDlg = new Dialog(BorderLayout.center());
 //        helpDlg.add(BorderLayout.CENTER, browser);
@@ -188,6 +190,7 @@ public class TuoLaJi {
         Button bExit = new Button("Exit");
         FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
         bExit.addActionListener((e) -> {
+            disp.playBuiltinSound(Display.SOUND_TYPE_ALARM);
             if (this.player != null) {
                 player.disconnect();
             }
@@ -197,7 +200,7 @@ public class TuoLaJi {
         Button bAbout = new Button("About");
         FontImage.setMaterialIcon(bAbout, FontImage.MATERIAL_INFO_OUTLINE);
         bAbout.addActionListener((e) -> {
-            disp.vibrate(2);
+            disp.vibrate(1000);
             disp.playBuiltinSound(Display.SOUND_TYPE_WARNING);
             Dialog.show("About", this.title + "\nVersion " + this.version, okCmd);
         });
@@ -217,10 +220,14 @@ public class TuoLaJi {
 //        List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
 // WifiManager wimanager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 //    String macAddress = wimanager.getConnectionInfo().getMacAddress();
-            String msisdn = disp.getMsisdn();
-            if (msisdn != null) return msisdn;
             String udid = disp.getUdid();
-            if (udid != null) return udid;
+            if (udid != null && !udid.trim().isEmpty()) {
+                return udid.trim();
+            }
+            String msisdn = disp.getMsisdn();
+            if (msisdn != null && !msisdn.trim().isEmpty()) {
+                return msisdn.trim();
+            }
 
             Storage storage = Storage.getInstance();
             Object pId = storage.readObject("playerId");
