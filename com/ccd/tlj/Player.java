@@ -57,6 +57,12 @@ public class Player {
     private final Form mainForm;
     private final TuoLaJi main;
 
+    public Player(String playerId, TuoLaJi main) {
+        this.playerId = playerId;
+        this.mainForm = main.formMain;
+        this.main = main;
+    }
+
     public Player(String playerId, String playerName, TuoLaJi main) {
         this.playerId = playerId;
         this.playerName = playerName;
@@ -84,10 +90,16 @@ public class Player {
         }
 
         this.mySocket = new MySocket();
+        Socket.connect(Card.TLJ_HOST, Card.TLJ_PORT, mySocket);
+    }
+
+    public void startPlay(String playerName) {
+        Log.p(playerName);
+        if (this.mySocket == null) return;
+        this.playerName = playerName;
         mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId
                 + "\",\"name\":\"" + this.playerName + "\""
                 + ",\"ver\":\"" + main.version + "\"");
-        Socket.connect(Card.TLJ_HOST, Card.TLJ_PORT, mySocket);
     }
 
     public void disconnect() {
@@ -419,6 +431,59 @@ public class Player {
         if (Card.DEBUG_MODE) Log.p("Show table: done");
     }
 
+    public void createTable(Container table) {
+        this.hand = new Hand(this);
+
+        PlayerInfo p0 = new PlayerInfo("bottom");
+        this.infoLst.add(p0);
+        this.infoLst.add(new PlayerInfo("right down"));
+        this.infoLst.add(new PlayerInfo("right up"));
+        this.infoLst.add(new PlayerInfo("top"));
+        this.infoLst.add(new PlayerInfo("left up"));
+        this.infoLst.add(new PlayerInfo("left down"));
+
+        Button bExit = new Button("Exit");
+        FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
+        bExit.setUIID("myExit");
+        bExit.addActionListener((e) -> {
+            cancelTimers();
+            this.main.switchScene("entry");
+        });
+
+        Label lbGeneral = new Label("Game ");
+        lbGeneral.getStyle().setFont(Hand.fontGeneral);
+
+        String gmInfo = " ";
+        String ptInfo = " ";
+        String pointInfo = " ";
+
+        this.gameInfo = new Label(gmInfo);
+        this.gameInfo.getStyle().setFgColor(0xebef07);
+        this.gameInfo.getStyle().setFont(Hand.fontRank);
+        this.partnerInfo = new Label(ptInfo);
+        this.partnerInfo.getStyle().setFgColor(INFO_COLOR);
+        this.partnerInfo.getStyle().setFont(Hand.fontGeneral);
+
+        this.pointsInfo = new Label(pointInfo);
+        this.pointsInfo.getStyle().setFgColor(POINT_COLOR);
+        this.pointsInfo.getStyle().setFont(Hand.fontRank);
+
+        table.add(hand);
+        table.add(bExit).add(lbGeneral).add(this.gameInfo).add(this.partnerInfo).add(this.pointsInfo);
+        LayeredLayout ll = (LayeredLayout) table.getLayout();
+        ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
+        ll.setInsets(lbGeneral, "0 auto auto 0")
+                .setInsets(this.partnerInfo, "0 0 auto auto")
+                .setInsets(this.pointsInfo, "0 auto auto 25%")
+                .setInsets(this.gameInfo, "0 auto auto 0");
+        ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
+        ll.setReferenceComponentTop(this.partnerInfo, bExit, 1f);
+
+        for (PlayerInfo pp : infoLst) {
+            pp.addItems(table);
+        }
+    }
+
     private void cancelTimers() {
         for (PlayerInfo pp : infoLst) {
             pp.cancelTimer();
@@ -695,7 +760,8 @@ public class Player {
                         if (hand != null) {
                             hand.setIsReady(false);
                         }
-                        showTable(data);
+//                        showTable(data);
+                        main.switchScene("table");
                         break;
                     case "bid":
                         displayBid(data);
@@ -750,6 +816,7 @@ public class Player {
 
         @Override
         public void connectionEstablished(InputStream is, OutputStream os) {
+            main.enableButtons();
             byte[] buffer = new byte[4096];
             int count = 0;
             try {
@@ -845,6 +912,103 @@ public class Player {
         int rank;
 
         boolean isContractSide = false;
+
+        PlayerInfo(String loc) {
+            this.location = loc;
+
+            String info = "#";
+            mainInfo = new Label(info);
+            userHelp = new UserHelp();
+
+            points = new Label("        ");
+            points.getAllStyles().setFont(Hand.fontRank);
+
+            contractor = new Label("     ");
+            contractor.getAllStyles().setFgColor(POINT_COLOR);
+            contractor.getAllStyles().setFont(Hand.fontRank);
+
+            timer = new Label("    ");
+            timer.getAllStyles().setFgColor(TIMER_COLOR);
+            timer.getAllStyles().setFont(Hand.fontRank);
+//            timer.setHidden(true, true);    // setHidden Does not work
+
+            if (loc.equals("bottom")) {
+                btnBid = new Button("200");
+                btnPlus = new Button("");
+                btnMinus = new Button("");
+                btnPass = new Button("Pass");
+
+                FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_ARROW_UPWARD);
+                FontImage.setMaterialIcon(btnMinus, FontImage.MATERIAL_ARROW_DOWNWARD);
+
+///
+//                btnBid.getAllStyles().setFgColor(BUTTON_COLOR);
+                btnBid.getAllStyles().setFont(Hand.fontRank);
+                btnBid.getAllStyles().setBgImage(backImage);
+                btnPass.getAllStyles().setBgImage(backImage);
+
+                btnBid.addActionListener((e) -> {
+                    actionButtons.setVisible(false);
+                    actionButtons.setEnabled(false);
+
+                    cancelTimer();
+                    mySocket.addRequest(actionBid, "\"bid\":" + btnBid.getText().trim());
+                });
+                btnPass.addActionListener((e) -> {
+                    actionButtons.setVisible(false);
+                    actionButtons.setEnabled(false);
+                    cancelTimer();
+                    mySocket.addRequest(actionBid, "\"bid\":\"pass\"");
+                });
+                btnPlus.addActionListener((e) -> {
+                    int point = parseInteger(btnBid.getText());
+                    if (point < this.maxBid) {
+                        point += 5;
+                        btnBid.setText("" + point);
+                    }
+                });
+                btnMinus.addActionListener((e) -> {
+                    int point = parseInteger(btnBid.getText());
+                    if (point > 0) {
+                        point -= 5;
+                        btnBid.setText("" + point);
+                    }
+                });
+
+                btnPlay = new Button("Play");
+                btnPlay.getAllStyles().setBgImage(backImage);
+                btnPlay.addActionListener((e) -> {
+                    String action = btnPlay.getText().toLowerCase();
+                    if (action.contains("bury")) action = "bury";
+                    else if (action.contains("play")) action = "play";
+                    List<Card> cards = hand.getSelectedCards();
+                    if (action.contains("bury") && cards.size() != 6) {
+                        userHelp.showHelp(userHelp.BURY_CARDS);
+                        return;
+                    }
+                    if (action.equals("play")) {
+                        if (!isValid(cards, userHelp)) {
+                            return;
+                        }
+                    }
+                    userHelp.clear();
+                    actionButtons.setVisible(false);
+                    actionButtons.setEnabled(false);
+                    cancelTimer();
+                    mySocket.addRequest(action, "\"cards\":\"" + Card.cardsToString(cards) + "\"");
+                });
+
+                if (isPlaying) {
+                    actionButtons = BoxLayout.encloseXNoGrow(btnPlay);
+                } else {
+                    if (candidateTrumps.isEmpty()) {
+                        actionButtons = BoxLayout.encloseXNoGrow(btnPass);
+                    } else {
+                        actionButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
+                    }
+                }
+            }
+        }
 
         PlayerInfo(String loc, int seat, int rank) {
             this.location = loc;

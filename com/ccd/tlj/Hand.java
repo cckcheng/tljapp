@@ -530,21 +530,20 @@ public class Hand extends Component {
 
     @Override
     public void paintBackground(Graphics g) {
+        g.translate(-g.getTranslateX(), -g.getTranslateY());
+        g.setColor(TuoLaJi.BACKGROUND_COLOR);
+        g.fillRect(0, 0, getX() + getWidth(), getY() + getHeight());
         if (!this.isReady) {
             return;
         }
         synchronized (lock) {
 //        Log.p(this.upperList.size() + ":" + this.lowerList.size());
-            g.translate(-g.getTranslateX(), -g.getTranslateY());
 //        g.clearRect(0, 0, getWidth(), getY() + getHeight());
             init();
 
-            g.setColor(TuoLaJi.BACKGROUND_COLOR);
             int x = getX();
             int y0 = getY() + getHeight() - hReserved - cardHeight;
             int y1 = y0 - cardHeight * 5 / 6;
-
-            g.fillRect(0, 0, getX() + getWidth(), getY() + getHeight());
 
             g.translate(x, y1);
             int px = this.xPitch;

@@ -8,21 +8,28 @@ import com.codename1.io.Log;
 import com.codename1.io.NetworkManager;
 import com.codename1.io.Storage;
 import com.codename1.io.URL;
+import com.codename1.l10n.L10NManager;
 import com.codename1.ui.Button;
+import com.codename1.ui.ButtonGroup;
 import static com.codename1.ui.CN.*;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
+import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
+import com.codename1.ui.RadioButton;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
+import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.plaf.UIManager;
+import com.codename1.ui.table.TableLayout;
 import com.codename1.ui.util.Resources;
 import com.codename1.ui.util.UITimer;
 import com.codename1.util.StringUtil;
@@ -67,40 +74,74 @@ public class TuoLaJi {
     }
 
     public Form formMain = null;
+    private Label lbTitle;
     private Button btnPlay = null;
-    private UITimer connTimer = null;
+    private Button btnHelp = null;
+    private Button btnExit = null;
+    private Button btnSetting = null;
 
     public void enableButtons() {
         if (this.btnPlay != null) {
             this.btnPlay.setEnabled(true);
-            this.btnPlay.setText("Play");
+            this.btnPlay.setText(Dict.get(lang, "Play"));
         }
-        this.connTimer.cancel();
+        if (this.btnHelp != null) {
+            this.btnHelp.setEnabled(true);
+        }
     }
 
+    public void refreshButtons() {
+        this.lbTitle.setText(Dict.get(lang, title));
+        if (this.btnPlay.isEnabled()) {
+            this.btnPlay.setText(Dict.get(lang, "Play"));
+        }
+        this.btnHelp.setText(Dict.get(lang, "Help"));
+        this.btnExit.setText(Dict.get(lang, "Exit"));
+        this.btnSetting.setText(Dict.get(lang, "Settings"));
+    }
+
+    private Player player = null;
+
     public void onConnectionError() {
+        Player p = this.player;
         if (this.btnPlay != null) {
-            this.btnPlay.setText("Network Error");
+            this.btnPlay.setText(Dict.get(lang, "Network Error"));
+            Button btn = this.btnPlay;
             new UITimer(new Runnable() {
                 @Override
                 public void run() {
-                    enableButtons();
+                    btn.setText(Dict.get(lang, "Connecting") + "...");
+                    p.connectServer();
                 }
-            }).schedule(3000, false, this.formMain);
+            }).schedule(5000, false, this.formMain);
         }
     }
 
     public String version = "1.02";
 //        String title = "Bid Tractor";
-    String title = "Langley TuoLaJi";
+    public final static String title = "Langley TuoLaJi";
+
+    private String lang = "en";
+    private Container entry;
+    private Container table;
+
     public void start() {
         if(current != null){
             current.show();
             return;
         }
 
-        String onlineHelp = getHelp();
         Display disp = Display.getInstance();
+        Object sObj = Storage.getInstance().readObject("lang");
+        if (sObj != null) {
+            this.lang = sObj.toString();
+        } else {
+            L10NManager l10n = disp.getLocalizationManager();
+            this.lang = l10n.getLanguage();
+            Storage.getInstance().writeObject("lang", this.lang);
+        }
+
+        String onlineHelp = getHelp();
         disp.lockOrientation(false);
         disp.requestFullScreen();
         disp.setNoSleep(true);
@@ -108,62 +149,60 @@ public class TuoLaJi {
         disp.setBuiltinSoundsEnabled(true);
         this.version = disp.getProperty("AppVersion", this.version);
 
-        BoxLayout layout = BoxLayout.y();
-        Form mainForm = new Form(title, layout);
+        String playerId = getPlayerID(disp);
+        if (playerId == null) {
+            Dialog.show(Dict.get(lang, "Error"), "Failed to generate Player ID", Dict.get(lang, "OK"), "");
+            disp.exitApplication();;
+        }
+
+        Form mainForm = new Form(title, new BorderLayout());
         this.formMain = mainForm;
         mainForm.getStyle().setBgColor(BACKGROUND_COLOR);
         mainForm.getToolbar().hideToolbar();
+
+        this.player = new Player(playerId, this);
+
+        this.entry = new Container(BoxLayout.yLast());
+        this.table = new Container(new LayeredLayout());
+        this.player.createTable(this.table);
+
 //        mainForm.getToolbar().addCommandToLeftSideMenu("New Game", null, (e) -> {
 //            Log.p("Start New Game");
 //        });
 
 //        Style sTitle = mainForm.getToolbar().getTitleComponent().getUnselectedStyle();
 //        sTitle.setFont(Hand.fontSymbol);
-        Label lbTitle = new Label(title);
+        lbTitle = new Label(Dict.get(lang, title));
 //        lbTitle.getStyle().setAlignment(CENTER);
         lbTitle.getStyle().setFont(Hand.fontRank);
-        mainForm.add(lbTitle);
+        entry.add(lbTitle);
 
-        String playerId = getPlayerID(disp);
-        if (playerId == null) {
-            Dialog.show("Error", "Failed to generate Player ID", "OK", "");
-            return;
-        }
-
-        TextField pName = new TextField("", "Your Name", 20, TextArea.ANY);
-        Object sObj = Storage.getInstance().readObject("playerName");
-        if (sObj != null) {
-            pName.setText(sObj.toString());
-        }
-
-        Command okCmd = new Command("OK");
-        Button bPlay = new Button("Play");
+        Button bPlay = new Button(Dict.get(lang, "Connecting") + "...");
+        bPlay.setEnabled(false);
         this.btnPlay = bPlay;
-        this.connTimer = new UITimer(new Runnable() {
-            @Override
-            public void run() {
-                if (bPlay.isEnabled()) return;
-                Dialog.show("Error", "Failed to connect, please try again later.", okCmd);
-                bPlay.setEnabled(true);
-                bPlay.setText("Play");
-            }
-        });
 
         FontImage.setMaterialIcon(bPlay, FontImage.MATERIAL_PEOPLE);
         bPlay.addActionListener((e) -> {
-            String playerName = pName.getText().trim();
-            if (playerName.isEmpty()) {
-                Dialog.show("Name Required", "Please input your name", okCmd);
+            Object sgObj = Storage.getInstance().readObject("playerName");
+            if (sgObj == null) {
+                TextField pName = new TextField("", Dict.get(lang, "Your Name"), 20, TextArea.ANY);
+                Command pNameCmd = new Command(Dict.get(lang, "OK")) {
+                    @Override
+                    public void actionPerformed(ActionEvent ev) {
+                        String playerName = pName.getText().trim();
+                        if (playerName.isEmpty()) return;
+                        pName.stopEditing();
+                        playerName = StringUtil.replaceAll(playerName, "\"", "");
+                        playerName = StringUtil.replaceAll(playerName, "\\", "");
+                        playerName = StringUtil.replaceAll(playerName, "'", "");
+                        if (playerName.isEmpty()) return;
+                        Storage.getInstance().writeObject("playerName", playerName);
+                        player.startPlay(playerName);
+                    }
+                };
+                Dialog.show(Dict.get(lang, "Player Name"), pName, pNameCmd);
             } else {
-                pName.stopEditing();
-                playerName = StringUtil.replaceAll(playerName, "\"", "");
-                playerName = StringUtil.replaceAll(playerName, "\\", "");
-                playerName = StringUtil.replaceAll(playerName, "'", "");
-                Storage.getInstance().writeObject("playerName", playerName);
-                startGame(playerId, playerName);
-                bPlay.setEnabled(false);
-                bPlay.setText("Connecting...");
-                connTimer.schedule(Player.TIME_OUT_SECONDS * 1000, false, mainForm);
+                this.player.startPlay(sgObj.toString());
             }
         });
 
@@ -174,22 +213,25 @@ public class TuoLaJi {
         SpanLabel helpContent = new SpanLabel();
         helpContent.setTextBlockAlign(Component.LEFT);
         helpContent.setText(onlineHelp);
-        helpContent.setScrollableY(true);
-        helpContent.setScrollVisible(true);
 //        helpContent.setText("TuoLaJi is a very popular Chinese card game.\nMore help\nmorehelp");
-        Dialog helpDlg = new Dialog(BorderLayout.center());
+//        Dialog helpDlg = new Dialog(BorderLayout.center());
+        Dialog helpDlg = new Dialog(BoxLayout.y());
+        helpDlg.setScrollableY(true);
+        helpDlg.setScrollableX(false);
 //        helpDlg.add(BorderLayout.CENTER, browser);
-        helpDlg.add(BorderLayout.CENTER, helpContent);
+//        helpDlg.add(BorderLayout.CENTER, helpContent);
+        helpDlg.add(helpContent);
         helpDlg.setDisposeWhenPointerOutOfBounds(true);
-        Button bHelp = new Button("Help");
-        FontImage.setMaterialIcon(bHelp, FontImage.MATERIAL_HELP);
-        bHelp.addActionListener((e) -> {
+        btnHelp = new Button(Dict.get(lang, "Help"));
+        FontImage.setMaterialIcon(btnHelp, FontImage.MATERIAL_HELP);
+        btnHelp.setEnabled(false);
+        btnHelp.addActionListener((e) -> {
             helpDlg.show(0, 0, 100, 100);
         });
 
-        Button bExit = new Button("Exit");
-        FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
-        bExit.addActionListener((e) -> {
+        btnExit = new Button(Dict.get(lang, "Exit"));
+        FontImage.setMaterialIcon(btnExit, FontImage.MATERIAL_EXIT_TO_APP);
+        btnExit.addActionListener((e) -> {
             disp.playBuiltinSound(Display.SOUND_TYPE_ALARM);
             if (this.player != null) {
                 player.disconnect();
@@ -197,21 +239,89 @@ public class TuoLaJi {
             Display.getInstance().exitApplication();
         });
 
-        Button bAbout = new Button("About");
-        FontImage.setMaterialIcon(bAbout, FontImage.MATERIAL_INFO_OUTLINE);
-        bAbout.addActionListener((e) -> {
+        btnSetting = new Button(Dict.get(lang, "Settings"));
+        FontImage.setMaterialIcon(btnSetting, FontImage.MATERIAL_SETTINGS);
+        btnSetting.addActionListener((e) -> {
             disp.vibrate(1000);
             disp.playBuiltinSound(Display.SOUND_TYPE_WARNING);
-            Dialog.show("About", this.title + "\nVersion " + this.version, okCmd);
+            TextField pName = new TextField("", Dict.get(lang, "Your Name"), 20, TextArea.ANY);
+            Object sgObj = Storage.getInstance().readObject("playerName");
+            if (sgObj != null) {
+                pName.setText(sgObj.toString());
+            }
+            Dialog settingDlg = new Dialog(Dict.get(lang, "Settings"), new BorderLayout());
+            settingDlg.add(BorderLayout.CENTER, TableLayout.encloseIn(2, true,
+                    new Label(Dict.get(lang, "Player Name")), pName,
+                    new Label(Dict.get(lang, "Version")), new Label(this.version)
+            ));
+            Command okCmd = new Command(Dict.get(lang, "OK")) {
+                @Override
+                public void actionPerformed(ActionEvent ev) {
+                    String playerName = pName.getText().trim();
+                    if (playerName.isEmpty()) {
+                        settingDlg.dispose();
+                        return;
+                    }
+                    pName.stopEditing();
+                    playerName = StringUtil.replaceAll(playerName, "\"", "");
+                    playerName = StringUtil.replaceAll(playerName, "\\", "");
+                    playerName = StringUtil.replaceAll(playerName, "'", "");
+                    if (playerName.isEmpty()) {
+                        settingDlg.dispose();
+                        return;
+                    }
+                    Storage.getInstance().writeObject("playerName", playerName);
+                    settingDlg.dispose();
+                }
+            };
+            settingDlg.add(BorderLayout.SOUTH, new Button(okCmd));
+            settingDlg.setDisposeWhenPointerOutOfBounds(true);
+            settingDlg.show(0, 0, 200, 200);
         });
 
-        mainForm.add(pName);
-        mainForm.add(bPlay)
-                .add(bHelp)
-                .add(bAbout)
-                .add(bExit);
+        RadioButton rbEn = new RadioButton("English");
+        RadioButton rbZh = new RadioButton("中文");
+        ButtonGroup btnGroup = new ButtonGroup(rbEn, rbZh);
+        btnGroup.addActionListener((e) -> {
+            if (rbEn.isSelected()) {
+                this.lang = "en";
+            } else if (rbZh.isSelected()) {
+                this.lang = "zh";
+            }
+            Storage.getInstance().writeObject("lang", this.lang);
+            refreshButtons();
+        });
+        if (lang.equalsIgnoreCase("zh")) {
+            rbZh.setSelected(true);
+        } else {
+            rbEn.setSelected(true);
+        }
 
+        entry.add(this.btnPlay)
+                .add(this.btnHelp)
+                .add(this.btnSetting)
+                .add(this.btnExit);
+        entry.add(BoxLayout.encloseXNoGrow(rbEn, rbZh));
+
+        mainForm.add(BorderLayout.CENTER, entry);
         mainForm.show();
+
+        this.player.connectServer();
+    }
+
+    public void switchScene(final String scene) {
+        this.formMain.removeAll();
+        switch (scene) {
+            case "entry":
+                this.formMain.add(BorderLayout.CENTER, this.entry);
+                break;
+            case "table":
+                this.formMain.add(BorderLayout.CENTER, this.table);
+                break;
+        }
+
+        this.formMain.setGlassPane(null);
+        this.formMain.repaint();
     }
 
     private String getPlayerID(Display disp) {
@@ -220,14 +330,16 @@ public class TuoLaJi {
 //        List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
 // WifiManager wimanager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 //    String macAddress = wimanager.getConnectionInfo().getMacAddress();
-            String udid = disp.getUdid();
-            if (udid != null && !udid.trim().isEmpty()) {
-                return udid.trim();
-            }
-            String msisdn = disp.getMsisdn();
-            if (msisdn != null && !msisdn.trim().isEmpty()) {
-                return msisdn.trim();
-            }
+
+            // skip this for now, may implement in future
+//            String udid = disp.getUdid();
+//            if (udid != null && !udid.trim().isEmpty()) {
+//                return udid.trim();
+//            }
+//            String msisdn = disp.getMsisdn();
+//            if (msisdn != null && !msisdn.trim().isEmpty()) {
+//                return msisdn.trim();
+//            }
 
             Storage storage = Storage.getInstance();
             Object pId = storage.readObject("playerId");
@@ -240,17 +352,6 @@ public class TuoLaJi {
             Dialog.show("Fail to get player ID", e.getMessage(), "OK", "");
         }
         return playerId;
-    }
-
-    private Player player = null;
-
-    private void startGame(String playerId, String playerName) {
-        if (this.player == null) {
-            player = new Player(playerId, playerName, this);
-        } else {
-            player.setPlayerName(playerName);
-        }
-        player.connectServer();
     }
 
     private String getHelp1() {
@@ -268,7 +369,7 @@ public class TuoLaJi {
         }
     }
 
-    private String getHelp() {
+    private String getHelp2() {
         try {
             URL u = new URL(Card.HELP_URL);
             URL.HttpURLConnection conn = (URL.HttpURLConnection) u.openConnection();
@@ -286,6 +387,14 @@ public class TuoLaJi {
             Log.e(err);
             return "Not Available";
         }
+    }
+
+    private String getHelp() {
+        String s = "TBA\n";
+        for (int i = 0; i < 100; i++) {
+            s += "Test " + i + "\n";
+        }
+        return s;
     }
 
     public void stop() {
