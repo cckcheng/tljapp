@@ -41,6 +41,13 @@ public class Dict {
                         return "连接中";
                     case "network error":
                         return "联网失败";
+
+                    case "bury":
+                        return "扣底";
+                    case "1 vs 5":
+                    case "1vs5":
+                        return "一打五";
+
                     default:
                         return src;
                 }
