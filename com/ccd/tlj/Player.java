@@ -473,7 +473,7 @@ public class Player {
         }
 
         PlayerInfo p0 = this.infoLst.get(0);
-        p0.needChangeActions = true;
+        p0.seat = currentSeat;
         this.playerMap.put(currentSeat, p0);
         p0.setPlayerName(playerName);
         char trumpSuite = Card.JOKER;
@@ -670,8 +670,9 @@ public class Player {
     }
 */
     private void parsePlayerInfo(PlayerInfo pp, Map<String, Object> rawData) {
-        pp.needChangeActions = true;
+//        pp.needChangeActions = true;
         int seat = parseInteger(rawData.get("seat"));
+        pp.seat = seat;
         this.playerMap.put(seat, pp);
         if (!this.isPlaying) {
             displayBidInfo(pp, trimmedString(rawData.get("bid")));
@@ -754,6 +755,7 @@ public class Player {
             }
         }
         hand.repaint();
+        this.infoLst.get(0).needChangeActions = true;
 
         if (!summary.isEmpty()) {
             mainForm.setGlassPane((g, rect) -> {
@@ -1141,12 +1143,10 @@ public class Player {
                 btnPlay = new Button("Play");
                 btnPlay.getAllStyles().setBgImage(backImage);
                 btnPlay.addActionListener((e) -> {
-                    String action = btnPlay.getText().toLowerCase();
-                    if (action.contains("bury")) action = "bury";
-                    else if (action.contains("play")) action = "play";
+                    String action = btnPlay.getName();
                     List<Card> cards = hand.getSelectedCards();
-                    if (action.contains("bury") && cards.size() != 6) {
-                        userHelp.showHelp(userHelp.BURY_CARDS);
+                    if (action.equals("bury") && cards.size() != 6) {
+//                        userHelp.showHelp(userHelp.BURY_CARDS);
                         return;
                     }
                     if (action.equals("play")) {
@@ -1161,7 +1161,10 @@ public class Player {
                     mySocket.addRequest(action, "\"cards\":\"" + Card.cardsToString(cards) + "\"");
                 });
 
-                actionButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
+                actionButtons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+                actionButtons.addAll(btnPlus, btnBid, btnMinus, btnPass);
+//                actionButtons.add(btnPass);
+//                actionButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
 //                actionButtons = BoxLayout.encloseXNoGrow(btnPass);
             }
         }
@@ -1319,7 +1322,9 @@ public class Player {
                         });
                     }
 
-                    actionButtons.setShouldCalcPreferredSize(true);
+                    if (Card.DEBUG_MODE) {
+                        actionButtons.setShouldCalcPreferredSize(true);
+                    }
                     needChangeActions = true;
                 } else if (act.equals("bid")) {
                     if (needChangeActions) {
@@ -1330,7 +1335,9 @@ public class Player {
                             actionButtons.addAll(btnPlus, btnBid, btnMinus, btnPass);
                         }
                         needChangeActions = false;
-                        actionButtons.setShouldCalcPreferredSize(true);
+                        if (Card.DEBUG_MODE) {
+                            actionButtons.setShouldCalcPreferredSize(true);
+                        }
                     }
                     this.maxBid = contractPoint - 5;
                     btnBid.setText("" + this.maxBid);
@@ -1338,8 +1345,11 @@ public class Player {
                     userHelp.showHelp(userHelp.BURY_CARDS);
                     actionButtons.removeAll();
                     actionButtons.add(btnPlay);
+                    btnPlay.setName("bury");
                     btnPlay.setText(Dict.get(main.lang, "Bury"));
-                    actionButtons.setShouldCalcPreferredSize(true);
+                    if (Card.DEBUG_MODE) {
+                        actionButtons.setShouldCalcPreferredSize(true);
+                    }
                     needChangeActions = true;
                 } else if (act.equals("partner")) {
                     userHelp.showHelp(userHelp.SET_PARTNER);
@@ -1366,15 +1376,20 @@ public class Player {
                         mySocket.addRequest(actionPartner, "\"def\":\"0\"");
                     });
                     actionButtons.add(new Label("   ")).add(btn);
-                    actionButtons.setShouldCalcPreferredSize(true);
+                    if (Card.DEBUG_MODE) {
+                        actionButtons.setShouldCalcPreferredSize(true);
+                    }
                     needChangeActions = true;
                 } else if(act.equals("play")){
                     if(needChangeActions) {
                         actionButtons.removeAll();
                         actionButtons.add(btnPlay);
-                        btnPlay.setText("Play");
+                        btnPlay.setName("play");
+                        btnPlay.setText(Dict.get(main.lang, "Play"));
                         needChangeActions = false;
-                        actionButtons.setShouldCalcPreferredSize(true);
+                        if (Card.DEBUG_MODE) {
+                            actionButtons.setShouldCalcPreferredSize(true);
+                        }
                     }
                 } else {
                     // not supported
