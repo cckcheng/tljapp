@@ -1318,6 +1318,8 @@ public class Player {
                             mySocket.addRequest(actionSetTrump, "\"trump\":\"" + c + "\"");
                         });
                     }
+
+                    actionButtons.setShouldCalcPreferredSize(true);
                     needChangeActions = true;
                 } else if (act.equals("bid")) {
                     if (needChangeActions) {
@@ -1328,6 +1330,7 @@ public class Player {
                             actionButtons.addAll(btnPlus, btnBid, btnMinus, btnPass);
                         }
                         needChangeActions = false;
+                        actionButtons.setShouldCalcPreferredSize(true);
                     }
                     this.maxBid = contractPoint - 5;
                     btnBid.setText("" + this.maxBid);
@@ -1336,6 +1339,7 @@ public class Player {
                     actionButtons.removeAll();
                     actionButtons.add(btnPlay);
                     btnPlay.setText(Dict.get(main.lang, "Bury"));
+                    actionButtons.setShouldCalcPreferredSize(true);
                     needChangeActions = true;
                 } else if (act.equals("partner")) {
                     userHelp.showHelp(userHelp.SET_PARTNER);
@@ -1362,6 +1366,7 @@ public class Player {
                         mySocket.addRequest(actionPartner, "\"def\":\"0\"");
                     });
                     actionButtons.add(new Label("   ")).add(btn);
+                    actionButtons.setShouldCalcPreferredSize(true);
                     needChangeActions = true;
                 } else if(act.equals("play")){
                     if(needChangeActions) {
@@ -1369,6 +1374,7 @@ public class Player {
                         actionButtons.add(btnPlay);
                         btnPlay.setText("Play");
                         needChangeActions = false;
+                        actionButtons.setShouldCalcPreferredSize(true);
                     }
                 } else {
                     // not supported
