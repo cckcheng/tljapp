@@ -225,8 +225,8 @@ public class TuoLaJi {
         FontImage.setMaterialIcon(btnHelp, FontImage.MATERIAL_HELP);
 //        btnHelp.setEnabled(false);
         btnHelp.addActionListener((e) -> {
-            switchScene("table");
-//            helpDlg.show(0, 0, 100, 100);
+//            switchScene("table");
+            helpDlg.show(0, 0, 100, 100);
         });
 
         btnExit = new Button(Dict.get(lang, "Exit"));

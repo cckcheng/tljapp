@@ -44,6 +44,8 @@ public class Dict {
 
                     case "bury":
                         return "扣底";
+                    case "pass":
+                        return "不叫";
                     case "nt":
                         return "无将";
                     case "1 vs 5":
@@ -67,5 +69,16 @@ public class Dict {
             default:
                 return src;
         }
+    }
+
+    public static final int PLAY = 1;
+
+    static public String get(final String lang, int k) {
+        switch (k) {
+            case PLAY:
+                return lang.equals("zh") ? "出牌" : "Play";
+        }
+
+        return "Unknown";
     }
 }

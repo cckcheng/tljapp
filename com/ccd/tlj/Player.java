@@ -479,7 +479,10 @@ public class Player {
 
     private String bidToString(String bid) {
         if (bid == null || bid.isEmpty() || bid.equals("-")) return "";
-        if (bid.equalsIgnoreCase("pass")) return "Pass";
+        if (bid.equalsIgnoreCase("pass")) {
+            return "Pass";
+        }
+
         return "" + parseInteger(bid);
     }
 
@@ -975,6 +978,8 @@ public class Player {
                 needChangeActions = true;
                 userHelp.clear();
                 userHelp.setLanguage(main.lang);
+                actionButtons.setVisible(false);
+                actionButtons.setEnabled(false);
             }
         }
 
@@ -1041,8 +1046,8 @@ public class Player {
                             .setReferenceComponentBottom(timer, actionButtons, 1f)
                             .setReferenceComponentBottom(userHelp, timer, 1f);
 
-//                    actionButtons.setVisible(false);
-//                    actionButtons.setEnabled(false);
+                    actionButtons.setVisible(false);
+                    actionButtons.setEnabled(false);
                     break;
             }
 
@@ -1138,7 +1143,7 @@ public class Player {
                             actionButtons.add(bidButtons);
                         }
                         needChangeActions = false;
-//                        actionButtons.setShouldCalcPreferredSize(true);
+                        actionButtons.setShouldCalcPreferredSize(true);
                     }
                     this.maxBid = contractPoint - 5;
                     btnBid.setText("" + this.maxBid);
@@ -1148,7 +1153,7 @@ public class Player {
                     actionButtons.add(btnPlay);
                     btnPlay.setName("bury");
                     btnPlay.setText(Dict.get(main.lang, "Bury"));
-//                    actionButtons.setShouldCalcPreferredSize(true);
+                    actionButtons.setShouldCalcPreferredSize(true);
                     needChangeActions = true;
                 } else if (act.equals("partner")) {
                     userHelp.showHelp(userHelp.SET_PARTNER);
@@ -1177,15 +1182,15 @@ public class Player {
                     buttons.add(new Label("   ")).add(btn);
                     actionButtons.removeAll();
                     actionButtons.add(buttons);
-//                    actionButtons.setShouldCalcPreferredSize(true);
+                    actionButtons.setShouldCalcPreferredSize(true);
                     needChangeActions = true;
                 } else if(act.equals("play")){
                     if(needChangeActions) {
                         btnPlay.setName("play");
-                        btnPlay.setText(Dict.get(main.lang, "Play"));
+                        btnPlay.setText(Dict.get(main.lang, Dict.PLAY));
                         actionButtons.removeAll();
                         actionButtons.add(btnPlay);
-//                        actionButtons.setShouldCalcPreferredSize(true);
+                        actionButtons.setShouldCalcPreferredSize(true);
                         needChangeActions = false;
                     }
                 } else {
@@ -1250,12 +1255,16 @@ public class Player {
         }
 
         void setLanguage(String lang) {
-            if(curLang.equalsIgnoreCase(lang)) return;
-            if (lang.equalsIgnoreCase("zh")) {
-                this.replaceAndWait(engLabel, chnLabel, null);
-            } else {
-                this.replaceAndWait(chnLabel, engLabel, null);
+            if (curLang.equalsIgnoreCase(lang)) {
+                return;
             }
+            this.removeAll();
+            if (lang.equalsIgnoreCase("zh")) {
+                this.add(chnLabel);
+            } else {
+                this.add(engLabel);
+            }
+            curLang = lang;
         }
 
         void clear() {

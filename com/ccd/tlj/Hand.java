@@ -240,6 +240,7 @@ public class Hand extends Component {
             this.removeCard(c);
         }
         this.selected.clear();
+        resortOnDemand();
         this.repaint();
     }
 
@@ -258,7 +259,47 @@ public class Hand extends Component {
             this.selected.clear();
         }
 
+        resortOnDemand();
         this.repaint();
+    }
+
+    private boolean needResort = true;
+
+    private void resortOnDemand() {
+        if (!needResort) {
+            return;
+        }
+        int lenS = this.spades.size();
+        int lenH = this.hearts.size();
+        int lenC = this.clubs.size();
+        int lenD = this.diamonds.size();
+        int lenNonTrump = lenS + lenH + lenC + lenD;
+        if (lenNonTrump > 20) {
+            return;
+        }
+
+        this.upperList.clear();
+        this.lowerList.clear();
+        this.upperList.addAll(this.trumps);
+
+        for (int i = 0; i < TOTAL_SUITES; i++) {
+            List<Card> cc = this.suites.get(i);
+            if (!cc.isEmpty()) {
+                this.lowerList.addAll(cc);
+                continue;
+            }
+
+            if (i == 1) {
+                this.lowerList.addAll(this.suites.get(3));
+                this.lowerList.addAll(this.suites.get(2));
+                break;
+            } else if (i == 2) {
+                this.lowerList.addAll(0, this.suites.get(3));
+                break;
+            }
+        }
+
+        needResort = false;
     }
 
     synchronized public void clearCards() {
@@ -267,6 +308,7 @@ public class Hand extends Component {
         for (int i = 0; i < TOTAL_SUITES; i++) {
             this.suites.get(i).clear();
         }
+        needResort = true;
     }
 
     synchronized void addPlayCards(Player.PlayerInfo pp, List<Card> lst) {
@@ -339,12 +381,15 @@ public class Hand extends Component {
         int lenH = this.hearts.size();
         int lenC = this.clubs.size();
         int lenD = this.diamonds.size();
-        int total = lenT + lenS + lenH + lenC + lenD;
+        int lenNonTrump = lenS + lenH + lenC + lenD;
+
+        int total = lenT + lenNonTrump;
         int halfLen = total / 2 + 1;
         int tolerance = 3;
         int threshold = halfLen - tolerance;
 
-        if (lenT >= threshold) {
+        if (lenNonTrump <= 20 || lenT >= threshold) {
+            needResort = false;
             for (int i = 0; i < TOTAL_SUITES; i++) {
                 List<Card> cc = this.suites.get(i);
                 if (!cc.isEmpty()) {
