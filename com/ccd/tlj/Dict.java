@@ -44,9 +44,20 @@ public class Dict {
 
                     case "bury":
                         return "扣底";
+                    case "nt":
+                        return "无将";
                     case "1 vs 5":
                     case "1vs5":
                         return "一打五";
+
+                    case "1st":
+                        return "第一";
+                    case "2nd":
+                        return "第二";
+                    case "3rd":
+                        return "第三";
+                    case "4th":
+                        return "第四";
 
                     default:
                         return src;

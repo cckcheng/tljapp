@@ -75,6 +75,7 @@ public class Player {
     private MySocket mySocket = null;
 
     static final String actionJoinTable = "join";
+    static final String actionExit = "out";
     static final String actionBid = "bid";
     static final String actionSetTrump = "trump";
     static final String actionBuryCards = "bury";
@@ -101,7 +102,6 @@ public class Player {
 
     public void joinTable() {
         if (this.mySocket == null) return;
-        this.reset();
         mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId
                 + "\",\"name\":\"" + this.playerName + "\""
                 + ",\"ver\":\"" + main.version + "\"");
@@ -238,7 +238,11 @@ public class Player {
     private Label partnerInfo;
     private Label pointsInfo;
 
-    private void reset() {
+    private void resetTable() {
+        this.hand.setIsReady(false);
+        this.hand.clearCards();
+        candidateTrumps.clear();
+
         isPlaying = false;
         timeout = 30;
         contractPoint = -1;
@@ -247,210 +251,14 @@ public class Player {
         gameInfo.setText(" ");
         partnerInfo.setText(" ");
         pointsInfo.setText(" ");
+        for (PlayerInfo pp : this.infoLst) {
+            pp.reset();
+        }
     }
 
-//    private Container tablePane;
-    /*
-    private void showTable(Map<String, Object> data) {
-//        mainForm.getContentPane().setVisible(false);
-        if (Card.DEBUG_MODE) Log.p("Show table: 01");
-        tablePane = mainForm.getFormLayeredPane(mainForm.getClass(), true);
-        tablePane.setLayout(new LayeredLayout());
-        if (this.tableOn) {
-            tablePane.removeAll();
-            mainForm.setGlassPane(null);
-        }
-
-        infoLst.clear();
-
-        if (Card.DEBUG_MODE) {
-            Log.p("Show table: 02");
-        }
-        String stage = trimmedString(data.get("stage"));
-        this.isPlaying = stage.equalsIgnoreCase(PLAYING_STAGE);
-        currentSeat = parseInteger(data.get("seat"));
-        int actionSeat = parseInteger(data.get("next"));
-        this.playerRank = parseInteger(data.get("rank"));
-        int game = parseInteger(data.get("game"));
-        int defaultTimeout = parseInteger(data.get("timeout"));
-        if (defaultTimeout > 0) this.timeout = defaultTimeout;
-        if (Card.DEBUG_MODE) {
-            Log.p("Show table: 03");
-        }
-
-        this.hand = new Hand(this);
-        candidateTrumps.clear();
-        if (Card.DEBUG_MODE) {
-            Log.p("Show table: 31");
-        }
-        this.addCards(data);
-
-        if (Card.DEBUG_MODE) {
-            Log.p("Show table: 32");
-        }
-
-        PlayerInfo p0 = new PlayerInfo("bottom", currentSeat, playerRank);
-        this.infoLst.add(p0);
-        this.playerMap.put(currentSeat, p0);
-        p0.setPlayerName(playerName);
-        char trumpSuite = Card.JOKER;
-
-        if (Card.DEBUG_MODE) {
-            Log.p("Show table: 04");
-        }
-        String info = trimmedString(data.get("info"));
-        if (info.isEmpty()) {
-            if (Card.DEBUG_MODE) {
-                Log.p("Show table: 05");
-            }
-            this.gameRank = parseInteger(data.get("gameRank"));
-            this.contractPoint = parseInteger(data.get("contract"));
-
-            String trump = data.get("trump").toString();
-            if (!trump.isEmpty()) trumpSuite = trump.charAt(0);
-
-            if (gameRank > 0) {
-                hand.sortCards(trumpSuite, gameRank, true);
-            } else {
-                hand.sortCards(trumpSuite, playerRank, true);
-            }
-
-            if (!this.isPlaying) {
-                int minBid = parseInteger(data.get("minBid"));
-                if (minBid > 0) p0.addMidBid(minBid);
-                displayBidInfo(p0, trimmedString(data.get("bid")));
-            } else {
-                List<Card> lst = Card.fromString(trimmedString(data.get("cards")), this.currentTrump, this.gameRank);
-                if (lst != null) {
-                    p0.cards.addAll(lst);
-                }
-                int point1 = parseInteger(data.get("pt1")); // points earned by player itself
-                if (point1 != -1) {
-                    if (point1 == 0) {
-                        p0.contractor.setText("");
-                    } else {
-                        p0.contractor.setText(point1 + "");
-                    }
-                }
-            }
-        } else {
-            p0.userHelp.showInfo(info);
-        }
-        if (Card.DEBUG_MODE) {
-            Log.p("Show table: 06");
-        }
-
-        Button bExit = new Button("Exit");
-        FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
-        bExit.setUIID("myExit");
-        bExit.addActionListener((e) -> {
-            this.tableOn = false;
-            cancelTimers();
-            tablePane.removeAll();
-            mainForm.setGlassPane(null);
-            mainForm.getContentPane().setVisible(true);
-            mainForm.repaint();
-            disconnect();
-        });
-
-        List<Object> players = (List<Object>) data.get("players");
-        Map<String, Object> pR1 = (Map<String, Object>) players.get(0);
-        Map<String, Object> pR2 = (Map<String, Object>) players.get(1);
-        Map<String, Object> pTop = (Map<String, Object>) players.get(2);
-        Map<String, Object> pL2 = (Map<String, Object>) players.get(3);
-        Map<String, Object> pL1 = (Map<String, Object>) players.get(4);
-
-        parsePlayerInfo(pR1, "right down");
-        parsePlayerInfo(pR2, "right up");
-        parsePlayerInfo(pL2, "left up");
-        parsePlayerInfo(pL1, "left down");
-        parsePlayerInfo(pTop, "top");
-
-        this.lbGeneral = new Label("Game " + game);
-        lbGeneral.getStyle().setFont(Hand.fontGeneral);
-
-        String gmInfo = " ";
-        String ptInfo = " ";
-        String pointInfo = " ";
-        int actTime = parseInteger(data.get("acttime"));
-        String act = trimmedString(data.get("act"));
-        if (this.isPlaying) {
-            gmInfo = this.contractPoint + " ";
-            if (!act.equals("dim")) {
-                if (trumpSuite == Card.JOKER) {
-                    gmInfo += "NT ";
-                } else {
-                    gmInfo += Card.suiteSign(trumpSuite);
-                }
-                gmInfo += Card.rankToString(gameRank);
-            }
-            ptInfo = this.partnerDef(trimmedString(data.get("def")));
-            int points = parseInteger(data.get("pt0"));
-            pointInfo = points + "分";
-        }
-        this.gameInfo = new Label(gmInfo);
-        this.gameInfo.getStyle().setFgColor(0xebef07);
-        this.gameInfo.getStyle().setFont(Hand.fontRank);
-        this.partnerInfo = new Label(ptInfo);
-        this.partnerInfo.getStyle().setFgColor(INFO_COLOR);
-        this.partnerInfo.getStyle().setFont(Hand.fontGeneral);
-
-        this.pointsInfo = new Label(pointInfo);
-        this.pointsInfo.getStyle().setFgColor(POINT_COLOR);
-        this.pointsInfo.getStyle().setFont(Hand.fontRank);
-
-        tablePane.add(hand);
-        tablePane.add(bExit).add(lbGeneral).add(this.gameInfo).add(this.partnerInfo).add(this.pointsInfo);
-        LayeredLayout ll = (LayeredLayout) tablePane.getLayout();
-        ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
-        ll.setInsets(lbGeneral, "0 auto auto 0")
-                .setInsets(this.partnerInfo, "0 0 auto auto")
-                .setInsets(this.pointsInfo, "0 auto auto 25%")
-                .setInsets(this.gameInfo, "0 auto auto 0");
-        ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
-        ll.setReferenceComponentTop(this.partnerInfo, bExit, 1f);
-
-        for (PlayerInfo pp : infoLst) {
-            pp.addItems(tablePane);
-        }
-
-        PlayerInfo pp = this.playerMap.get(actionSeat);
-        if (pp != null) {
-            if (act.equals("bury")) {
-                pp.showTimer(actTime, this.contractPoint, "bury");
-            } else if (act.isEmpty()){
-                pp.showTimer(this.timeout, this.contractPoint, "bid");
-            } else {
-                pp.showTimer(this.timeout, this.contractPoint, act);
-            }
-        }
-
-        if (this.isPlaying) {
-            int seatContractor = parseInteger(data.get("seatContractor"));
-            pp = this.playerMap.get(seatContractor);
-            if (pp != null) pp.setContractor(CONTRACTOR);
-            int seatPartner = parseInteger(data.get("seatPartner"));
-            pp = this.playerMap.get(seatPartner);
-            if (pp != null) {
-                if (pp.isContractSide) {
-                    pp.setContractor(CONTRACTOR + "," + PARTNER);
-                } else {
-                    pp.setContractor(PARTNER);
-                }
-            }
-
-            this.currentTrump = trumpSuite;
-        }
-        hand.setIsReady(true);
-        mainForm.repaint();
-        this.tableOn = true;
-        main.enableButtons();
-
-        if (Card.DEBUG_MODE) Log.p("Show table: done");
-    }
-*/
     private void refreshTable(Map<String, Object> data) {
         if (Card.DEBUG_MODE) Log.p("Refresh table: 01");
+        this.resetTable();
 
         String stage = trimmedString(data.get("stage"));
         this.isPlaying = stage.equalsIgnoreCase(PLAYING_STAGE);
@@ -464,8 +272,6 @@ public class Player {
             Log.p("Refresh table: 02");
         }
 
-        candidateTrumps.clear();
-        this.hand.clearCards();
         this.addCards(data);
 
         if (Card.DEBUG_MODE) {
@@ -473,9 +279,8 @@ public class Player {
         }
 
         PlayerInfo p0 = this.infoLst.get(0);
-        p0.seat = currentSeat;
+        p0.setMainInfo(currentSeat, playerName, this.playerRank);
         this.playerMap.put(currentSeat, p0);
-        p0.setPlayerName(playerName);
         char trumpSuite = Card.JOKER;
 
         if (Card.DEBUG_MODE) {
@@ -500,7 +305,7 @@ public class Player {
 
             if (!this.isPlaying) {
                 int minBid = parseInteger(data.get("minBid"));
-                if (minBid > 0) p0.addMidBid(minBid);
+                if (minBid > 0) p0.addMinBid(minBid);
                 displayBidInfo(p0, trimmedString(data.get("bid")));
             } else {
                 List<Card> lst = Card.fromString(trimmedString(data.get("cards")), this.currentTrump, this.gameRank);
@@ -597,10 +402,12 @@ public class Player {
         this.infoLst.add(new PlayerInfo("left up"));
         this.infoLst.add(new PlayerInfo("left down"));
 
-        Button bExit = new Button("Exit");
+        Button bExit = new Button(Dict.get(main.lang, "Exit"));
         FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
         bExit.setUIID("myExit");
         bExit.addActionListener((e) -> {
+            this.tableOn = false;
+            mySocket.addRequest(actionExit, "");
             cancelTimers();
             this.main.switchScene("entry");
         });
@@ -644,35 +451,12 @@ public class Player {
             pp.cancelTimer();
         }
     }
-    /*
-    private void parsePlayerInfo(Map<String, Object> rawData, String location) {
-        int seat = parseInteger(rawData.get("seat"));
-        PlayerInfo pp = new PlayerInfo(location, seat, parseInteger(rawData.get("rank")));
-        if (!this.isPlaying) {
-            displayBidInfo(pp, trimmedString(rawData.get("bid")));
-        } else {
-            List<Card> lst = Card.fromString(trimmedString(rawData.get("cards")), this.currentTrump, this.gameRank);
-            if (lst != null) {
-                this.hand.addPlayCards(pp, lst);
-            }
-            int point1 = parseInteger(rawData.get("pt1")); // points earned by player itself
-            if (point1 != -1) {
-                if (point1 == 0) {
-                    pp.contractor.setText("");
-                } else {
-                    pp.contractor.setText(point1 + "");
-                }
-            }
 
-        }
-        this.infoLst.add(pp);
-        this.playerMap.put(seat, pp);
-    }
-*/
     private void parsePlayerInfo(PlayerInfo pp, Map<String, Object> rawData) {
-//        pp.needChangeActions = true;
         int seat = parseInteger(rawData.get("seat"));
-        pp.seat = seat;
+        String name = trimmedString(rawData.get("name"));
+        if (name.isEmpty()) name = "#" + seat;
+        pp.setMainInfo(seat, name, parseInteger(rawData.get("rank")));
         this.playerMap.put(seat, pp);
         if (!this.isPlaying) {
             displayBidInfo(pp, trimmedString(rawData.get("bid")));
@@ -923,9 +707,6 @@ public class Player {
 
                 switch (action) {
                     case "init":
-                        if (hand != null) {
-                            hand.setIsReady(false);
-                        }
                         main.switchScene("table");
                         refreshTable(data);
                         break;
@@ -960,6 +741,8 @@ public class Player {
 
         @Override
         public void connectionError(int errorCode, String message) {
+//            Display.getInstance().vibrate(1000);  // this works
+
 //            if (isConnected()) closeRequested = true;
 //            main.enableButtons();
             main.onConnectionError();
@@ -997,7 +780,7 @@ public class Player {
                             request = Base64.encode(request.getBytes());
                             os.write(Card.confusedData(request).getBytes());
                         }
-                        checkConnection = true;
+                        checkConnection = tableOn;
                     }
                     int n = is.available();
                     if (n > 0) {
@@ -1068,6 +851,7 @@ public class Player {
         String playerName;
         UITimer countDownTimer;
         Container actionButtons;
+        Container bidButtons;
         Button btnBid;
         Button btnPlus;
         Button btnMinus;
@@ -1082,8 +866,7 @@ public class Player {
         PlayerInfo(String loc) {
             this.location = loc;
 
-            String info = loc;
-            mainInfo = new Label(info);
+            mainInfo = new Label(loc);
             userHelp = new UserHelp(main.lang);
 
             points = new Label("        ");
@@ -1102,7 +885,7 @@ public class Player {
                 btnBid = new Button("200");
                 btnPlus = new Button("");
                 btnMinus = new Button("");
-                btnPass = new Button("Pass");
+                btnPass = new Button(Dict.get(main.lang, "Pass"));
 
                 FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_ARROW_UPWARD);
                 FontImage.setMaterialIcon(btnMinus, FontImage.MATERIAL_ARROW_DOWNWARD);
@@ -1161,11 +944,15 @@ public class Player {
                     mySocket.addRequest(action, "\"cards\":\"" + Card.cardsToString(cards) + "\"");
                 });
 
-                actionButtons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
-                actionButtons.addAll(btnPlus, btnBid, btnMinus, btnPass);
+//                actionButtons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+//                actionButtons.addAll(btnPlus, btnBid, btnMinus, btnPass);
 //                actionButtons.add(btnPass);
 //                actionButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
 //                actionButtons = BoxLayout.encloseXNoGrow(btnPass);
+//                actionButtons = new Container(BoxLayout.yLast());
+                actionButtons = new Container();
+                bidButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
+                actionButtons.add(bidButtons);
             }
         }
 
@@ -1177,7 +964,21 @@ public class Player {
             return mainInfo.getAbsoluteY() + mainInfo.getHeight();
         }
 
-        void addItems(Container pane) {
+        synchronized void reset() {
+            cancelTimer();
+            contractor.getAllStyles().setFgColor(POINT_COLOR);
+            contractor.setText("");
+            points.setText("");
+            hand.clearPlayCards(this);
+            this.isContractSide = false;
+            if (location.equals("bottom")) {
+                needChangeActions = true;
+                userHelp.clear();
+                userHelp.setLanguage(main.lang);
+            }
+        }
+
+        synchronized void addItems(Container pane) {
             pane.add(mainInfo).add(points).add(timer).add(contractor);
             LayeredLayout ll = (LayeredLayout) pane.getLayout();
 
@@ -1240,20 +1041,22 @@ public class Player {
                             .setReferenceComponentBottom(timer, actionButtons, 1f)
                             .setReferenceComponentBottom(userHelp, timer, 1f);
 
-                    actionButtons.setVisible(false);
-                    actionButtons.setEnabled(false);
+//                    actionButtons.setVisible(false);
+//                    actionButtons.setEnabled(false);
                     break;
             }
 
         }
 
-        void setPlayerName(String playerName) {
+        void setMainInfo(int seat, String playerName, int rank) {
+            this.seat = seat;
+            this.rank = rank;
             this.playerName = playerName;
-            String info = this.mainInfo.getText();
-            this.mainInfo.setText(playerName + " " + info);
+            String info = playerName + "," + Card.rankToString(rank, "R");
+            this.mainInfo.setText(info);
         }
 
-        void addMidBid(int minBid) {
+        void addMinBid(int minBid) {
             String info = this.mainInfo.getText();
             this.mainInfo.setText( info + ", " + minBid);
         }
@@ -1266,7 +1069,7 @@ public class Player {
             FontImage.setMaterialIcon(timer, '0');  // hide it
         }
 
-        void showPoints(String point) {
+        synchronized void showPoints(String point) {
             cancelTimer();
             this.points.setText(point);
             if (point.equalsIgnoreCase("pass")) {
@@ -1283,7 +1086,7 @@ public class Player {
 
         int maxBid = -1;
         boolean needChangeActions=false;
-        void showTimer(int timeout, int contractPoint, String act) {
+        synchronized void showTimer(int timeout, int contractPoint, String act) {
             userHelp.clear();
             cancelTimer();  // cancel the running timer if any
             if (act.equals("dim")) {
@@ -1303,16 +1106,16 @@ public class Player {
                 }
 
                 if (act.equals("dim")) {
-                    actionButtons.removeAll();
                     userHelp.showHelp(userHelp.SET_TRUMP);
+                    Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
                     for (char c : candidateTrumps) {
                         Button btn = new Button();
                         if (c == Card.JOKER) {
-                            btn.setText("NT");
+                            btn.setText(Dict.get(main.lang, "NT"));
                         } else {
                             btn.setText(Card.suiteSign(c));
                         }
-                        actionButtons.add(btn);
+                        buttons.add(btn);
                         btn.addActionListener((e) -> {
                             actionButtons.setVisible(false);
                             actionButtons.setEnabled(false);
@@ -1322,9 +1125,9 @@ public class Player {
                         });
                     }
 
-                    if (Card.DEBUG_MODE) {
-                        actionButtons.setShouldCalcPreferredSize(true);
-                    }
+                    actionButtons.removeAll();
+                    actionButtons.add(buttons);
+//                    actionButtons.setShouldCalcPreferredSize(true);   // seems no effect
                     needChangeActions = true;
                 } else if (act.equals("bid")) {
                     if (needChangeActions) {
@@ -1332,12 +1135,10 @@ public class Player {
                         if (candidateTrumps.isEmpty()) {
                             actionButtons.add(btnPass);
                         } else {
-                            actionButtons.addAll(btnPlus, btnBid, btnMinus, btnPass);
+                            actionButtons.add(bidButtons);
                         }
                         needChangeActions = false;
-                        if (Card.DEBUG_MODE) {
-                            actionButtons.setShouldCalcPreferredSize(true);
-                        }
+//                        actionButtons.setShouldCalcPreferredSize(true);
                     }
                     this.maxBid = contractPoint - 5;
                     btnBid.setText("" + this.maxBid);
@@ -1347,25 +1148,23 @@ public class Player {
                     actionButtons.add(btnPlay);
                     btnPlay.setName("bury");
                     btnPlay.setText(Dict.get(main.lang, "Bury"));
-                    if (Card.DEBUG_MODE) {
-                        actionButtons.setShouldCalcPreferredSize(true);
-                    }
+//                    actionButtons.setShouldCalcPreferredSize(true);
                     needChangeActions = true;
                 } else if (act.equals("partner")) {
                     userHelp.showHelp(userHelp.SET_PARTNER);
-                    actionButtons.removeAll();
-                    RadioButton rb1 = new RadioButton("1st");
-                    RadioButton rb2 = new RadioButton("2nd");
-                    RadioButton rb3 = new RadioButton("3rd");
-                    RadioButton rb4 = new RadioButton("4th");
+                    Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+                    RadioButton rb1 = new RadioButton(Dict.get(main.lang, "1st"));
+                    RadioButton rb2 = new RadioButton(Dict.get(main.lang, "2nd"));
+                    RadioButton rb3 = new RadioButton(Dict.get(main.lang, "3rd"));
+                    RadioButton rb4 = new RadioButton(Dict.get(main.lang, "4th"));
                     ButtonGroup btnGroup = new ButtonGroup(rb1,rb2,rb3,rb4);
-                    actionButtons.addAll(rb1,rb2,rb3,rb4);
+                    buttons.addAll(rb1, rb2, rb3, rb4);
                     String rnk = Card.rankToString(playerRank);
                     rnk = rnk.equals("A") ? "K" : "A";
-                    addCardButton(Card.SPADE, rnk, btnGroup);
-                    addCardButton(Card.HEART, rnk, btnGroup);
-                    addCardButton(Card.DIAMOND, rnk, btnGroup);
-                    addCardButton(Card.CLUB, rnk, btnGroup);
+                    addCardButton(buttons, Card.SPADE, rnk, btnGroup);
+                    addCardButton(buttons, Card.HEART, rnk, btnGroup);
+                    addCardButton(buttons, Card.DIAMOND, rnk, btnGroup);
+                    addCardButton(buttons, Card.CLUB, rnk, btnGroup);
 //                    Button btn = new Button("1vs5", "nopartner");
                     Button btn = new Button(Dict.get(main.lang, "1vs5"));
                     btn.setCapsText(false);
@@ -1375,21 +1174,19 @@ public class Player {
                         cancelTimer();
                         mySocket.addRequest(actionPartner, "\"def\":\"0\"");
                     });
-                    actionButtons.add(new Label("   ")).add(btn);
-                    if (Card.DEBUG_MODE) {
-                        actionButtons.setShouldCalcPreferredSize(true);
-                    }
+                    buttons.add(new Label("   ")).add(btn);
+                    actionButtons.removeAll();
+                    actionButtons.add(buttons);
+//                    actionButtons.setShouldCalcPreferredSize(true);
                     needChangeActions = true;
                 } else if(act.equals("play")){
                     if(needChangeActions) {
-                        actionButtons.removeAll();
-                        actionButtons.add(btnPlay);
                         btnPlay.setName("play");
                         btnPlay.setText(Dict.get(main.lang, "Play"));
+                        actionButtons.removeAll();
+                        actionButtons.add(btnPlay);
+//                        actionButtons.setShouldCalcPreferredSize(true);
                         needChangeActions = false;
-                        if (Card.DEBUG_MODE) {
-                            actionButtons.setShouldCalcPreferredSize(true);
-                        }
                     }
                 } else {
                     // not supported
@@ -1400,14 +1197,14 @@ public class Player {
             }
         }
 
-        private void addCardButton(char suite, String rnk, ButtonGroup btnGroup) {
+        private void addCardButton(Container buttons, char suite, String rnk, ButtonGroup btnGroup) {
             if(suite != currentTrump) {
                 Button btn = new Button(Card.suiteSign(suite) + rnk, "suite" + suite);
-                actionButtons.add(new Label("   "));
-                actionButtons.add(btn);
+                buttons.add(new Label("   "));
+                buttons.add(btn);
                 btn.addActionListener((e)->{
                     if(!btnGroup.isSelected()) {
-//                        Dialog.show("Alert", "请指定第几个");
+                        Dialog.show("Alert", "请指定第几个");
                     } else {
                         actionButtons.setVisible(false);
                         actionButtons.setEnabled(false);
@@ -1441,12 +1238,23 @@ public class Player {
         final int PLAY_SAME_SUIT = 35;
         final int NO_CARD_SELECTED = 30;
 
+        String curLang;
         UserHelp(String lang) {
             this.setLayout(new BoxLayout(BoxLayout.Y_AXIS_BOTTOM_LAST));
             if (lang.equalsIgnoreCase("zh")) {
                 this.add(chnLabel);
             } else {
                 this.add(engLabel);
+            }
+            curLang = lang;
+        }
+
+        void setLanguage(String lang) {
+            if(curLang.equalsIgnoreCase(lang)) return;
+            if (lang.equalsIgnoreCase("zh")) {
+                this.replaceAndWait(engLabel, chnLabel, null);
+            } else {
+                this.replaceAndWait(chnLabel, engLabel, null);
             }
         }
 

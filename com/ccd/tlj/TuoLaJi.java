@@ -186,18 +186,13 @@ public class TuoLaJi {
         bPlay.addActionListener((e) -> {
             Object sgObj = Storage.getInstance().readObject("playerName");
             if (sgObj == null) {
-                TextField pName = new TextField("", Dict.get(lang, "Your Name"), 20, TextArea.ANY);
+                TextField pName = new TextField("", Dict.get(lang, "Your Name"), 16, TextArea.ANY);
+                pName.setMaxSize(16);
                 Command pNameCmd = new Command(Dict.get(lang, "OK")) {
                     @Override
                     public void actionPerformed(ActionEvent ev) {
-                        String playerName = pName.getText().trim();
-                        if (playerName.isEmpty()) return;
-                        pName.stopEditing();
-                        playerName = StringUtil.replaceAll(playerName, "\"", "");
-                        playerName = StringUtil.replaceAll(playerName, "\\", "");
-                        playerName = StringUtil.replaceAll(playerName, "'", "");
-                        if (playerName.isEmpty()) return;
-                        Storage.getInstance().writeObject("playerName", playerName);
+                        String playerName = savePlayerName(pName);
+                        if (playerName == null) return;
                         player.startPlay(playerName);
                     }
                 };
@@ -247,9 +242,9 @@ public class TuoLaJi {
         btnSetting = new Button(Dict.get(lang, "Settings"));
         FontImage.setMaterialIcon(btnSetting, FontImage.MATERIAL_SETTINGS);
         btnSetting.addActionListener((e) -> {
-            disp.vibrate(1000);
             disp.playBuiltinSound(Display.SOUND_TYPE_WARNING);
-            TextField pName = new TextField("", Dict.get(lang, "Your Name"), 20, TextArea.ANY);
+            TextField pName = new TextField("", Dict.get(lang, "Your Name"), 16, TextArea.ANY);
+            pName.setMaxSize(16);
             Object sgObj = Storage.getInstance().readObject("playerName");
             if (sgObj != null) {
                 pName.setText(sgObj.toString());
@@ -267,21 +262,9 @@ public class TuoLaJi {
             Command okCmd = new Command(Dict.get(lang, "OK")) {
                 @Override
                 public void actionPerformed(ActionEvent ev) {
-                    String playerName = pName.getText().trim();
-                    if (playerName.isEmpty()) {
-//                        settingDlg.dispose();
-                        return;
-                    }
-                    pName.stopEditing();
-                    playerName = StringUtil.replaceAll(playerName, "\"", "");
-                    playerName = StringUtil.replaceAll(playerName, "\\", "");
-                    playerName = StringUtil.replaceAll(playerName, "'", "");
-                    if (playerName.isEmpty()) {
-//                        settingDlg.dispose();
-                        return;
-                    }
-                    Storage.getInstance().writeObject("playerName", playerName);
-//                    settingDlg.dispose();
+                    String playerName = savePlayerName(pName);
+                    if (playerName == null) return;
+                    player.setPlayerName(playerName);
                 }
             };
 //            settingDlg.add(BorderLayout.CENTER, props);
@@ -322,19 +305,35 @@ public class TuoLaJi {
         this.player.connectServer();
     }
 
+    private String savePlayerName(TextField pName) {
+        String playerName = pName.getText().trim();
+        if (playerName.isEmpty()) return null;
+        pName.stopEditing();
+        playerName = StringUtil.replaceAll(playerName, "\"", "");
+        playerName = StringUtil.replaceAll(playerName, "\\", "");
+        playerName = StringUtil.replaceAll(playerName, "'", "");
+        if (playerName.isEmpty()) return null;
+        Storage.getInstance().writeObject("playerName", playerName);
+        return playerName;
+    }
+
     private Component currentComp;
     public void switchScene(final String scene) {
 //        this.formMain.removeAll();
         switch (scene) {
             case "entry":
-                this.formMain.replaceAndWait(currentComp, this.entry, null);
+                if (this.currentComp != this.entry) {
+                    this.formMain.replaceAndWait(currentComp, this.entry, null);
 //                this.formMain.add(BorderLayout.CENTER, this.entry);
-                this.currentComp = this.entry;
+                    this.currentComp = this.entry;
+                }
                 break;
             case "table":
-                this.formMain.replaceAndWait(currentComp, this.table, null);
+                if (this.currentComp != this.table) {
+                    this.formMain.replaceAndWait(currentComp, this.table, null);
 //                this.formMain.add(BorderLayout.CENTER, this.table);
-                this.currentComp = this.table;
+                    this.currentComp = this.table;
+                }
                 break;
         }
 
