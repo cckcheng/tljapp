@@ -12,7 +12,7 @@ public class Dict {
             return src;
         }
 
-        final String lowerSrc = src.toLowerCase();
+        final String lowerSrc = src.toLowerCase().trim();
         switch (lang) {
             case "zh":
                 switch (lowerSrc) {
@@ -52,6 +52,8 @@ public class Dict {
                     case "1vs5":
                         return "一打五";
 
+                    case "partner":
+                        return "找朋友";
                     case "1st":
                         return "第一";
                     case "2nd":
@@ -60,6 +62,9 @@ public class Dict {
                         return "第三";
                     case "4th":
                         return "第四";
+
+                    case "points":
+                        return "分";
 
                     default:
                         return src;

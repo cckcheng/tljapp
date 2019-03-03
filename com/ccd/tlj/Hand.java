@@ -415,6 +415,7 @@ public class Hand extends Component {
             return;
         }
 
+        needResort = true;
         List<Integer> suiteLens = new ArrayList<>();
         suiteLens.add(lenS);
         suiteLens.add(lenH);
@@ -526,7 +527,7 @@ public class Hand extends Component {
         cards.removeAll(tmpTrumps);
     }
 
-    private int displayWidth(int cardNum) {
+    public int displayWidth(int cardNum) {
         // calculate small cards total display width
         return (cardNum - 1) * this.sPitch + this.sCardWidth;
     }

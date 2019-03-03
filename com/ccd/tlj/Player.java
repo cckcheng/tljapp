@@ -82,7 +82,7 @@ public class Player {
     static final String actionPlayCards = "play";
     static final String actionPartner = "partner";
 
-    public void connectServer() {
+    public void connectServer(boolean rejoin) {
         if (!Socket.isSupported()) {
             Dialog.show("Alert", "Socket is not supported", "OK", "");
             return;
@@ -91,7 +91,9 @@ public class Player {
         main.disableButtons();
         this.mySocket = new MySocket();
         Socket.connect(Card.TLJ_HOST, Card.TLJ_PORT, mySocket);
-        if (this.tableOn) joinTable();
+        if (rejoin) {
+            joinTable();
+        }
     }
 
     public void startPlay(String playerName) {
@@ -101,7 +103,10 @@ public class Player {
     }
 
     public void joinTable() {
-        if (this.mySocket == null) return;
+        if (this.mySocket == null) {
+            return;
+        }
+        mySocket.checkConnection = true;
         mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId
                 + "\",\"name\":\"" + this.playerName + "\""
                 + ",\"ver\":\"" + main.version + "\"");
@@ -176,19 +181,19 @@ public class Player {
             part = Card.suiteSign(def.charAt(0)) + def.charAt(1);
             switch(seq) {
                 case '0':
-                    part = " 1st " + part;
+                    part = Dict.get(main.lang, " 1st ") + part;
                     break;
                 case '1':
-                    part = " 2nd " + part;
+                    part = Dict.get(main.lang, " 2nd ") + part;
                     break;
                 case '2':
-                    part = " 3rd " + part;
+                    part = Dict.get(main.lang, " 3rd ") + part;
                     break;
                 case '3':
-                    part = " 4th " + part;
+                    part = Dict.get(main.lang, " 4th ") + part;
                     break;
             }
-            part = "Parter:" + part;
+            part = Dict.get(main.lang, "Parter") + ":" + part;
         }
         return part;
     }
@@ -242,6 +247,7 @@ public class Player {
         this.hand.setIsReady(false);
         this.hand.clearCards();
         candidateTrumps.clear();
+        mainForm.setGlassPane(null);
 
         isPlaying = false;
         timeout = 30;
@@ -529,7 +535,7 @@ public class Player {
     private void gameSummary(Map<String, Object> data) {
         int points = parseInteger(data.get("pt0"));
         if (points != -1) {
-            this.pointsInfo.setText(points + "分");
+            this.pointsInfo.setText(points + Dict.get(main.lang, " points"));
         }
         final String summary = trimmedString(data.get("summary"));
         int seat = parseInteger(data.get("seat"));  // the contractor
@@ -544,14 +550,39 @@ public class Player {
         hand.repaint();
         this.infoLst.get(0).needChangeActions = true;
 
+        int x = hand.displayWidth(6) + 15;
         if (!summary.isEmpty()) {
             mainForm.setGlassPane((g, rect) -> {
                 g.setColor(INFO_COLOR);
                 g.setFont(Hand.fontGeneral);
-                int x = 300;
                 int y = 160;
                 int idx = -1;
                 String str = summary;
+                while (!str.isEmpty()) {
+                    idx = str.indexOf("\n");
+                    if (idx >= 0) {
+                        g.drawString(str.substring(0, idx), x, y);
+                    } else {
+                        g.drawString(str, x, y);
+                        break;
+                    }
+                    y += Hand.fontGeneral.getHeight();
+                    str = str.substring(idx + 1);
+                }
+            });
+        }
+    }
+
+    private void showInfo(Map<String, Object> data) {
+        final String info = trimmedString(data.get("info"));
+        int x = hand.displayWidth(6) + 15;
+        if (!info.isEmpty()) {
+            mainForm.setGlassPane((g, rect) -> {
+                g.setColor(INFO_COLOR);
+                g.setFont(Hand.fontGeneral);
+                int y = 160;
+                int idx = -1;
+                String str = info;
                 while (!str.isEmpty()) {
                     idx = str.indexOf("\n");
                     if (idx >= 0) {
@@ -738,6 +769,9 @@ public class Player {
                         }
                         gameSummary(data);
                         break;
+                    case "info":
+                        showInfo(data);
+                        break;
                 }
             }
         }
@@ -762,7 +796,7 @@ public class Player {
                 } catch (InterruptedException ex) {
 
                 }
-                connectServer();
+                connectServer(true);
             }
         }
 
@@ -783,7 +817,9 @@ public class Player {
                             request = Base64.encode(request.getBytes());
                             os.write(Card.confusedData(request).getBytes());
                         }
-                        checkConnection = tableOn;
+                        if (!checkConnection) {
+                            checkConnection = tableOn;
+                        }
                     }
                     int n = is.available();
                     if (n > 0) {
@@ -804,13 +840,15 @@ public class Player {
                 os.close();
                 is.close();
             } catch (Exception err) {
+                Log.p("exception conncetion!");
 //                err.printStackTrace();
 //                Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
             }
 
             if (!closeRequested) {
                 // not expected, connect again
-                connectServer();
+                Log.p("re-connect");
+                connectServer(true);
             }
         }
     }
@@ -854,7 +892,7 @@ public class Player {
         String playerName;
         UITimer countDownTimer;
         Container actionButtons;
-        Container bidButtons;
+//        Container bidButtons;
         Button btnBid;
         Button btnPlus;
         Button btnMinus;
@@ -950,12 +988,12 @@ public class Player {
 //                actionButtons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 //                actionButtons.addAll(btnPlus, btnBid, btnMinus, btnPass);
 //                actionButtons.add(btnPass);
-//                actionButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
+                actionButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
 //                actionButtons = BoxLayout.encloseXNoGrow(btnPass);
 //                actionButtons = new Container(BoxLayout.yLast());
-                actionButtons = new Container();
-                bidButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
-                actionButtons.add(bidButtons);
+//                actionButtons = new Container();
+//                bidButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
+//                actionButtons.add(bidButtons);
             }
         }
 
@@ -978,6 +1016,7 @@ public class Player {
                 needChangeActions = true;
                 userHelp.clear();
                 userHelp.setLanguage(main.lang);
+                btnPass.setText(Dict.get(main.lang, "Pass"));
                 actionButtons.setVisible(false);
                 actionButtons.setEnabled(false);
             }
@@ -1046,8 +1085,8 @@ public class Player {
                             .setReferenceComponentBottom(timer, actionButtons, 1f)
                             .setReferenceComponentBottom(userHelp, timer, 1f);
 
-                    actionButtons.setVisible(false);
-                    actionButtons.setEnabled(false);
+//                    actionButtons.setVisible(false);
+//                    actionButtons.setEnabled(false);
                     break;
             }
 
@@ -1112,7 +1151,8 @@ public class Player {
 
                 if (act.equals("dim")) {
                     userHelp.showHelp(userHelp.SET_TRUMP);
-                    Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+                    actionButtons.removeAll();
+//                    Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
                     for (char c : candidateTrumps) {
                         Button btn = new Button();
                         if (c == Card.JOKER) {
@@ -1120,7 +1160,8 @@ public class Player {
                         } else {
                             btn.setText(Card.suiteSign(c));
                         }
-                        buttons.add(btn);
+//                        buttons.add(btn);
+                        actionButtons.add(btn);
                         btn.addActionListener((e) -> {
                             actionButtons.setVisible(false);
                             actionButtons.setEnabled(false);
@@ -1130,8 +1171,7 @@ public class Player {
                         });
                     }
 
-                    actionButtons.removeAll();
-                    actionButtons.add(buttons);
+//                    actionButtons.add(buttons);
 //                    actionButtons.setShouldCalcPreferredSize(true);   // seems no effect
                     needChangeActions = true;
                 } else if (act.equals("bid")) {
@@ -1140,10 +1180,11 @@ public class Player {
                         if (candidateTrumps.isEmpty()) {
                             actionButtons.add(btnPass);
                         } else {
-                            actionButtons.add(bidButtons);
+//                            actionButtons.add(bidButtons);
+                            actionButtons.addAll(btnPlus, btnBid, btnMinus, btnPass);
                         }
                         needChangeActions = false;
-                        actionButtons.setShouldCalcPreferredSize(true);
+//                        actionButtons.setShouldCalcPreferredSize(true);
                     }
                     this.maxBid = contractPoint - 5;
                     btnBid.setText("" + this.maxBid);
@@ -1153,23 +1194,29 @@ public class Player {
                     actionButtons.add(btnPlay);
                     btnPlay.setName("bury");
                     btnPlay.setText(Dict.get(main.lang, "Bury"));
-                    actionButtons.setShouldCalcPreferredSize(true);
+//                    actionButtons.setShouldCalcPreferredSize(true);
                     needChangeActions = true;
                 } else if (act.equals("partner")) {
                     userHelp.showHelp(userHelp.SET_PARTNER);
-                    Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+                    actionButtons.removeAll();
+//                    Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
                     RadioButton rb1 = new RadioButton(Dict.get(main.lang, "1st"));
                     RadioButton rb2 = new RadioButton(Dict.get(main.lang, "2nd"));
                     RadioButton rb3 = new RadioButton(Dict.get(main.lang, "3rd"));
                     RadioButton rb4 = new RadioButton(Dict.get(main.lang, "4th"));
                     ButtonGroup btnGroup = new ButtonGroup(rb1,rb2,rb3,rb4);
-                    buttons.addAll(rb1, rb2, rb3, rb4);
+//                    buttons.addAll(rb1, rb2, rb3, rb4);
+                    actionButtons.addAll(rb1, rb2, rb3, rb4);
                     String rnk = Card.rankToString(playerRank);
                     rnk = rnk.equals("A") ? "K" : "A";
-                    addCardButton(buttons, Card.SPADE, rnk, btnGroup);
-                    addCardButton(buttons, Card.HEART, rnk, btnGroup);
-                    addCardButton(buttons, Card.DIAMOND, rnk, btnGroup);
-                    addCardButton(buttons, Card.CLUB, rnk, btnGroup);
+//                    addCardButton(buttons, Card.SPADE, rnk, btnGroup);
+//                    addCardButton(buttons, Card.HEART, rnk, btnGroup);
+//                    addCardButton(buttons, Card.DIAMOND, rnk, btnGroup);
+//                    addCardButton(buttons, Card.CLUB, rnk, btnGroup);
+                    addCardButton(actionButtons, Card.SPADE, rnk, btnGroup);
+                    addCardButton(actionButtons, Card.HEART, rnk, btnGroup);
+                    addCardButton(actionButtons, Card.DIAMOND, rnk, btnGroup);
+                    addCardButton(actionButtons, Card.CLUB, rnk, btnGroup);
 //                    Button btn = new Button("1vs5", "nopartner");
                     Button btn = new Button(Dict.get(main.lang, "1vs5"));
                     btn.setCapsText(false);
@@ -1179,10 +1226,10 @@ public class Player {
                         cancelTimer();
                         mySocket.addRequest(actionPartner, "\"def\":\"0\"");
                     });
-                    buttons.add(new Label("   ")).add(btn);
-                    actionButtons.removeAll();
-                    actionButtons.add(buttons);
-                    actionButtons.setShouldCalcPreferredSize(true);
+//                    buttons.add(new Label("   ")).add(btn);
+                    actionButtons.add(new Label("   ")).add(btn);
+//                    actionButtons.add(buttons);
+//                    actionButtons.setShouldCalcPreferredSize(true);
                     needChangeActions = true;
                 } else if(act.equals("play")){
                     if(needChangeActions) {
@@ -1190,7 +1237,7 @@ public class Player {
                         btnPlay.setText(Dict.get(main.lang, Dict.PLAY));
                         actionButtons.removeAll();
                         actionButtons.add(btnPlay);
-                        actionButtons.setShouldCalcPreferredSize(true);
+//                        actionButtons.setShouldCalcPreferredSize(true);
                         needChangeActions = false;
                     }
                 } else {
@@ -1273,7 +1320,11 @@ public class Player {
         }
 
         void showInfo(String info) {
-            engLabel.setText(info);
+            if (curLang.equalsIgnoreCase("zh")) {
+                chnLabel.setText(info);
+            } else {
+                engLabel.setText(info);
+            }
         }
 
         void showHelp(int category) {

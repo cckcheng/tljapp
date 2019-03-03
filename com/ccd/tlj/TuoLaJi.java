@@ -108,13 +108,15 @@ public class TuoLaJi {
             this.btnPlay.setEnabled(false);
             this.btnPlay.setText(Dict.get(lang, "Network Error"));
             Button btn = this.btnPlay;
-            new UITimer(new Runnable() {
-                @Override
-                public void run() {
-                    btn.setText(Dict.get(lang, "Connecting") + "...");
-                    p.connectServer();
-                }
-            }).schedule(5000, false, this.formMain);
+            if (this.currentComp == this.entry) {
+                new UITimer(new Runnable() {
+                    @Override
+                    public void run() {
+                        btn.setText(Dict.get(lang, "Connecting") + "...");
+                        p.connectServer(false);
+                    }
+                }).schedule(5000, false, this.formMain);
+            }
         }
     }
 
@@ -193,6 +195,7 @@ public class TuoLaJi {
                     public void actionPerformed(ActionEvent ev) {
                         String playerName = savePlayerName(pName);
                         if (playerName == null) return;
+                        bPlay.setEnabled(false);
                         player.startPlay(playerName);
                     }
                 };
@@ -302,7 +305,7 @@ public class TuoLaJi {
         this.currentComp = entry;
         mainForm.show();
 
-        this.player.connectServer();
+        this.player.connectServer(false);
     }
 
     private String savePlayerName(TextField pName) {
