@@ -153,15 +153,19 @@ public class Hand extends Component {
         }
     }
 
-    private void removeFromList(List<Card> lst, int rank) {
+    private boolean removeFromList(List<Card> lst, char suite, int rank) {
         Card m = null;
         for (Card c : lst) {
-            if (c.rank == rank) {
+            if (c.rank == rank && c.suite == suite) {
                 m = c;
                 break;
             }
         }
-        if (m != null) lst.remove(m);
+        if (m == null) {
+            return false;
+        }
+        lst.remove(m);
+        return true;
     }
 
     private void findAndRemove(String s) {
@@ -191,21 +195,22 @@ public class Hand extends Component {
             }
         }
 
+        if (removeFromList(this.trumps, suite, rank)) {
+            return;
+        }
+
         switch (suite) {
             case Card.SPADE:
-                removeFromList(this.spades, rank);
+                removeFromList(this.spades, suite, rank);
                 break;
             case Card.HEART:
-                removeFromList(this.hearts, rank);
+                removeFromList(this.hearts, suite, rank);
                 break;
             case Card.DIAMOND:
-                removeFromList(this.diamonds, rank);
+                removeFromList(this.diamonds, suite, rank);
                 break;
             case Card.CLUB:
-                removeFromList(this.clubs, rank);
-                break;
-            default:
-                removeFromList(this.trumps, rank);
+                removeFromList(this.clubs, suite, rank);
                 break;
         }
     }
@@ -235,7 +240,7 @@ public class Hand extends Component {
         return this.selected;
     }
 
-    synchronized public void removeCards(List<Card> cards) {
+    synchronized private void removeCards(List<Card> cards) {
         for (Card c : cards) {
             this.removeCard(c);
         }
@@ -254,12 +259,13 @@ public class Hand extends Component {
             cards = cards.substring(x + 1);
             x = cards.indexOf(',');
         }
+
         if (!cards.isEmpty()) {
             findAndRemove(cards);
             this.selected.clear();
+            resortOnDemand();
         }
 
-        resortOnDemand();
         this.repaint();
     }
 
