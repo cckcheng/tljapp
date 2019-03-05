@@ -308,6 +308,10 @@ public class Hand extends Component {
         needResort = false;
     }
 
+    synchronized public boolean isEmpty() {
+        return this.lowerList.size() + this.upperList.size() < 1;
+    }
+
     synchronized public void clearCards() {
         this.selected.clear();
         this.trumps.clear();

@@ -158,6 +158,7 @@ public class Player {
     }
 
     synchronized private void addRemains(Map<String, Object> data) {
+        if (this.hand.isEmpty()) return;
         String cards = trimmedString(data.get("cards"));
         if (cards.isEmpty()) return;
         int x = cards.indexOf(',');
@@ -178,6 +179,7 @@ public class Player {
     }
 
     private void buryCards(Map<String, Object> data) {
+        if (this.hand.isEmpty()) return;
         String strCards = trimmedString(data.get("cards"));
         if (strCards.isEmpty()) return;
         hand.removeCards(strCards);
@@ -612,6 +614,7 @@ public class Player {
     }
 
     private void playCards(Map<String, Object> data) {
+        if (this.hand.isEmpty()) return;
         int seat = parseInteger(data.get("seat"));
         int actionSeat = parseInteger(data.get("next"));
         int points = parseInteger(data.get("pt0")); // total points by non-contract players
@@ -677,6 +680,7 @@ public class Player {
     private char currentTrump;
     private int gameRank;
     synchronized private void setTrump(Map<String, Object> data) {
+        if (this.hand.isEmpty()) return;
         String trump = data.get("trump").toString();
         if (trump.isEmpty()) return;
         this.currentTrump = trump.charAt(0);
