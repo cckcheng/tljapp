@@ -55,6 +55,15 @@ public class Player {
     private final Form mainForm;
     private final TuoLaJi main;
 
+    private UITimer gameTimer;
+    private Runnable notifyPlayer = new Runnable() {
+        @Override
+        public void run() {
+            Display.getInstance().vibrate(1000);  // this works
+            gameTimer = null;
+        }
+    };
+
     public Player(String playerId, TuoLaJi main) {
         this.playerId = playerId;
         this.mainForm = main.formMain;
@@ -109,8 +118,10 @@ public class Player {
         this.tableOn = true;
         mySocket.checkConnection = true;
         mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId
-                + "\",\"name\":\"" + this.playerName + "\""
-                + ",\"ver\":\"" + main.version + "\"");
+                + "\",\"name\":\"" + this.playerName
+                + "\",\"lang\":\"" + main.lang
+                + "\",\"ver\":\"" + main.version
+                + "\"");
     }
 
     public void disconnect() {
@@ -316,6 +327,13 @@ public class Player {
             }
         } else {
             p0.userHelp.showInfo(info);
+            if (gameTimer == null) {
+                int pauseSeconds = parseInteger(data.get("pause"));
+                if (pauseSeconds - 5 > 0) {
+                    gameTimer = new UITimer(this.notifyPlayer);
+                    gameTimer.schedule((pauseSeconds - 5) * 1000, false, mainForm);
+                }
+            }
         }
 
         List<Object> players = (List<Object>) data.get("players");
@@ -398,7 +416,7 @@ public class Player {
         bExit.setUIID("myExit");
         bExit.addActionListener((e) -> {
             this.tableOn = false;
-            mySocket.addRequest(actionExit, "");
+            if (mySocket != null) mySocket.addRequest(actionExit, "");
             cancelTimers();
             this.main.switchScene("entry");
         });
@@ -521,6 +539,13 @@ public class Player {
         if (!this.tableOn) {
             return;
         }
+
+        int pauseSeconds = parseInteger(data.get("pause"));
+        if (pauseSeconds - 5 > 0) {
+            gameTimer = new UITimer(this.notifyPlayer);
+            gameTimer.schedule((pauseSeconds - 5) * 1000, false, mainForm);
+        }
+
         int points = parseInteger(data.get("pt0"));
         if (points != -1) {
             this.pointsInfo.setText(points + Dict.get(main.lang, " points"));
@@ -770,8 +795,6 @@ public class Player {
 
         @Override
         public void connectionError(int errorCode, String message) {
-//            Display.getInstance().vibrate(1000);  // this works
-
 //            if (isConnected()) closeRequested = true;
 //            main.enableButtons();
             main.onConnectionError();
