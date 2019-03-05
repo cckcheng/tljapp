@@ -6,6 +6,7 @@ import com.codename1.io.Socket;
 import com.codename1.io.SocketConnection;
 import com.codename1.ui.Button;
 import com.codename1.ui.ButtonGroup;
+import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
@@ -15,6 +16,7 @@ import com.codename1.ui.Form;
 import com.codename1.ui.Graphics;
 import com.codename1.ui.Label;
 import com.codename1.ui.RadioButton;
+import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.util.UITimer;
@@ -526,7 +528,7 @@ public class Player {
         if (lst != null) {
             this.hand.addPlayCards(pp, lst);
             if (pp.location.equals("bottom")) {
-                hand.removeCards(cards);
+                if (!this.hand.isEmpty()) hand.removeCards(cards);
                 if (pp.actionButtons != null) {
                     pp.actionButtons.setVisible(false);
                     pp.actionButtons.setEnabled(false);
@@ -613,7 +615,6 @@ public class Player {
     }
 
     private void playCards(Map<String, Object> data) {
-        if (this.hand.isEmpty()) return;
         int seat = parseInteger(data.get("seat"));
         int actionSeat = parseInteger(data.get("next"));
         int points = parseInteger(data.get("pt0")); // total points by non-contract players
@@ -664,7 +665,6 @@ public class Player {
         } else {
             for (PlayerInfo pp : this.infoLst) {
                 this.hand.clearPlayCards(pp);
-                pp.cancelTimer();
             }
         }
 
@@ -953,11 +953,44 @@ public class Player {
 //            timer.setHidden(true, true);    // setHidden Does not work
 
             if (loc.equals("bottom")) {
+                Command commonCmd = new Command("Play") {   // for pass, bury and play
+                    @Override
+                    public void actionPerformed(ActionEvent ev) {
+                        final String action = ev.getActualComponent().getName();
+                        List<Card> cards;
+                        switch (action) {
+                            case "pass":
+                                mySocket.addRequest(actionBid, "\"bid\":\"pass\"");
+                                break;
+                            case "bury":
+                                cards = hand.getSelectedCards();
+                                if (cards.size() != 6) return;
+                                userHelp.clear();
+                                mySocket.addRequest(action, "\"cards\":\"" + Card.cardsToString(cards) + "\"");
+                                break;
+                            case "play":
+                                cards = hand.getSelectedCards();
+                                if (!isValid(cards, userHelp)) return;
+                                userHelp.clear();
+                                mySocket.addRequest(action, "\"cards\":\"" + Card.cardsToString(cards) + "\"");
+                                break;
+                        }
+
+                        actionButtons.setVisible(false);
+                        actionButtons.setEnabled(false);
+                        cancelTimer();
+                    }
+                };
+
                 btnBid = new Button("200");
                 btnPlus = new Button("");
                 btnMinus = new Button("");
-                btnPass = new Button(Dict.get(main.lang, "Pass"));
-                btnPassSingle = new Button(Dict.get(main.lang, "Pass"));
+                btnPass = new Button(commonCmd);
+                btnPassSingle = new Button(commonCmd);
+                btnPass.setText(Dict.get(main.lang, "Pass"));
+                btnPassSingle.setText(Dict.get(main.lang, "Pass"));
+                btnPass.setName("pass");
+                btnPassSingle.setName("pass");
 
                 FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_ARROW_UPWARD);
                 FontImage.setMaterialIcon(btnMinus, FontImage.MATERIAL_ARROW_DOWNWARD);
@@ -975,18 +1008,6 @@ public class Player {
                     cancelTimer();
                     mySocket.addRequest(actionBid, "\"bid\":" + btnBid.getText().trim());
                 });
-                btnPass.addActionListener((e) -> {
-                    actionButtons.setVisible(false);
-                    actionButtons.setEnabled(false);
-                    cancelTimer();
-                    mySocket.addRequest(actionBid, "\"bid\":\"pass\"");
-                });
-                btnPassSingle.addActionListener((e) -> {
-                    actionButtons.setVisible(false);
-                    actionButtons.setEnabled(false);
-                    cancelTimer();
-                    mySocket.addRequest(actionBid, "\"bid\":\"pass\"");
-                });
 
                 btnPlus.addActionListener((e) -> {
                     int point = parseInteger(btnBid.getText());
@@ -1003,26 +1024,8 @@ public class Player {
                     }
                 });
 
-                btnPlay = new Button("Play");
+                btnPlay = new Button(commonCmd);
                 btnPlay.getAllStyles().setBgImage(backImage);
-                btnPlay.addActionListener((e) -> {
-                    String action = btnPlay.getName();
-                    List<Card> cards = hand.getSelectedCards();
-                    if (action.equals("bury") && cards.size() != 6) {
-//                        userHelp.showHelp(userHelp.BURY_CARDS);
-                        return;
-                    }
-                    if (action.equals("play")) {
-                        if (!isValid(cards, userHelp)) {
-                            return;
-                        }
-                    }
-                    userHelp.clear();
-                    actionButtons.setVisible(false);
-                    actionButtons.setEnabled(false);
-                    cancelTimer();
-                    mySocket.addRequest(action, "\"cards\":\"" + Card.cardsToString(cards) + "\"");
-                });
 
                 bidButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
                 actionButtons = bidButtons;
@@ -1151,7 +1154,6 @@ public class Player {
         void cancelTimer() {
             if (countDownTimer != null) countDownTimer.cancel();
 //            this.timer.setHidden(true, true); // setHidden does not work well
-//            this.points.setHidden(false, true);
 //            this.timer.setText("");
 //            FontImage.setMaterialIcon(timer, '0');  // hide it
             this.timer.setVisible(false);
@@ -1196,7 +1198,6 @@ public class Player {
 
                 if (act.equals("dim")) {
                     userHelp.showHelp(userHelp.SET_TRUMP);
-//                    actionButtons.removeAll();
                     Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
                     for (char c : candidateTrumps) {
                         Button btn = new Button();
@@ -1205,7 +1206,6 @@ public class Player {
                         } else {
                             btn.setText(Card.suiteSign(c));
                         }
-//                        actionButtons.add(btn);
                         buttons.add(btn);
                         btn.addActionListener((e) -> {
                             actionButtons.setVisible(false);
@@ -1221,12 +1221,6 @@ public class Player {
                     needChangeActions = true;
                 } else if (act.equals("bid")) {
                     if (needChangeActions) {
-//                        actionButtons.removeAll();
-//                        if (candidateTrumps.isEmpty()) {
-//                            actionButtons.add(btnPass);
-//                        } else {
-//                            actionButtons.addAll(btnPlus, btnBid, btnMinus, btnPass);
-//                        }
                         if (candidateTrumps.isEmpty()) {
                             if (actionButtons != passButton) {
                                 parent.replaceAndWait(actionButtons, passButton, null);
@@ -1245,8 +1239,6 @@ public class Player {
                     btnBid.setText("" + this.maxBid);
                 } else if (act.equals("bury")) {
                     userHelp.showHelp(userHelp.BURY_CARDS);
-//                    actionButtons.removeAll();
-//                    actionButtons.add(btnPlay);
                     parent.replaceAndWait(actionButtons, playButton, null);
                     actionButtons = playButton;
                     btnPlay.setName("bury");
@@ -1255,21 +1247,15 @@ public class Player {
                 } else if (act.equals("partner")) {
                     userHelp.showHelp(userHelp.SET_PARTNER);
 
-//                    actionButtons.removeAll();
                     Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
                     RadioButton rb1 = new RadioButton(Dict.get(main.lang, "1st"));
                     RadioButton rb2 = new RadioButton(Dict.get(main.lang, "2nd"));
                     RadioButton rb3 = new RadioButton(Dict.get(main.lang, "3rd"));
                     RadioButton rb4 = new RadioButton(Dict.get(main.lang, "4th"));
                     ButtonGroup btnGroup = new ButtonGroup(rb1,rb2,rb3,rb4);
-//                    actionButtons.addAll(rb1, rb2, rb3, rb4);
                     buttons.addAll(rb1, rb2, rb3, rb4);
                     String rnk = Card.rankToString(playerRank);
                     rnk = rnk.equals("A") ? "K" : "A";
-//                    addCardButton(actionButtons, Card.SPADE, rnk, btnGroup);
-//                    addCardButton(actionButtons, Card.HEART, rnk, btnGroup);
-//                    addCardButton(actionButtons, Card.DIAMOND, rnk, btnGroup);
-//                    addCardButton(actionButtons, Card.CLUB, rnk, btnGroup);
                     addCardButton(buttons, Card.SPADE, rnk, btnGroup);
                     addCardButton(buttons, Card.HEART, rnk, btnGroup);
                     addCardButton(buttons, Card.DIAMOND, rnk, btnGroup);
@@ -1282,7 +1268,6 @@ public class Player {
                         cancelTimer();
                         mySocket.addRequest(actionPartner, "\"def\":\"0\"");
                     });
-//                    actionButtons.add(new Label("   ")).add(btn);
                     buttons.add(new Label("   ")).add(btn);
                     parent.replaceAndWait(actionButtons, buttons, null);
                     actionButtons = buttons;
@@ -1291,8 +1276,6 @@ public class Player {
                     if(needChangeActions) {
                         btnPlay.setName("play");
                         btnPlay.setText(Dict.get(main.lang, Dict.PLAY));
-//                        actionButtons.removeAll();
-//                        actionButtons.add(btnPlay);
                         if (actionButtons != playButton) {
                             parent.replaceAndWait(actionButtons, playButton, null);
                             actionButtons = playButton;

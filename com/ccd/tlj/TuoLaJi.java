@@ -187,9 +187,12 @@ public class TuoLaJi {
         FontImage.setMaterialIcon(bPlay, FontImage.MATERIAL_PEOPLE);
         bPlay.addActionListener((e) -> {
             Object sgObj = Storage.getInstance().readObject("playerName");
-            if (sgObj == null) {
+            if (sgObj == null || Card.TLJ_PORT == 6658) {
                 TextField pName = new TextField("", Dict.get(lang, "Your Name"), 16, TextArea.ANY);
                 pName.setMaxSize(16);
+                if (sgObj != null) {
+                    pName.setText(sgObj.toString());
+                }
                 Command pNameCmd = new Command(Dict.get(lang, "OK")) {
                     @Override
                     public void actionPerformed(ActionEvent ev) {
@@ -199,7 +202,7 @@ public class TuoLaJi {
                         player.startPlay(playerName);
                     }
                 };
-                Dialog.show(Dict.get(lang, "Player Name"), pName, pNameCmd);
+                Dialog.show("", pName, pNameCmd);
             } else {
                 bPlay.setEnabled(false);
                 this.player.startPlay(sgObj.toString());
