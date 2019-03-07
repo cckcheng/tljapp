@@ -98,6 +98,9 @@ public class TuoLaJi {
         this.btnHelp.setText(Dict.get(lang, "Help"));
         this.btnExit.setText(Dict.get(lang, "Exit"));
         this.btnSetting.setText(Dict.get(lang, "Settings"));
+        if (this.player != null) {
+            this.player.refreshLang();
+        }
     }
 
     private Player player = null;
