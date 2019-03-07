@@ -740,12 +740,12 @@ public class Player {
         }
 
         private void processReceived(String msg) throws IOException {
-            if(!msg.startsWith("{")) {
-                msg = Card.confusedData(msg);
-                msg = new String(Base64.decode(msg.getBytes()));
-            }
-//            if (Card.DEBUG_MODE)
-                Log.p("Received: " + msg);
+//            Log.p("Raw data: " + msg);
+//            if (!msg.startsWith("{")) {
+//                msg = Card.confusedData(msg);
+//                msg = new String(Base64.decode(msg.getBytes()));
+//            }
+
             JSONParser parser = new JSONParser();
             int idx = msg.indexOf("\n");
             while (idx > 0) {
@@ -753,6 +753,12 @@ public class Player {
                 msg = msg.substring(idx + 1);
                 idx = msg.indexOf("\n");
                 if (subMsg.trim().isEmpty()) continue;
+
+                if (!subMsg.startsWith("{")) {
+                    subMsg = Card.confusedData(subMsg);
+                    subMsg = new String(Base64.decode(subMsg.getBytes()));
+                }
+//                Log.p("Received: " + subMsg);
                 Map<String, Object> data = parser.parseJSON(new StringReader(subMsg));
                 final String action = trimmedString(data.get("action"));
 
@@ -786,12 +792,7 @@ public class Player {
                     case "gameover":
                         startNotifyTimer(data);
                         cancelTimers();
-                        new UITimer(new Runnable() {
-                            @Override
-                            public void run() {
-                                gameSummary(data);
-                            }
-                        }).schedule(2000, false, mainForm);
+                        gameSummary(data);
                         break;
                     case "info":
                         showInfo(data);
@@ -847,9 +848,12 @@ public class Player {
                     if (n > 0) {
                         checkConnection = false;
                         count = 0;
-                        n = is.read(buffer, 0, 4096);
-                        if (n < 0) break;
-                        processReceived(new String(buffer, 0, n));
+                        String msg = "";
+                        while ((n = is.read(buffer, 0, 4096)) > 0) {
+                            msg += new String(buffer, 0, n);
+                            if (n < 4096) break;
+                        }
+                        processReceived(msg);
                     } else {
                         if (checkConnection) count++;
                         if (count > serverWaitCycle) {
