@@ -6,9 +6,7 @@ import com.codename1.ui.Font;
 import com.codename1.ui.Graphics;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -673,14 +671,15 @@ public class Hand extends Component {
         int x1 = x0 + (this.upperList.size() - 1) * xPitch + cardWidth;
         int x2 = x0 + (this.lowerList.size() - 1) * xPitch + cardWidth;
         Card c = selectCard(x, y, x0, x1, x2, y0, y1, y2);
-        if (c != null) dragged.add(c);
-//        if (this.selected.contains(c)) {
-//            this.selected.remove(c);
-//        } else {
-//            this.selected.add(c);
-//        }
+        if (c == null) return;
+//        if (c != null) dragged.add(c);
+        if (this.selected.contains(c)) {
+            this.selected.remove(c);
+        } else {
+            this.selected.add(c);
+        }
     }
-
+    /*
     Set<Card> dragged = new HashSet<>();
 
     @Override
@@ -805,31 +804,31 @@ public class Hand extends Component {
     }
 */
 
-    @Override
-    public void pointerReleased(int x, int y) {
-        if(!this.player.isPlaying) return;
-        int y0 = getY() + getHeight() - hReserved;
-        int y1 = y0 - cardHeight;
-        int y2 = y1 - cardHeight * 4 / 5;
-        int x0 = getX() + 5;
-        int x1 = x0 + (this.upperList.size() - 1) * xPitch + cardWidth;
-        int x2 = x0 + (this.lowerList.size() - 1) * xPitch + cardWidth;
-        Card c1 = selectCard(x, y, x0, x1, x2, y0, y1, y2);
-        if (c1 == null) {
-            dragged.clear();
-            return;
-        }
-
-        dragged.add(c1);
-        for (Card c : dragged) {
-            if (this.selected.contains(c)) {
-                this.selected.remove(c);
-            } else {
-                this.selected.add(c);
-            }
-        }
-        dragged.clear();
-    }
+//    @Override
+//    public void pointerReleased(int x, int y) {
+//        if(!this.player.isPlaying) return;
+//        int y0 = getY() + getHeight() - hReserved;
+//        int y1 = y0 - cardHeight;
+//        int y2 = y1 - cardHeight * 4 / 5;
+//        int x0 = getX() + 5;
+//        int x1 = x0 + (this.upperList.size() - 1) * xPitch + cardWidth;
+//        int x2 = x0 + (this.lowerList.size() - 1) * xPitch + cardWidth;
+//        Card c1 = selectCard(x, y, x0, x1, x2, y0, y1, y2);
+//        if (c1 == null) {
+//            dragged.clear();
+//            return;
+//        }
+//
+//        dragged.add(c1);
+//        for (Card c : dragged) {
+//            if (this.selected.contains(c)) {
+//                this.selected.remove(c);
+//            } else {
+//                this.selected.add(c);
+//            }
+//        }
+//        dragged.clear();
+//    }
 
     Card selectCard(int x, int y, int x0, int x1, int x2, int y0, int y1, int y2) {
         if (y > y0 || y < y2) return null;
