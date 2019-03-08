@@ -451,14 +451,89 @@ public class TuoLaJi {
 
         this.help = new Container(new LayeredLayout());
 
-        Container content = new Container(BoxLayout.y());
+//        Container content = new Container(BoxLayout.y());
+        Container content = new Container();
         content.setScrollableY(true);
         content.setScrollableX(false);
 
-        SpanLabel lb = new SpanLabel("Test ");
+        SpanLabel lb = new SpanLabel("This game is played by six players,"
+                + " using four full decks. Each player is dealt with 35 cards,"
+                + " while the remaining 6 cards will be added to the declarer later."
+                + " The bidding procedure is similar to Bridge game, each player can bid a specific point or pass."
+                + " The declarer is the player who made the final point bid (contract point)."
+                + " That means, after this point bid, other players all pass."
+                + " Then the declarer choose which suit is trump, or NT means no-trump."
+                + " After that, the remaining 6 cards is added to the declarer’s hand."
+                + " The declarer then select any 6 cards to throw out, as the hole cards."
+                + " At this point, the declarer can define the partner condition:"
+                + " e.g. 2nd ♠A, it means who plays the second ♠A will be the declarer’s partner,"
+                + " then all other 4 players will be the defenders."
+                + " The defenders need collect enough points (equals or greater than the contract point) to beat the contract.");
+        content.add(lb);
+        Label boldLabel = new Label("Playing Stage:");
+        boldLabel.getStyle().setFont(Hand.fontGeneral);
+        content.add(boldLabel);
+        lb = new SpanLabel("The declarer plays the first hand, then each player plays in a counter-clockwise order."
+                + " The player who wins this round collects all the points (sum all the point cards played, if any),"
+                + " and will be the next leading player, and so on."
+                + " If a defender wins the final round and there are point cards in the hole cards,"
+                + " the total points in the hole cards will be times by a multiple (4 or more, depends on the winning hand strength) and added the defenders’ collected points."
+                + " If the contract is made, the declarer and partner is promoted to next rank,"
+                + " otherwise the defenders are promoted to next rank.");
         content.add(lb);
 
-        this.help.add(content);
+        Container p = new Container();
+        content.add(p);
+        boldLabel = new Label("Point Cards: ");
+        boldLabel.getStyle().setFont(Hand.fontGeneral);
+        p.add(boldLabel);
+        p.add(new Label("5 (5 points), 10 and K (10 points)."))
+                .add(new Label(" 100 points per deck,"))
+                .add(new Label(" total points is 400."));
+
+        p = new Container();
+        content.add(p);
+        boldLabel = new Label("Card Rank");
+        boldLabel.getStyle().setFont(Hand.fontGeneral);
+        p.add(boldLabel);
+        p.add(new Label(" (from low to high):"))
+                .add(new Label(" 2, 3, 4 … 10, J, Q, K, A,"))
+                .add(new Label(" game rank (not in trump suit),"))
+                .add(new Label(" game rank (in trump suit), Black Joker, Red Joker."));
+
+        p = new Container();
+        content.add(p);
+        boldLabel = new Label("Game Rank: ");
+        boldLabel.getStyle().setFont(Hand.fontGeneral);
+        p.add(boldLabel);
+        p.add(new Label("The declarer’s current rank"))
+                .add(new Label(" (In general, each match begins from Rank 2)"));
+        p = new Container();
+        content.add(p);
+        p.add(new SpanLabel(
+                "Trump: Red Joker, Black Joker and the game rank cards are always trumps (even in a NT game).\n"
+                + "Flop Play: The leading player plays multiple combinations together. To make it a valid play, all the combinations must not be beaten by other players. \n"
+                + "    e.g. the leading player try play ♥A♥K♥K, but another player has ♥A♥A, then the leading player is forced to play ♥K♥K (♥A will be returned to his/her hand), and get a 10 point penalty (each card returned get a 10 point penalty).\n"
+                + "Ruff: A player can ruff by using his/her trump if the leading suit is empty in his/her hand.\n"
+                + "Overruff: If the leading hand is a Flop, and two players can ruff, then only the strongest(longest) combination is compared to determine which is the winning hand. \n"
+                + "    e.g. suppose ♥ is trump, game rank is 10 \n"
+                + "    a. the leading hand is ♠AQQJJ, one player ruffs with ♥A6655, then another player can overruff with ♥59988 \n"
+                + "    b. the leading hand is ♠AAJJ, one player ruffs with ♥JJ99, then another player can overruff with ♥QQ22\n"
+                + "\n"
+                + "DaGuang: Defenders collected no point, declarer and partner is promoted by 3 ranks.\n"
+                + "XiaoGuang: The total collected points are less than half of the contract point, declarer and partner is promoted by 2 ranks.\n"
+                + "Bounce: The total collected points minus the contract point, for each additional 80 points, the defenders are promoted by 1 more rank.\n"
+                + "1 vs 5: At the beginning of playing stage, the declarer can choose “1 vs 5” (no partner). If the contract is made, the declarer will get double promotion.\n"
+                + "Match: The player whose rank passes Rank A wins the match. A full match (2 -> A) usually takes 3.5 to 4.5 hours.\n"
+                + "\n"
+                + "Card Combinations\n"
+                + "Single: a single card\n"
+                + "Pair: 2 same cards\n"
+                + "Tractor: connected pairs: e.g. 2233, 667788, 5577(while 6 is the game rank), ♠K♠K♠A♠A♥5♥5♠5♠5BBRR (while game rank is 5 and ♠ is trump, B is Black Joker, R is Red Joker)\n"
+                + "Trips: 3 same cards (if leaded, other player has to follow a pair if he has no trips to play)\n"
+                + "Quads: 4 same cards (bomb, can beat 2-pair tractor; if leaded, the follow play preference is: quads, trips + single, 2-pair tractor, 2 pairs, 1 pair + 2 singles, 4 singles)\n"
+                + "Bulldozer: connected trips (or quads): e.g. 444555, JJJQQQKKK (if leaded, the follow play preference is (for 2-trips bulldozer): 2 trips, 1 trips + 1 pair + 1 single, 2-pair tractor + 2 singles, 2 pairs + 2 singles, 1 pair + 4 singles, 6 singles)"
+        ));
 
         Button bReturn = new Button();
         FontImage.setMaterialIcon(bReturn, FontImage.MATERIAL_EXIT_TO_APP);
@@ -466,7 +541,8 @@ public class TuoLaJi {
         bReturn.addActionListener((e) -> {
             this.switchScene("entry");
         });
-        this.help.add(bReturn);
+
+        this.help.add(content).add(bReturn);
         LayeredLayout ll = (LayeredLayout) help.getLayout();
         ll.setInsets(bReturn, "auto 0 0 auto");  //top right bottom left
         this.switchScene("help");
