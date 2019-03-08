@@ -123,13 +123,14 @@ public class TuoLaJi {
         }
     }
 
-    public String version = "1.02";
+    public String version = "1.11";
 //        String title = "Bid Tractor";
     public final static String title = "Langley TuoLaJi";
 
     public String lang = "en";
     private Container entry;
     private Container table;
+    private Container help;
 
     public void start() {
         if(current != null){
@@ -235,7 +236,8 @@ public class TuoLaJi {
 //        btnHelp.setEnabled(false);
         btnHelp.addActionListener((e) -> {
 //            switchScene("table");
-            helpDlg.show(0, 0, 100, 100);
+//            helpDlg.show(0, 0, 100, 100);
+            showHelp();
         });
 
         btnExit = new Button(Dict.get(lang, "Exit"));
@@ -344,6 +346,13 @@ public class TuoLaJi {
                     this.currentComp = this.table;
                 }
                 break;
+            case "help":
+                if (this.currentComp != this.help) {
+                    this.formMain.replaceAndWait(currentComp, this.help, null);
+//                this.formMain.add(BorderLayout.CENTER, this.table);
+                    this.currentComp = this.help;
+                }
+                break;
         }
 
         this.formMain.setGlassPane(null);
@@ -434,4 +443,32 @@ public class TuoLaJi {
     public void destroy() {
     }
 
+    private void showHelp() {
+        if (this.help != null) {
+            this.switchScene("help");
+            return;
+        }
+
+        this.help = new Container(new LayeredLayout());
+
+        Container content = new Container(BoxLayout.y());
+        content.setScrollableY(true);
+        content.setScrollableX(false);
+
+        SpanLabel lb = new SpanLabel("Test ");
+        content.add(lb);
+
+        this.help.add(content);
+
+        Button bReturn = new Button();
+        FontImage.setMaterialIcon(bReturn, FontImage.MATERIAL_EXIT_TO_APP);
+        bReturn.setUIID("return");
+        bReturn.addActionListener((e) -> {
+            this.switchScene("entry");
+        });
+        this.help.add(bReturn);
+        LayeredLayout ll = (LayeredLayout) help.getLayout();
+        ll.setInsets(bReturn, "auto 0 0 auto");  //top right bottom left
+        this.switchScene("help");
+    }
 }
