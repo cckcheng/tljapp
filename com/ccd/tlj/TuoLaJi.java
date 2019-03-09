@@ -488,11 +488,11 @@ public class TuoLaJi {
     }
 
     private Container showHelpZH() {
-        Container content = new Container();
+        Container content = new Container(BoxLayout.y());
         content.setScrollableY(true);
-        content.setScrollableX(false);
+        content.setScrollableX(true);
 
-        SpanLabel lb = new SpanLabel("本游戏为六人四付找朋友打法，采用竞叫上庄，庄家叫主后拿底牌并扣底，然后找一个朋友（也可以不找，一个打五个，打成后升级翻倍）");
+        SpanLabel lb = new SpanLabel("本游戏为六人四付找朋友打法，采用竞叫上庄，庄家叫主后拿底牌并扣底，\n然后找一个朋友（也可以不找，一个打五个，打成后升级翻倍）");
         content.add(lb);
         lb = new SpanLabel("如果被闲家扣底，则底牌分翻4倍（对子抠底则再乘以2,三张则再乘3, ...）");
         content.add(lb);
@@ -502,14 +502,13 @@ public class TuoLaJi {
         content.add(lb);
         lb = new SpanLabel("甩牌失败扣分，每收回一张扣10分");
         content.add(lb);
-        lb = new SpanLabel("当需要跟对子（或三张）时必须跟对，如果没有其它对子，但有三张（或四张）则必须拆了跟出");
+        lb = new SpanLabel("当需要跟对子（或三张）时必须跟对，\n如果没有其它对子，但有三张（或四张）则必须拆了跟出");
         content.add(lb);
         return content;
     }
 
     private Container showHelpEN() {
-//        Container content = new Container(BoxLayout.y());
-        Container content = new Container();
+        Container content = new Container(BoxLayout.y());
         content.setScrollableY(true);
         content.setScrollableX(false);
 
@@ -527,8 +526,10 @@ public class TuoLaJi {
                 + " then all other 4 players will be the defenders."
                 + " The defenders need collect enough points (equals or greater than the contract point) to beat the contract.");
         content.add(lb);
-        content.add(boldText("Playing Stage:"));
-        addLongText(content, "The declarer plays the first hand, then each player plays in a counter-clockwise order."
+        Container p = new Container();
+        content.add(p);
+        p.add(boldText("Playing Stage:"));
+        addLongText(p, "The declarer plays the first hand, then each player plays in a counter-clockwise order."
                 + " The player who wins this round collects all the points (sum all the point cards played, if any),"
                 + " and will be the next leading player, and so on."
                 + " If a defender wins the final round and there are point cards in the hole cards,"
@@ -536,8 +537,7 @@ public class TuoLaJi {
                 + " If the contract is made, the declarer and partner is promoted to next rank,"
                 + " otherwise the defenders are promoted to next rank.");
 
-        Container p = new Container();
-        content.add(p);
+        content.add(p = new Container());
         p.add(boldText("Point Cards:"));
         addLongText(p, "5 (5 points), 10 and K (10 points). 100 points per deck, total points is 400.");
 
@@ -587,7 +587,7 @@ public class TuoLaJi {
         addLongText(p, "The player whose rank passes Rank A wins the match. A full match (2 -> A) usually takes 3.5 to 4.5 hours.");
 
         content.add(p = new Container());
-        p.add(boldText("Card Combinations"));
+        p.add(boldText("Card Combinations\n"));
         content.add(p = new Container());
         p.add(boldText("Single:"));
         addLongText(p, "a single card");
