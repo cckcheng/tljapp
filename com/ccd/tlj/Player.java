@@ -1232,21 +1232,21 @@ public class Player {
                     actionButtons = buttons;
                     needChangeActions = true;
                 } else if (act.equals("bid")) {
-                    if (needChangeActions) {
+//                    if (needChangeActions) {
                         if (candidateTrumps.isEmpty()) {
-                            if (actionButtons != passButton) {
+//                            if (actionButtons != passButton) {
                                 parent.replaceAndWait(actionButtons, passButton, null);
                                 actionButtons = passButton;
-                            }
+//                            }
                         } else {
-                            if (actionButtons != bidButtons) {
+//                            if (actionButtons != bidButtons) {
                                 parent.replaceAndWait(actionButtons, bidButtons, null);
                                 actionButtons = bidButtons;
-                            }
+//                            }
                         }
 
                         needChangeActions = false;
-                    }
+//                    }
                     this.maxBid = contractPoint - 5;
                     btnBid.setText("" + this.maxBid);
                 } else if (act.equals("bury")) {
@@ -1285,15 +1285,15 @@ public class Player {
                     actionButtons = buttons;
                     needChangeActions = true;
                 } else if(act.equals("play")){
-                    if(needChangeActions) {
+//                    if(needChangeActions) {
                         btnPlay.setName("play");
                         btnPlay.setText(Dict.get(main.lang, Dict.PLAY));
-                        if (actionButtons != playButton) {
+//                        if (actionButtons != playButton) {
                             parent.replaceAndWait(actionButtons, playButton, null);
                             actionButtons = playButton;
-                        }
+//                        }
                         needChangeActions = false;
-                    }
+//                    }
                 } else {
                     // not supported
                     Log.p("Unknown act: " + act);
