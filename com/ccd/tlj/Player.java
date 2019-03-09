@@ -1202,10 +1202,12 @@ public class Player {
             countDownTimer.schedule(950, true, mainForm);   // slightly less to 1 sec
 
             if (this.location.equals("bottom")) {
-                if (Display.getInstance().isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM)) {
-                    Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
-                }
+//                if (Display.getInstance().isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM)) {
+//                    Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
+//                }
 
+                actionButtons.setVisible(true);
+                actionButtons.setEnabled(true);
                 if (act.equals("dim")) {
                     userHelp.showHelp(userHelp.SET_TRUMP);
                     Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -1296,8 +1298,6 @@ public class Player {
                     // not supported
                     Log.p("Unknown act: " + act);
                 }
-                actionButtons.setVisible(true);
-                actionButtons.setEnabled(true);
             }
         }
 
