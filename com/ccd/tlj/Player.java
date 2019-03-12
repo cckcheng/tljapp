@@ -409,6 +409,21 @@ public class Player {
         }
     }
 
+    private Command holdCommand(int holdMinutes) {
+        String txt = Dict.get(main.lang, "No");
+        if (holdMinutes > 0) {
+            txt = holdMinutes + Dict.get(main.lang, " minutes");
+        }
+        return new Command(txt) {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                if (mySocket != null) {
+                    mySocket.addRequest(actionExit, "\"hold\":" + holdMinutes);
+                }
+            }
+        };
+    }
+
     public void createTable(Container table) {
         this.hand = new Hand(this);
 
@@ -422,12 +437,13 @@ public class Player {
 
         this.bExit = new Button(Dict.get(main.lang, "Exit"));
         FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
+
         bExit.setUIID("myExit");
         bExit.addActionListener((e) -> {
-            this.tableOn = false;
-            if (mySocket != null) mySocket.addRequest(actionExit, "");
+            tableOn = false;
             cancelTimers();
-            this.main.switchScene("entry");
+            Dialog.show("", Dict.get(main.lang, "Hold Seat") + "?", holdCommand(15), holdCommand(5), holdCommand(0));
+            main.switchScene("entry");
         });
 
         this.lbGeneral = new Label("Game ");
@@ -743,6 +759,7 @@ public class Player {
                 json += "," + data;
             }
             pendingRequests.add("{" + json + "}");
+//            Log.p(json);
         }
 
         private void processReceived(String msg) throws IOException {

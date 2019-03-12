@@ -20,6 +20,8 @@ public class Dict {
                         return "确定";
                     case "cancel":
                         return "取消";
+                    case "no":
+                        return "否";
                     case "error":
                         return "错误";
 
@@ -65,6 +67,11 @@ public class Dict {
 
                     case "points":
                         return "分";
+
+                    case "hold seat":
+                        return "是否保留座位";
+                    case "minutes":
+                        return "分钟";
 
                     default:
                         return src;
