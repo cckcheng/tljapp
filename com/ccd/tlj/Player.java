@@ -248,6 +248,7 @@ public class Player {
     public final List<PlayerInfo> infoLst = new ArrayList<>();
     public Map<Integer, PlayerInfo> playerMap = new HashMap<>();
     private boolean tableOn = false;
+    private boolean tableEnded = false;
     private int timeout = 30;   // 30 seconds
     public boolean isPlaying = false;
     private int contractPoint = -1;
@@ -261,6 +262,7 @@ public class Player {
     private Button bExit;
 
     private void resetTable() {
+        this.tableEnded = false;
         this.hand.setIsReady(false);
         this.hand.clearCards();
         candidateTrumps.clear();
@@ -442,7 +444,7 @@ public class Player {
         bExit.addActionListener((e) -> {
             tableOn = false;
             cancelTimers();
-            Dialog.show("", Dict.get(main.lang, "Hold Seat") + "?", holdCommand(15), holdCommand(5), holdCommand(0));
+            if (!tableEnded) Dialog.show("", Dict.get(main.lang, "Hold Seat") + "?", holdCommand(15), holdCommand(5), holdCommand(0));
             main.switchScene("entry");
         });
 
@@ -573,6 +575,8 @@ public class Player {
         int points = parseInteger(data.get("pt0"));
         if (points != -1) {
             this.pointsInfo.setText(points + Dict.get(main.lang, " points"));
+        } else {
+            this.tableEnded = true;
         }
         final String summary = trimmedString(data.get("summary"));
         int seat = parseInteger(data.get("seat"));  // the contractor
