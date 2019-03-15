@@ -150,7 +150,7 @@ public class TuoLaJi {
             Storage.getInstance().writeObject("lang", this.lang);
         }
 
-        String onlineHelp = getHelp();
+//        String onlineHelp = getHelp();
         disp.lockOrientation(false);
         disp.requestFullScreen();
         disp.setNoSleep(true);
@@ -219,26 +219,12 @@ public class TuoLaJi {
 //        WebBrowser browser = new WebBrowser();    // not work
 //        browser.setURL(Card.HELP_URL);
 //        browser.setPage(onlineHelp, null);
-        SpanLabel helpContent = new SpanLabel();
-        helpContent.setTextBlockAlign(Component.LEFT);
-        helpContent.setText(onlineHelp);
-//        helpContent.setText("TuoLaJi is a very popular Chinese card game.\nMore help\nmorehelp");
-//        Dialog helpDlg = new Dialog(BorderLayout.center());
-        Dialog helpDlg = new Dialog(BoxLayout.y());
-        helpDlg.setScrollableY(true);
-        helpDlg.setScrollableX(false);
-//        helpDlg.add(BorderLayout.CENTER, browser);
-//        helpDlg.add(BorderLayout.CENTER, helpContent);
-        helpDlg.add(helpContent);
-        helpDlg.add(theme.getImage("a1.png").scaledWidth(disp.getDisplayWidth() - 400));
+//        helpDlg.add(theme.getImage("h2.png").scaledWidth(disp.getDisplayWidth() - 400));
 
-        helpDlg.setDisposeWhenPointerOutOfBounds(true);
         btnHelp = new Button(Dict.get(lang, "Help"));
         FontImage.setMaterialIcon(btnHelp, FontImage.MATERIAL_HELP);
 //        btnHelp.setEnabled(false);
         btnHelp.addActionListener((e) -> {
-//            switchScene("table");
-//            helpDlg.show(0, 0, 100, 100);
             showHelp(lang);
         });
 
@@ -497,7 +483,7 @@ public class TuoLaJi {
         content.add(lb);
         lb = new SpanLabel("四张相同牌为炸弹，可以炸2对的拖拉机");
         content.add(lb);
-        lb = new SpanLabel("拖拉机只能是连对，或者相连的三张/四张，对子和连接的三张不算拖拉机）");
+        lb = new SpanLabel("拖拉机只能是连对，或者相连的三张/四张，对子和连接的三张不算拖拉机");
         content.add(lb);
         lb = new SpanLabel("甩牌失败扣分，每收回一张扣10分");
         content.add(lb);
@@ -535,6 +521,8 @@ public class TuoLaJi {
                 + " the total points in the hole cards will be times by a multiple (4 or more, depends on the winning hand strength) and added the defenders’ collected points."
                 + " If the contract is made, the declarer and partner is promoted to next rank,"
                 + " otherwise the defenders are promoted to next rank.");
+
+        content.add(theme.getImage("h2.png").scaledWidth(Display.getInstance().getDisplayWidth()));
 
         content.add(p = new Container());
         p.add(boldText("Point Cards:"));
