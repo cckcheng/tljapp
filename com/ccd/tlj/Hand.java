@@ -1,7 +1,9 @@
 package com.ccd.tlj;
 
 import com.codename1.io.Log;
+import com.codename1.ui.Button;
 import com.codename1.ui.Component;
+import com.codename1.ui.Container;
 import com.codename1.ui.Font;
 import com.codename1.ui.Graphics;
 import java.util.ArrayList;
@@ -662,7 +664,7 @@ public class Hand extends Component {
     }
 
     @Override
-    public void pointerPressed(int x, int y) {
+    synchronized public void pointerPressed(int x, int y) {
         if(!this.player.isPlaying) return;
         int y0 = getY() + getHeight() - hReserved;
         int y1 = y0 - cardHeight;
@@ -678,7 +680,26 @@ public class Hand extends Component {
         } else {
             this.selected.add(c);
         }
+
+        Container btns = player.infoLst.get(0).actionButtons;
+        if (btns.isVisible()) {
+            Button b = (Button) btns.getComponentAt(0);
+            if (b.getName().equals("bury")) {
+                btns.setEnabled(this.selected.size() == 6);
+            } else {
+                btns.setEnabled(validSelection());
+            }
+        }
     }
+
+    synchronized public boolean validSelection() {
+        Player.PlayerInfo pp = player.getLeadingPlayer();
+        if (pp != null) {
+            return this.selected.size() == pp.cards.size();
+        }
+        return this.selected.size() > 0;
+    }
+
     /*
     Set<Card> dragged = new HashSet<>();
 

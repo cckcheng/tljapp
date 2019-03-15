@@ -351,7 +351,6 @@ public class TuoLaJi {
             case "help":
                 if (this.currentComp != this.help) {
                     this.formMain.replaceAndWait(currentComp, this.help, null);
-//                this.formMain.add(BorderLayout.CENTER, this.table);
                     this.currentComp = this.help;
                 }
                 break;

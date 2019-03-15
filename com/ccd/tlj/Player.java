@@ -526,6 +526,17 @@ public class Player {
         return "" + parseInteger(bid);
     }
 
+    public PlayerInfo getLeadingPlayer() {
+        for (int x = 1; x < this.infoLst.size(); x++) {
+            PlayerInfo pp = this.infoLst.get(x);
+            if (!pp.cards.isEmpty()) {
+                return pp;
+            }
+        }
+
+        return null;
+    }
+
     private void displayBidInfo(PlayerInfo pp, String bid) {
         pp.showPoints(bidToString(bid));
     }
@@ -1277,6 +1288,7 @@ public class Player {
                     btnPlay.setName("bury");
                     btnPlay.setText(Dict.get(main.lang, "Bury"));
                     needChangeActions = true;
+                    actionButtons.setEnabled(false);
                 } else if (act.equals("partner")) {
                     userHelp.showHelp(userHelp.SET_PARTNER);
 
@@ -1314,6 +1326,7 @@ public class Player {
                             actionButtons = playButton;
 //                        }
                         needChangeActions = false;
+                    actionButtons.setEnabled(hand.validSelection());
 //                    }
                 } else {
                     // not supported
