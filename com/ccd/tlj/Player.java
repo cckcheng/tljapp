@@ -1067,7 +1067,8 @@ public class Player {
                 });
 
                 btnPlay = new Button(commonCmd);
-                btnPlay.getAllStyles().setBgImage(backImage);
+//                btnPlay.getAllStyles().setBgImage(backImage);
+                btnPlay.getAllStyles().setBgImage(main.back);
 
                 bidButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
                 actionButtons = bidButtons;

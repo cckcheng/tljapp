@@ -15,6 +15,7 @@ import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
+import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.RadioButton;
 import com.codename1.ui.TextArea;
@@ -134,6 +135,7 @@ public class TuoLaJi {
     private Container table;
     private Container help;
 
+    public Image back;
     public void start() {
         if(current != null){
             current.show();
@@ -150,6 +152,7 @@ public class TuoLaJi {
             Storage.getInstance().writeObject("lang", this.lang);
         }
 
+        back = theme.getImage("btn.png");
 //        String onlineHelp = getHelp();
         disp.lockOrientation(false);
         disp.requestFullScreen();
