@@ -681,13 +681,12 @@ public class Hand extends Component {
             this.selected.add(c);
         }
 
-        Container btns = player.infoLst.get(0).actionButtons;
-        if (btns.isVisible()) {
-            Button b = (Button) btns.getComponentAt(0);
+        Button b = player.infoLst.get(0).btnPlay;
+        if (b.isVisible()) {
             if (b.getName().equals("bury")) {
-                btns.setEnabled(this.selected.size() == 6);
+                b.setEnabled(this.selected.size() == 6);
             } else {
-                btns.setEnabled(validSelection());
+                b.setEnabled(validSelection());
             }
         }
     }

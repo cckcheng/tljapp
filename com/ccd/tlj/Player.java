@@ -7,6 +7,7 @@ import com.codename1.io.SocketConnection;
 import com.codename1.ui.Button;
 import com.codename1.ui.ButtonGroup;
 import com.codename1.ui.Command;
+import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
@@ -17,6 +18,7 @@ import com.codename1.ui.Graphics;
 import com.codename1.ui.Label;
 import com.codename1.ui.RadioButton;
 import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.util.UITimer;
@@ -50,7 +52,7 @@ public class Player {
     static final int RED_COLOR = 0xff0000;
     static final int BUTTON_COLOR = 0x47b2e8;
 
-    private final ButtonImage backImage = new ButtonImage(0xbcbcbc);
+//    private final ButtonImage backImage = new ButtonImage(0xbcbcbc);
     static final int TIME_OUT_SECONDS = 25;
     private final String playerId;
     private String playerName;
@@ -225,6 +227,10 @@ public class Player {
     private boolean isValid(List<Card> cards, UserHelp uh) {
         if (cards.isEmpty()) {
             uh.showHelp(uh.NO_CARD_SELECTED);
+            return false;
+        }
+        if (!hand.validSelection()) {
+            uh.showHelp(uh.INVALID_PLAY);
             return false;
         }
         return true;
@@ -566,6 +572,8 @@ public class Player {
                 if (pp.actionButtons != null) {
                     pp.actionButtons.setVisible(false);
                     pp.actionButtons.setEnabled(false);
+                    pp.btnPlay.setVisible(false);
+                    pp.btnPlay.setEnabled(false);
                 }
                 pp.userHelp.clear();
             }
@@ -905,7 +913,7 @@ public class Player {
                 is.close();
             } catch (Exception err) {
                 Log.p("exception conncetion!");
-//                err.printStackTrace();
+                err.printStackTrace();
 //                Dialog.show("Exception", "Error: " + err.getMessage(), "OK", "");
             }
 
@@ -957,10 +965,13 @@ public class Player {
         List<Card> cards = new ArrayList<>();   // cards played
         String playerName;
         UITimer countDownTimer;
-        Container actionButtons;
+        Component actionButtons;
         Container bidButtons;
         Container passButton;
-        Container playButton;
+//        Container playButton;
+
+        Container central;
+
         Button btnBid;
         Button btnPlus;
         Button btnMinus;
@@ -968,7 +979,7 @@ public class Player {
         Button btnPassSingle;
         Button btnPlay;
 
-        Container parent;
+//        Container parent;
 
         int seat;
         int rank;
@@ -980,7 +991,6 @@ public class Player {
             this.location = loc;
 
             mainInfo = new Label(loc);
-            userHelp = new UserHelp(main.lang);
 
             points = new Label("        ");
             points.getAllStyles().setFont(Hand.fontRank);
@@ -1003,23 +1013,33 @@ public class Player {
                         switch (action) {
                             case "pass":
                                 mySocket.addRequest(actionBid, "\"bid\":\"pass\"");
+                                actionButtons.setVisible(false);
+                                actionButtons.setEnabled(false);
                                 break;
                             case "bury":
                                 cards = hand.getSelectedCards();
-                                if (cards.size() != 6) return;
+                                if (cards.size() != 6) {
+                                    btnPlay.setEnabled(false);
+                                    return;
+                                }
                                 userHelp.clear();
                                 mySocket.addRequest(action, "\"cards\":\"" + Card.cardsToString(cards) + "\"");
+                                btnPlay.setVisible(false);
+                                btnPlay.setEnabled(false);
                                 break;
                             case "play":
                                 cards = hand.getSelectedCards();
-                                if (!isValid(cards, userHelp)) return;
+                                if (!isValid(cards, userHelp)) {
+                                    btnPlay.setEnabled(false);
+                                    return;
+                                }
                                 userHelp.clear();
                                 mySocket.addRequest(action, "\"cards\":\"" + Card.cardsToString(cards) + "\"");
+                                btnPlay.setVisible(false);
+                                btnPlay.setEnabled(false);
                                 break;
                         }
 
-                        actionButtons.setVisible(false);
-                        actionButtons.setEnabled(false);
                         cancelTimer();
                     }
                 };
@@ -1039,9 +1059,12 @@ public class Player {
 
 //                btnBid.getAllStyles().setFgColor(BUTTON_COLOR);
                 btnBid.getAllStyles().setFont(Hand.fontRank);
-                btnBid.getAllStyles().setBgImage(backImage);
-                btnPass.getAllStyles().setBgImage(backImage);
-                btnPassSingle.getAllStyles().setBgImage(backImage);
+//                btnBid.getAllStyles().setBgImage(backImage);
+//                btnPass.getAllStyles().setBgImage(backImage);
+//                btnPassSingle.getAllStyles().setBgImage(backImage);
+                btnBid.getAllStyles().setBgImage(main.back);
+                btnPass.getAllStyles().setBgImage(main.back);
+                btnPassSingle.getAllStyles().setBgImage(main.back);
 
                 btnBid.addActionListener((e) -> {
                     actionButtons.setVisible(false);
@@ -1067,13 +1090,27 @@ public class Player {
                 });
 
                 btnPlay = new Button(commonCmd);
+//                btnPlay.setUIID("play");
+//                btnPlay.setSize(new Dimension(100, 40)); // does not work
 //                btnPlay.getAllStyles().setBgImage(backImage);
                 btnPlay.getAllStyles().setBgImage(main.back);
+                btnPlay.getAllStyles().setAlignment(Component.CENTER);
 
                 bidButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
-                actionButtons = bidButtons;
+                bidButtons.getAllStyles().setAlignment(Component.CENTER);
                 passButton = BoxLayout.encloseXNoGrow(btnPassSingle);
-                playButton = BoxLayout.encloseXNoGrow(btnPlay);
+                passButton.getAllStyles().setAlignment(Component.CENTER);
+//                playButton = BoxLayout.encloseXNoGrow(btnPlay);
+//                playButton = BoxLayout.encloseX(btnPlay);
+//                playButton.getAllStyles().setAlignment(Component.CENTER);
+                actionButtons = bidButtons;
+
+                userHelp = new UserHelp(main.lang);
+                central = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+                central.getAllStyles().setAlignment(Component.CENTER);
+                timer.getAllStyles().setAlignment(Component.CENTER);
+                userHelp.getAllStyles().setAlignment(Component.CENTER);
+                central.add(userHelp).add(timer).add(actionButtons);
             }
         }
 
@@ -1111,8 +1148,13 @@ public class Player {
         }
 
         synchronized void addItems(Container pane) {
-            parent = pane;
-            pane.add(mainInfo).add(points).add(timer).add(contractor);
+//            parent = pane;
+            if (this.location.equals("bottom")) {
+                pane.add(mainInfo).add(points).add(contractor);
+            } else {
+                pane.add(mainInfo).add(points).add(timer).add(contractor);
+            }
+
             LayeredLayout ll = (LayeredLayout) pane.getLayout();
 
             switch (this.location) {
@@ -1162,17 +1204,22 @@ public class Player {
                             .setReferenceComponentTop(timer, mainInfo, 1f);
                     break;
                 case "bottom":
-                    pane.add(actionButtons).add(userHelp);
-                    ll.setInsets(actionButtons, "auto auto 33% auto");
+//                    pane.add(actionButtons).add(userHelp);
+//                    ll.setInsets(actionButtons, "auto auto 33% auto");
+                    pane.add(central);
+                    ll.setInsets(central, "auto auto 33% auto");
+                    pane.add(btnPlay);
+                    ll.setInsets(btnPlay, "auto auto 33% auto");
+                    btnPlay.setVisible(false);
 
-                    ll.setInsets(userHelp, "auto auto 0 auto");
+//                    ll.setInsets(userHelp, "auto auto 0 auto");
                     ll.setInsets(mainInfo, "auto auto 0 auto");
                     ll.setInsets(points, "auto auto 35% auto")
-                            .setInsets(timer, "auto auto 0 auto")
+                            //                            .setInsets(timer, "auto auto 0 auto")
                             .setInsets(contractor, "auto auto 0 20");
-                    ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
-                            .setReferenceComponentBottom(timer, actionButtons, 1f)
-                            .setReferenceComponentBottom(userHelp, timer, 1f);
+                    ll.setReferenceComponentLeft(contractor, mainInfo, 1f);
+//                            .setReferenceComponentBottom(timer, actionButtons, 1f)
+//                            .setReferenceComponentBottom(userHelp, timer, 1f);
 
                     actionButtons.setVisible(false);
                     actionButtons.setEnabled(false);
@@ -1220,7 +1267,6 @@ public class Player {
         int maxBid = -1;
         boolean needChangeActions=false;
         synchronized void showTimer(int timeout, int contractPoint, String act) {
-            userHelp.clear();
             cancelTimer();  // cancel the running timer if any
             if (act.equals("dim")) {
                 this.setContractor(CONTRACTOR);
@@ -1235,13 +1281,14 @@ public class Player {
             countDownTimer.schedule(950, true, mainForm);   // slightly less to 1 sec
 
             if (this.location.equals("bottom")) {
+                userHelp.clear();
 //                if (Display.getInstance().isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM)) {
 //                    Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
 //                }
 
-                actionButtons.setVisible(true);
-                actionButtons.setEnabled(true);
                 if (act.equals("dim")) {
+                    actionButtons.setVisible(true);
+                    actionButtons.setEnabled(true);
                     userHelp.showHelp(userHelp.SET_TRUMP);
                     Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
                     for (char c : candidateTrumps) {
@@ -1261,19 +1308,21 @@ public class Player {
                         });
                     }
 
-                    parent.replaceAndWait(actionButtons, buttons, null);
+                    central.replaceAndWait(actionButtons, buttons, null);
                     actionButtons = buttons;
                     needChangeActions = true;
                 } else if (act.equals("bid")) {
+                    actionButtons.setVisible(true);
+                    actionButtons.setEnabled(true);
 //                    if (needChangeActions) {
                         if (candidateTrumps.isEmpty()) {
 //                            if (actionButtons != passButton) {
-                                parent.replaceAndWait(actionButtons, passButton, null);
+                                central.replaceAndWait(actionButtons, passButton, null);
                                 actionButtons = passButton;
 //                            }
                         } else {
 //                            if (actionButtons != bidButtons) {
-                                parent.replaceAndWait(actionButtons, bidButtons, null);
+                                central.replaceAndWait(actionButtons, bidButtons, null);
                                 actionButtons = bidButtons;
 //                            }
                         }
@@ -1283,14 +1332,19 @@ public class Player {
                     this.maxBid = contractPoint - 5;
                     btnBid.setText("" + this.maxBid);
                 } else if (act.equals("bury")) {
+                    actionButtons.setVisible(false);
+                    actionButtons.setEnabled(false);
                     userHelp.showHelp(userHelp.BURY_CARDS);
-                    parent.replaceAndWait(actionButtons, playButton, null);
-                    actionButtons = playButton;
+//                    central.replaceAndWait(actionButtons, playButton, null);
+//                    actionButtons = playButton;
                     btnPlay.setName("bury");
                     btnPlay.setText(Dict.get(main.lang, "Bury"));
                     needChangeActions = true;
-                    actionButtons.setEnabled(false);
+                    btnPlay.setVisible(true);
+                    btnPlay.setEnabled(true);
                 } else if (act.equals("partner")) {
+                    actionButtons.setVisible(true);
+                    actionButtons.setEnabled(true);
                     userHelp.showHelp(userHelp.SET_PARTNER);
 
                     Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -1315,19 +1369,24 @@ public class Player {
                         mySocket.addRequest(actionPartner, "\"def\":\"0\"");
                     });
                     buttons.add(new Label("   ")).add(btn);
-                    parent.replaceAndWait(actionButtons, buttons, null);
+                    central.replaceAndWait(actionButtons, buttons, null);
                     actionButtons = buttons;
                     needChangeActions = true;
                 } else if(act.equals("play")){
+                    actionButtons.setVisible(false);
+                    actionButtons.setEnabled(false);
 //                    if(needChangeActions) {
                         btnPlay.setName("play");
                         btnPlay.setText(Dict.get(main.lang, Dict.PLAY));
-//                        if (actionButtons != playButton) {
-                            parent.replaceAndWait(actionButtons, playButton, null);
-                            actionButtons = playButton;
-//                        }
-                        needChangeActions = false;
-                    actionButtons.setEnabled(hand.validSelection());
+//                    if (actionButtons != playButton) {
+//                        central.replaceAndWait(actionButtons, playButton, null);
+//                        actionButtons = playButton;
+//                    }
+                    needChangeActions = false;
+//                    }
+                    btnPlay.setVisible(true);
+                    btnPlay.setEnabled(true);
+//                    btnPlay.setSize(new Dimension(50, 10)); // not work
 //                    }
                 } else {
                     // not supported
@@ -1376,9 +1435,12 @@ public class Player {
         final int PLAY_TRACTOR = 33;
         final int PLAY_SAME_SUIT = 35;
         final int NO_CARD_SELECTED = 30;
+        final int INVALID_PLAY = 99;
 
         String curLang;
         UserHelp(String lang) {
+            chnLabel.getAllStyles().setAlignment(Component.CENTER);
+            engLabel.getAllStyles().setAlignment(Component.CENTER);
             this.setLayout(new BoxLayout(BoxLayout.Y_AXIS_BOTTOM_LAST));
             if (lang.equalsIgnoreCase("zh")) {
                 this.add(chnLabel);
@@ -1433,6 +1495,10 @@ public class Player {
                 case NO_CARD_SELECTED:
                     engLabel.setText("Please select card(s) to play");
                     chnLabel.setText("请先选定要出的牌");
+                    break;
+                case INVALID_PLAY:
+                    engLabel.setText("Invalid play");
+                    chnLabel.setText("非法出牌");
                     break;
                 case PLAY_SAME_SUIT:
                     engLabel.setText("Must play same suite");
