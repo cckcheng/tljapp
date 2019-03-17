@@ -971,6 +971,7 @@ public class Player {
 //        Container playButton;
 
         Container central;
+        Container buttonContainer;
 
         Button btnBid;
         Button btnPlus;
@@ -1108,9 +1109,13 @@ public class Player {
                 userHelp = new UserHelp(main.lang);
                 central = new Container(new BoxLayout(BoxLayout.Y_AXIS));
                 central.getAllStyles().setAlignment(Component.CENTER);
+                buttonContainer = new Container();
+                buttonContainer.getAllStyles().setAlignment(Component.CENTER);
+                buttonContainer.add(actionButtons);
+
                 timer.getAllStyles().setAlignment(Component.CENTER);
                 userHelp.getAllStyles().setAlignment(Component.CENTER);
-                central.add(userHelp).add(timer).add(actionButtons);
+                central.add(userHelp).add(timer).add(buttonContainer);
             }
         }
 
@@ -1287,8 +1292,6 @@ public class Player {
 //                }
 
                 if (act.equals("dim")) {
-                    actionButtons.setVisible(true);
-                    actionButtons.setEnabled(true);
                     userHelp.showHelp(userHelp.SET_TRUMP);
                     Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
                     for (char c : candidateTrumps) {
@@ -1308,32 +1311,42 @@ public class Player {
                         });
                     }
 
-                    central.replaceAndWait(actionButtons, buttons, null);
+//                    central.replaceAndWait(actionButtons, buttons, null);
+                    buttonContainer.removeAll();
+                    buttonContainer.add(buttons);
                     actionButtons = buttons;
                     needChangeActions = true;
                 } else if (act.equals("bid")) {
-                    actionButtons.setVisible(true);
-                    actionButtons.setEnabled(true);
 //                    if (needChangeActions) {
                         if (candidateTrumps.isEmpty()) {
-//                            if (actionButtons != passButton) {
-                                central.replaceAndWait(actionButtons, passButton, null);
+                            if (actionButtons != passButton) {
+//                                central.replaceAndWait(actionButtons, passButton, null);
+                                buttonContainer.removeAll();
+                                buttonContainer.add(passButton);
                                 actionButtons = passButton;
-//                            }
-                        } else {
-//                            if (actionButtons != bidButtons) {
-                                central.replaceAndWait(actionButtons, bidButtons, null);
-                                actionButtons = bidButtons;
-//                            }
-                        }
+                            }
+                    } else {
+                        if (actionButtons != bidButtons) {
+//                                central.replaceAndWait(actionButtons, bidButtons, null);
+                            buttonContainer.removeAll();
+                            buttonContainer.add(bidButtons);
+                            actionButtons = bidButtons;
+                            }
+                    }
+                    if (!actionButtons.isVisible()) {
+                        actionButtons.setVisible(true);
+                        actionButtons.setEnabled(true);
+                    }
 
                         needChangeActions = false;
 //                    }
                     this.maxBid = contractPoint - 5;
                     btnBid.setText("" + this.maxBid);
                 } else if (act.equals("bury")) {
-                    actionButtons.setVisible(false);
-                    actionButtons.setEnabled(false);
+                    if (actionButtons.isVisible()) {
+                        actionButtons.setVisible(false);
+                        actionButtons.setEnabled(false);
+                    }
                     userHelp.showHelp(userHelp.BURY_CARDS);
 //                    central.replaceAndWait(actionButtons, playButton, null);
 //                    actionButtons = playButton;
@@ -1343,8 +1356,6 @@ public class Player {
                     btnPlay.setVisible(true);
                     btnPlay.setEnabled(true);
                 } else if (act.equals("partner")) {
-                    actionButtons.setVisible(true);
-                    actionButtons.setEnabled(true);
                     userHelp.showHelp(userHelp.SET_PARTNER);
 
                     Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -1369,12 +1380,16 @@ public class Player {
                         mySocket.addRequest(actionPartner, "\"def\":\"0\"");
                     });
                     buttons.add(new Label("   ")).add(btn);
-                    central.replaceAndWait(actionButtons, buttons, null);
+//                    central.replaceAndWait(actionButtons, buttons, null);
+                    buttonContainer.removeAll();
+                    buttonContainer.add(buttons);
                     actionButtons = buttons;
                     needChangeActions = true;
-                } else if(act.equals("play")){
-                    actionButtons.setVisible(false);
-                    actionButtons.setEnabled(false);
+                } else if (act.equals("play")) {
+                    if (actionButtons.isVisible()) {
+                        actionButtons.setVisible(false);
+                        actionButtons.setEnabled(false);
+                    }
 //                    if(needChangeActions) {
                         btnPlay.setName("play");
                         btnPlay.setText(Dict.get(main.lang, Dict.PLAY));
