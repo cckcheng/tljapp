@@ -18,6 +18,7 @@ import com.codename1.ui.Graphics;
 import com.codename1.ui.Label;
 import com.codename1.ui.RadioButton;
 import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.util.UITimer;
@@ -958,8 +959,8 @@ public class Player {
         UITimer countDownTimer;
         Component actionButtons;
         Container bidButtons;
-        Container passButton;
-        Container playButton;
+//        Container passButton;
+//        Container playButton;
 
         Container central;
         Container buttonContainer;
@@ -968,7 +969,7 @@ public class Player {
         Button btnPlus;
         Button btnMinus;
         Button btnPass;
-        Button btnPassSingle;
+//        Button btnPassSingle;
         Button btnPlay;
 
         Container parent;
@@ -1034,11 +1035,11 @@ public class Player {
                 btnPlus = new Button("");
                 btnMinus = new Button("");
                 btnPass = new Button(commonCmd);
-                btnPassSingle = new Button(commonCmd);
+//                btnPassSingle = new Button(commonCmd);
                 btnPass.setText(Dict.get(main.lang, "Pass"));
-                btnPassSingle.setText(Dict.get(main.lang, "Pass"));
+//                btnPassSingle.setText(Dict.get(main.lang, "Pass"));
                 btnPass.setName("pass");
-                btnPassSingle.setName("pass");
+//                btnPassSingle.setName("pass");
 
                 FontImage.setMaterialIcon(btnPlus, FontImage.MATERIAL_ARROW_UPWARD);
                 FontImage.setMaterialIcon(btnMinus, FontImage.MATERIAL_ARROW_DOWNWARD);
@@ -1050,7 +1051,7 @@ public class Player {
 //                btnPassSingle.getAllStyles().setBgImage(backImage);
                 btnBid.getAllStyles().setBgImage(main.back);
                 btnPass.getAllStyles().setBgImage(main.back);
-                btnPassSingle.getAllStyles().setBgImage(main.back);
+//                btnPassSingle.getAllStyles().setBgImage(main.back);
 
                 btnBid.addActionListener((e) -> {
                     cancelTimer();
@@ -1081,17 +1082,20 @@ public class Player {
 
                 bidButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
                 bidButtons.getAllStyles().setAlignment(Component.CENTER);
-                passButton = BoxLayout.encloseXNoGrow(btnPassSingle);
-                passButton.getAllStyles().setAlignment(Component.CENTER);
-                playButton = BoxLayout.encloseXNoGrow(btnPlay);
-                playButton.getAllStyles().setAlignment(Component.CENTER);
+//                passButton = BoxLayout.encloseXNoGrow(btnPassSingle);
+//                passButton.getAllStyles().setAlignment(Component.CENTER);
+//                playButton = BoxLayout.encloseXNoGrow(btnPlay);
+//                playButton.getAllStyles().setAlignment(Component.CENTER);
 
                 userHelp = new UserHelp(main.lang);
                 central = new Container(new BoxLayout(BoxLayout.Y_AXIS));
                 central.getAllStyles().setAlignment(Component.CENTER);
-                buttonContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
-                buttonContainer.getAllStyles().setAlignment(Component.CENTER);
-                buttonContainer.add(new Label("   "));
+//                buttonContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+//                buttonContainer = new Container(BorderLayout.center());
+                buttonContainer = new Container(BorderLayout.absolute());
+//                buttonContainer.getAllStyles().setAlignment(Component.CENTER);
+                buttonContainer.add(BorderLayout.CENTER, bidButtons);
+                actionButtons = bidButtons;
 
                 timer.getAllStyles().setAlignment(Component.CENTER);
                 userHelp.getAllStyles().setAlignment(Component.CENTER);
@@ -1130,10 +1134,13 @@ public class Player {
                 userHelp.clear();
                 userHelp.setLanguage(main.lang);
                 btnPass.setText(Dict.get(main.lang, "Pass"));
-                btnPassSingle.setText(Dict.get(main.lang, "Pass"));
-                actionButtons = null;
+
                 buttonContainer.removeAll();
-                buttonContainer.add(new Label("   "));
+                central.removeComponent(buttonContainer);
+                buttonContainer = new Container(BorderLayout.absolute());
+                buttonContainer.add(BorderLayout.CENTER, bidButtons);
+                actionButtons = bidButtons;
+                central.add(buttonContainer);
             }
         }
 
@@ -1292,19 +1299,21 @@ public class Player {
                     }
 
                     buttonContainer.removeAll();
-                    buttonContainer.add(buttons);
+                    buttonContainer.add(BorderLayout.CENTER, buttons);
                     actionButtons = buttons;
                 } else if (act.equals("bid")) {
                     if (candidateTrumps.isEmpty()) {
-                        if (actionButtons != passButton) {
+                        btnPlay.setName("pass");
+                        btnPlay.setText(Dict.get(main.lang, "Pass"));
+                        if (actionButtons != btnPlay) {
                             buttonContainer.removeAll();
-                            buttonContainer.add(passButton);
-                            actionButtons = passButton;
+                            buttonContainer.add(BorderLayout.CENTER, btnPlay);
+                            actionButtons = btnPlay;
                         }
                     } else {
                         if (actionButtons != bidButtons) {
                             buttonContainer.removeAll();
-                            buttonContainer.add(bidButtons);
+                            buttonContainer.add(BorderLayout.CENTER, bidButtons);
                             actionButtons = bidButtons;
                         }
                         this.maxBid = contractPoint - 5;
@@ -1335,24 +1344,24 @@ public class Player {
                     buttons.add(new Label("   ")).add(btn);
 
                     buttonContainer.removeAll();
-                    buttonContainer.add(buttons);
+                    buttonContainer.add(BorderLayout.CENTER, buttons);
                     actionButtons = buttons;
                 } else if (act.equals("bury")) {
                     userHelp.showHelp(userHelp.BURY_CARDS);
                     btnPlay.setName("bury");
                     btnPlay.setText(Dict.get(main.lang, "Bury"));
-                    if (actionButtons != playButton) {
+                    if (actionButtons != btnPlay) {
                         buttonContainer.removeAll();
-                        buttonContainer.add(playButton);
-                        actionButtons = playButton;
+                        buttonContainer.add(BorderLayout.CENTER, btnPlay);
+                        actionButtons = btnPlay;
                     }
                 } else if (act.equals("play")) {
                     btnPlay.setName("play");
                     btnPlay.setText(Dict.get(main.lang, Dict.PLAY));
-                    if (actionButtons != playButton) {
+                    if (actionButtons != btnPlay) {
                         buttonContainer.removeAll();
-                        buttonContainer.add(playButton);
-                        actionButtons = playButton;
+                        buttonContainer.add(BorderLayout.CENTER, btnPlay);
+                        actionButtons = btnPlay;
                     }
                 } else {
                     // not supported
@@ -1373,7 +1382,6 @@ public class Player {
                 buttons.add(btn);
                 btn.addActionListener((e)->{
                     if(!btnGroup.isSelected()) {
-//                        Dialog.show("Alert", "请指定第几个");
                         userHelp.showHelp(userHelp.PARTNER_DEF);
                     } else {
                         cancelTimer();
