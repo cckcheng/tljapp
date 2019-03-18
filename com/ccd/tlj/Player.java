@@ -18,7 +18,6 @@ import com.codename1.ui.Graphics;
 import com.codename1.ui.Label;
 import com.codename1.ui.RadioButton;
 import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.util.UITimer;
@@ -1360,9 +1359,10 @@ public class Player {
                     Log.p("Unknown act: " + act);
                 }
 
-                actionButtons.setVisible(true);
                 actionButtons.setEnabled(true);
+                actionButtons.setVisible(true);
 //                buttonContainer.setShouldCalcPreferredSize(true); // not work
+//                central.repaint();    // no difference
             }
         }
 
@@ -1373,7 +1373,8 @@ public class Player {
                 buttons.add(btn);
                 btn.addActionListener((e)->{
                     if(!btnGroup.isSelected()) {
-                        Dialog.show("Alert", "请指定第几个");
+//                        Dialog.show("Alert", "请指定第几个");
+                        userHelp.showHelp(userHelp.PARTNER_DEF);
                     } else {
                         cancelTimer();
                         mySocket.addRequest(actionPartner,
@@ -1405,6 +1406,7 @@ public class Player {
         final int PLAY_SAME_SUIT = 35;
         final int NO_CARD_SELECTED = 30;
         final int INVALID_PLAY = 99;
+        final int PARTNER_DEF = 41;
 
         String curLang;
         UserHelp(String lang) {
@@ -1449,6 +1451,10 @@ public class Player {
 
         void showHelp(int category) {
             switch (category) {
+                case PARTNER_DEF:
+                    engLabel.setText("Please specify the ordinal number");
+                    chnLabel.setText("请指定第几个");
+                    break;
                 case SET_TRUMP:
                     engLabel.setText("Set Trump");
                     chnLabel.setText("请选将牌");
