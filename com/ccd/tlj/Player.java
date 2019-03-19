@@ -648,6 +648,22 @@ public class Player {
         }
     }
 
+    private void playerIn(Map<String, Object> data) {
+        int seat = parseInteger(data.get("seat"));
+        PlayerInfo pp = this.playerMap.get(seat);
+        if (pp != null) {
+            pp.updateName(trimmedString(data.get("name")), false);
+        }
+    }
+
+    private void playerOut(Map<String, Object> data) {
+        int seat = parseInteger(data.get("seat"));
+        PlayerInfo pp = this.playerMap.get(seat);
+        if (pp != null) {
+            pp.updateName(pp.playerName, true);
+        }
+    }
+
     private void showInfo(Map<String, Object> data) {
         final String info = trimmedString(data.get("info"));
         int x = hand.displayWidth(6) + 15;
@@ -857,6 +873,12 @@ public class Player {
                         break;
                     case "info":
                         showInfo(data);
+                        break;
+                    case "in":
+                        playerIn(data);
+                        break;
+                    case "out":
+                        playerOut(data);
                         break;
                 }
             }
@@ -1255,6 +1277,16 @@ public class Player {
             this.rank = rank;
             this.playerName = playerName;
             String info = playerName + "," + Card.rankToString(rank, "R");
+            this.mainInfo.setText(info);
+        }
+
+        void updateName(String playerName, boolean out) {
+            if (!out) this.playerName = playerName;
+            String name = this.playerName;
+            if (out) {
+                name += "(" + Dict.get(main.lang, "away") + ")";
+            }
+            String info = name + "," + Card.rankToString(rank, "R");
             this.mainInfo.setText(info);
         }
 

@@ -39,6 +39,8 @@ public class Dict {
                         return "昵称";
                     case "exit":
                         return "退出";
+                    case "away":
+                        return "离开";
                     case "connecting":
                         return "连接中";
                     case "network error":
