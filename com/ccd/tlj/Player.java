@@ -1119,8 +1119,8 @@ public class Player {
             if (actionButtons == null) {
                 return;
             }
-            actionButtons.setVisible(false);
             actionButtons.setEnabled(false);
+            actionButtons.setVisible(false);
         }
 
         synchronized void reset() {
@@ -1135,13 +1135,17 @@ public class Player {
                 userHelp.setLanguage(main.lang);
                 btnPass.setText(Dict.get(main.lang, "Pass"));
 
-                buttonContainer.removeAll();
-                central.removeComponent(buttonContainer);
-                buttonContainer = new Container(BorderLayout.absolute());
-                bidButtons.setEnabled(true);
-                buttonContainer.add(BorderLayout.CENTER, bidButtons);
-                actionButtons = bidButtons;
-                central.add(buttonContainer);
+//                buttonContainer.removeAll();
+//                central.removeComponent(buttonContainer);
+//                buttonContainer = new Container(BorderLayout.absolute());
+//                central.add(buttonContainer);
+                if (actionButtons != bidButtons) {
+                    bidButtons.setEnabled(true);
+                    bidButtons.setVisible(true);
+                    buttonContainer.removeAll();
+                    buttonContainer.add(BorderLayout.CENTER, bidButtons);
+                    actionButtons = bidButtons;
+                }
             }
         }
 
@@ -1373,7 +1377,6 @@ public class Player {
                     Log.p("Unknown act: " + act);
                 }
 
-//                actionButtons.setEnabled(true);
                 actionButtons.setVisible(true);
 //                buttonContainer.setShouldCalcPreferredSize(true); // not work
 //                central.repaint();    // no difference
