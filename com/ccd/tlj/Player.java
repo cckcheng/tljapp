@@ -6,6 +6,7 @@ import com.codename1.io.Socket;
 import com.codename1.io.SocketConnection;
 import com.codename1.ui.Button;
 import com.codename1.ui.ButtonGroup;
+import com.codename1.ui.CheckBox;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
@@ -89,6 +90,7 @@ public class Player {
 
     static final String actionJoinTable = "join";
     static final String actionExit = "out";
+    static final String actionRobot = "robot";
     static final String actionBid = "bid";
     static final String actionSetTrump = "trump";
     static final String actionBuryCards = "bury";
@@ -254,6 +256,7 @@ public class Player {
     public final List<PlayerInfo> infoLst = new ArrayList<>();
     public Map<Integer, PlayerInfo> playerMap = new HashMap<>();
     private boolean tableOn = false;
+    private boolean robotOn = false;
     private boolean tableEnded = false;
     private int timeout = 30;   // 30 seconds
     public boolean isPlaying = false;
@@ -266,6 +269,7 @@ public class Player {
     private Label partnerInfo;
     private Label pointsInfo;
     private Button bExit;
+    private CheckBox bRobot;
 
     private void resetTable() {
         this.tableEnded = false;
@@ -445,13 +449,26 @@ public class Player {
 
         this.bExit = new Button(Dict.get(main.lang, "Exit"));
         FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
-
         bExit.setUIID("myExit");
         bExit.addActionListener((e) -> {
             tableOn = false;
+            robotOn = false;
+            bRobot.setSelected(false);
             cancelTimers();
             if (!tableEnded) Dialog.show("", Dict.get(main.lang, "Hold Seat") + "?", holdCommand(15), holdCommand(5), holdCommand(0));
             main.switchScene("entry");
+        });
+
+        this.bRobot = new CheckBox(Dict.get(main.lang, "Robot"));
+        FontImage.setMaterialIcon(bRobot, FontImage.MATERIAL_ANDROID);
+        bRobot.addActionListener((e) -> {
+            robotOn = bRobot.isSelected();
+            if (mySocket != null) {
+                mySocket.addRequest(actionRobot, "\"on\":" + (robotOn ? 1 : 0));
+            }
+            if (robotOn) {
+                infoLst.get(0).dismissActions();
+            }
         });
 
         this.lbGeneral = new Label("Game ");
@@ -474,8 +491,10 @@ public class Player {
 
         table.add(hand);
         table.add(bExit).add(this.lbGeneral).add(this.gameInfo).add(this.partnerInfo).add(this.pointsInfo);
+        table.add(bRobot);
         LayeredLayout ll = (LayeredLayout) table.getLayout();
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
+        ll.setInsets(bRobot, "auto 0 0 auto");   //top right bottom left
         ll.setInsets(this.lbGeneral, "0 auto auto 0")
                 .setInsets(this.partnerInfo, "0 0 auto auto")
                 .setInsets(this.pointsInfo, "0 auto auto 20%")
@@ -490,6 +509,7 @@ public class Player {
 
     public void refreshLang() {
         this.bExit.setText(Dict.get(main.lang, "Exit"));
+        this.bRobot.setText(Dict.get(main.lang, "Robot"));
     }
 
     private void cancelTimers() {
@@ -1139,13 +1159,13 @@ public class Player {
 //                central.removeComponent(buttonContainer);
 //                buttonContainer = new Container(BorderLayout.absolute());
 //                central.add(buttonContainer);
-                if (actionButtons != bidButtons) {
+//                if (actionButtons != bidButtons) {
                     bidButtons.setEnabled(true);
                     bidButtons.setVisible(true);
                     buttonContainer.removeAll();
                     buttonContainer.add(BorderLayout.CENTER, bidButtons);
                     actionButtons = bidButtons;
-                }
+//                }
             }
         }
 
@@ -1282,6 +1302,7 @@ public class Player {
 
             if (this.location.equals("bottom")) {
                 userHelp.clear();
+                if (robotOn) return;
 //                if (Display.getInstance().isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM)) {
 //                    Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
 //                }

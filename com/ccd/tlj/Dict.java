@@ -44,6 +44,8 @@ public class Dict {
                     case "network error":
                         return "联网失败";
 
+                    case "robot":
+                        return "托管";
                     case "bury":
                         return "扣底";
                     case "pass":
