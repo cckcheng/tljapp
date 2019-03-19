@@ -1138,6 +1138,7 @@ public class Player {
                 buttonContainer.removeAll();
                 central.removeComponent(buttonContainer);
                 buttonContainer = new Container(BorderLayout.absolute());
+                bidButtons.setEnabled(true);
                 buttonContainer.add(BorderLayout.CENTER, bidButtons);
                 actionButtons = bidButtons;
                 central.add(buttonContainer);
@@ -1305,12 +1306,14 @@ public class Player {
                     if (candidateTrumps.isEmpty()) {
                         btnPlay.setName("pass");
                         btnPlay.setText(Dict.get(main.lang, "Pass"));
+                        btnPlay.setEnabled(true);
                         if (actionButtons != btnPlay) {
                             buttonContainer.removeAll();
                             buttonContainer.add(BorderLayout.CENTER, btnPlay);
                             actionButtons = btnPlay;
                         }
                     } else {
+                        bidButtons.setEnabled(true);
                         if (actionButtons != bidButtons) {
                             buttonContainer.removeAll();
                             buttonContainer.add(BorderLayout.CENTER, bidButtons);
@@ -1350,6 +1353,7 @@ public class Player {
                     userHelp.showHelp(userHelp.BURY_CARDS);
                     btnPlay.setName("bury");
                     btnPlay.setText(Dict.get(main.lang, "Bury"));
+                    btnPlay.setEnabled(true);
                     if (actionButtons != btnPlay) {
                         buttonContainer.removeAll();
                         buttonContainer.add(BorderLayout.CENTER, btnPlay);
@@ -1358,6 +1362,7 @@ public class Player {
                 } else if (act.equals("play")) {
                     btnPlay.setName("play");
                     btnPlay.setText(Dict.get(main.lang, Dict.PLAY));
+                    btnPlay.setEnabled(true);
                     if (actionButtons != btnPlay) {
                         buttonContainer.removeAll();
                         buttonContainer.add(BorderLayout.CENTER, btnPlay);
@@ -1368,7 +1373,7 @@ public class Player {
                     Log.p("Unknown act: " + act);
                 }
 
-                actionButtons.setEnabled(true);
+//                actionButtons.setEnabled(true);
                 actionButtons.setVisible(true);
 //                buttonContainer.setShouldCalcPreferredSize(true); // not work
 //                central.repaint();    // no difference
