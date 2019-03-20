@@ -1187,6 +1187,8 @@ public class Player {
                     buttonContainer.removeAll();
                     buttonContainer.add(BorderLayout.CENTER, bidButtons);
                     actionButtons = bidButtons;
+                bidButtons.setEnabled(false);
+                bidButtons.setVisible(false);
 //                }
             }
         }
