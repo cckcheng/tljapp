@@ -461,6 +461,7 @@ public class Player {
 
         this.bRobot = new CheckBox(Dict.get(main.lang, "Robot"));
         FontImage.setMaterialIcon(bRobot, FontImage.MATERIAL_ANDROID);
+        bRobot.getAllStyles().setFgColor(INFO_COLOR);
         bRobot.addActionListener((e) -> {
             robotOn = bRobot.isSelected();
             if (mySocket != null) {
@@ -879,6 +880,10 @@ public class Player {
                         break;
                     case "out":
                         playerOut(data);
+                        break;
+                    case "robot":
+                        bRobot.setSelected(true);
+                        robotOn = true;
                         break;
                 }
             }
