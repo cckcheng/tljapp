@@ -16,6 +16,8 @@ public class Dict {
         switch (lang) {
             case "zh":
                 switch (lowerSrc) {
+                    case "Tutorial":
+                        return "入门";
                     case "ok":
                         return "确定";
                     case "cancel":

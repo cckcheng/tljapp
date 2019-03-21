@@ -71,6 +71,7 @@ public class TuoLaJi {
 
     public Form formMain = null;
     private Label lbTitle;
+    private Button btnTutor = null;
     private Button btnPlay = null;
     private Button btnHelp = null;
     private Button btnExit = null;
@@ -100,6 +101,7 @@ public class TuoLaJi {
         }
         this.btnHelp.setText(Dict.get(lang, "Help"));
         this.btnExit.setText(Dict.get(lang, "Exit"));
+        this.btnTutor.setText(Dict.get(lang, "Tutorial"));
         this.btnSetting.setText(Dict.get(lang, "Settings"));
         if (this.player != null) {
             this.player.refreshLang();
@@ -134,6 +136,7 @@ public class TuoLaJi {
     private Container entry;
     private Container table;
     private Container help;
+    private Tutor tutor;
 
     public Image back;
     public void start() {
@@ -176,6 +179,7 @@ public class TuoLaJi {
 
         this.entry = new Container(BoxLayout.yLast());
         this.table = new Container(new LayeredLayout());
+        this.tutor = new Tutor(this);
         this.player.createTable(this.table);
 
 //        mainForm.getToolbar().addCommandToLeftSideMenu("New Game", null, (e) -> {
@@ -229,6 +233,12 @@ public class TuoLaJi {
 //        btnHelp.setEnabled(false);
         btnHelp.addActionListener((e) -> {
             showHelp(lang);
+        });
+
+        btnTutor = new Button(Dict.get(lang, "Tutorial"));
+        FontImage.setMaterialIcon(btnTutor, FontImage.MATERIAL_TOUCH_APP);
+        btnTutor.addActionListener((e) -> {
+            this.switchScene("tutor");
         });
 
         btnExit = new Button(Dict.get(lang, "Exit"));
@@ -294,7 +304,8 @@ public class TuoLaJi {
             rbEn.setSelected(true);
         }
 
-        entry.add(this.btnPlay)
+        entry.add(this.btnTutor)
+                .add(this.btnPlay)
                 .add(this.btnHelp)
                 .add(this.btnSetting)
                 .add(this.btnExit);
@@ -341,6 +352,13 @@ public class TuoLaJi {
                 if (this.currentComp != this.help) {
                     this.formMain.replaceAndWait(currentComp, this.help, null);
                     this.currentComp = this.help;
+                }
+                break;
+            case "tutor":
+                if (this.currentComp != this.tutor) {
+                    this.formMain.replaceAndWait(currentComp, this.tutor, null);
+                    this.currentComp = this.tutor;
+                    this.tutor.showTopic();
                 }
                 break;
         }
