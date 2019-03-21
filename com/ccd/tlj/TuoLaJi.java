@@ -128,8 +128,7 @@ public class TuoLaJi {
         }
     }
 
-    public String version = "1.2";
-//        String title = "Bid Tractor";
+    public String version = "2.0";
     public final static String title = "Langley TuoLaJi";
 
     public String lang = "en";
