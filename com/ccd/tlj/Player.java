@@ -408,6 +408,9 @@ public class Player {
         hand.setIsReady(true);
         this.tableOn = true;
         main.enableButtons();
+        if (this.robotOn) {
+            mySocket.addRequest(actionRobot, "\"on\":1");
+        }
         if (Card.DEBUG_MODE) Log.p("refresh table: done");
     }
 
