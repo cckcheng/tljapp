@@ -317,6 +317,10 @@ public class TuoLaJi {
         this.player.connectServer(false);
     }
 
+    public Player getPlayer() {
+        return player;
+    }
+
     private String savePlayerName(TextField pName) {
         String playerName = pName.getText().trim();
         if (playerName.isEmpty()) return null;

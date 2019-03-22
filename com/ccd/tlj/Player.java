@@ -439,6 +439,10 @@ public class Player {
         };
     }
 
+    public Hand getHand() {
+        return hand;
+    }
+
     public void createTable(Container table) {
         this.hand = new Hand(this);
 

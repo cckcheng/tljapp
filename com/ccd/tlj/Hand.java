@@ -3,7 +3,6 @@ package com.ccd.tlj;
 import com.codename1.io.Log;
 import com.codename1.ui.Button;
 import com.codename1.ui.Component;
-import com.codename1.ui.Container;
 import com.codename1.ui.Font;
 import com.codename1.ui.Graphics;
 import java.util.ArrayList;
@@ -534,6 +533,11 @@ public class Hand extends Component {
     public int displayWidth(int cardNum) {
         // calculate small cards total display width
         return (cardNum - 1) * this.sPitch + this.sCardWidth;
+    }
+
+    public int displayWidthNormal(int cardNum) {
+        // calculate small cards total display width
+        return (cardNum - 1) * this.xPitch + this.cardWidth;
     }
 
     int blackColor = 0x000000;
