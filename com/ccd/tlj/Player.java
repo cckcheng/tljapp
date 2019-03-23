@@ -1290,7 +1290,7 @@ public class Player {
             this.seat = seat;
             this.rank = rank;
             this.playerName = playerName;
-            String info = playerName + "," + Card.rankToString(rank, "R");
+            String info = playerName + ":" + Card.rankToString(rank, "");
             this.mainInfo.setText(info);
         }
 
@@ -1300,7 +1300,7 @@ public class Player {
             if (out) {
                 name += "(" + Dict.get(main.lang, "away") + ")";
             }
-            String info = name + "," + Card.rankToString(rank, "R");
+            String info = name + ":" + Card.rankToString(rank, "");
             this.mainInfo.setText(info);
         }
 

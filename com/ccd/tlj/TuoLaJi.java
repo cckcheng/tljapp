@@ -328,6 +328,7 @@ public class TuoLaJi {
         playerName = StringUtil.replaceAll(playerName, "\"", "");
         playerName = StringUtil.replaceAll(playerName, "\\", "");
         playerName = StringUtil.replaceAll(playerName, "'", "");
+        playerName = StringUtil.replaceAll(playerName, ":", " ");
         if (playerName.isEmpty()) return null;
         Storage.getInstance().writeObject("playerName", playerName);
         return playerName;
