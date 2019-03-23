@@ -133,57 +133,65 @@ public class Tutor extends Container {
             return new Command(title) {
                 @Override
                 public void actionPerformed(ActionEvent ev) {
-                    Dialog dlg = new Dialog(new BorderLayout());
-                    Command okCmd = new Command("Done") {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            dlg.dispose();
-                        }
-                    };
-                    Button btnNext = new Button("Next");
-                    btnNext.setEnabled(idx < currentIndex);
-                    btnNext.addActionListener((e) -> {
-                        dlg.dispose();
-                        topics.get(idx + 1).enableButton(true);
-                    });
-                    dlg.add(BorderLayout.SOUTH, BoxLayout.encloseXNoGrow(btnNext, new Button(okCmd)));
-                    Component content = null;
-                    switch (id) {
-                        case "point_cards":
-                            content = topicPointCards(btnNext);
-                            break;
-                        case "card_rank":
-                            break;
-                        case "game_rank":
-                            break;
-                        case "combination":
-                            break;
-                        case "trump":
-                            break;
-                        case "contract":
-                            break;
-
-                        case "lead":
-                            break;
-                        case "follow":
-                            break;
-                        case "exchange":
-                            break;
-                        case "pass_declarer":
-                            break;
-                        case "pass_defender":
-                            break;
-                        case "choose_side":
-                            break;
-
-                        default:
-                            break;
-                    }
-
-                    if (content != null) dlg.add(BorderLayout.CENTER, content);
-                    dlg.show(0, 0, 0, 0);
+                    showContent();
                 }
             };
+        }
+
+        void showContent() {
+            Dialog dlg = new Dialog(new BorderLayout());
+            Command okCmd = new Command("Done") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    dlg.dispose();
+                }
+            };
+            Button btnNext = new Button("Next");
+            btnNext.setEnabled(idx < currentIndex);
+            btnNext.addActionListener((e) -> {
+                dlg.dispose();
+                Topic nextTopic = topics.get(idx + 1);
+                nextTopic.enableButton(true);
+                nextTopic.showContent();
+            });
+            dlg.add(BorderLayout.SOUTH, BoxLayout.encloseXNoGrow(btnNext, new Button(okCmd)));
+            Component content = null;
+            switch (id) {
+                case "point_cards":
+                    content = topicPointCards(btnNext);
+                    break;
+                case "card_rank":
+                    break;
+                case "game_rank":
+                    break;
+                case "combination":
+                    break;
+                case "trump":
+                    break;
+                case "contract":
+                    break;
+
+                case "lead":
+                    break;
+                case "follow":
+                    break;
+                case "exchange":
+                    break;
+                case "pass_declarer":
+                    break;
+                case "pass_defender":
+                    break;
+                case "choose_side":
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (content != null) {
+                dlg.add(BorderLayout.CENTER, content);
+            }
+            dlg.show(0, 0, 0, 0);
         }
 
         Component topicPointCards(Button btnNext) {
