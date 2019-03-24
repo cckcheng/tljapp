@@ -90,19 +90,19 @@ public class Tutor extends Container {
         List<Topic> lst = new ArrayList<>();
         lst.add(new Topic(idx++, "point_cards", "Point Cards"));
         lst.add(new Topic(idx++, "card_rank", "Card Rank"));
-        lst.add(new Topic(idx++, "combination", "Card Combinations"));
         lst.add(new Topic(idx++, "trump", "Trump"));
+        lst.add(new Topic(idx++, "combination", "Card Combinations"));
         lst.add(new Topic(idx++, "table", "Table Layout"));
 
         lst.add(new Topic(idx++, "lead", "Leading Play"));
-        lst.add(new Topic(idx++, "follow", "Following Play"));
+        lst.add(new Topic(idx++, "follow", "Follow Play"));
         lst.add(new Topic(idx++, "ruff", "Ruff & Over-ruff"));
 
+        lst.add(new Topic(idx++, "exchange", "Declarer: exchange cards"));
+        lst.add(new Topic(idx++, "flop", "Flop Play"));
         basicTopicNum = lst.size();
 
-        lst.add(new Topic(idx++, "flop", "Flop Play"));
-        lst.add(new Topic(idx++, "exchange", "Declarer: exchange hole cards"));
-        lst.add(new Topic(idx++, "pass_declarer", "Pass to partner: declarer side"));
+        lst.add(new Topic(idx++, "pass_declarer", "Pass to partner: declaring side"));
         lst.add(new Topic(idx++, "pass_defender", "Pass to partner: defenders"));
         lst.add(new Topic(idx++, "choose_side", "Choose the correct side"));
         return lst;
@@ -161,12 +161,12 @@ public class Tutor extends Container {
                     content = topicPointCards(btnNext);
                     break;
                 case "card_rank":
-                    break;
-                case "game_rank":
+                    content = topicCardRank(btnNext);
                     break;
                 case "combination":
                     break;
                 case "trump":
+                    content = topicTrump(btnNext);
                     break;
                 case "contract":
                     break;
@@ -176,6 +176,8 @@ public class Tutor extends Container {
                 case "follow":
                     break;
                 case "exchange":
+                    break;
+                case "flop":
                     break;
                 case "pass_declarer":
                     break;
@@ -234,6 +236,76 @@ public class Tutor extends Container {
             });
             return content;
         }
+
+        private Component topicCardRank(Button btnNext) {
+            SpanLabel lb0 = new SpanLabel("Within a suit, the highest ranked card is Ace, then K,Q,J,10,9,8,7,6,5,4,3,2.");
+            Container content = BoxLayout.encloseY(lb0);
+            content.setScrollableY(true);
+            lb0 = new SpanLabel("The leading player can play one or more cards of a single suit,"
+                    + " then other players must play same number of cards of the same suit, in a couter-clockwise order."
+                    + " The player who played the highest ranked card won this round, and get all the points included."
+                    + " If two more players played the highest ranked card, the first player won.");
+            content.add(lb0);
+
+            content.add(" ");
+            content.add("Quiz: ♥5, ♥9, ♥Q, ♥K, ♥K, ♥10");
+            content.add("For the above play sequence, which player won this round?");
+            RadioButton rb1 = new RadioButton("First");
+            RadioButton rb2 = new RadioButton("Second");
+            RadioButton rb3 = new RadioButton("Third");
+            RadioButton rb4 = new RadioButton("Fouth");
+            RadioButton rb5 = new RadioButton("Fifth");
+            ButtonGroup btnGroup = new ButtonGroup(rb1, rb2, rb3, rb4, rb5);
+            content.add(BoxLayout.encloseXNoGrow(rb1, rb2, rb3, rb4, rb5));
+            btnGroup.addActionListener((e) -> {
+                btnNext.setEnabled(rb4.isSelected());
+            });
+            return content;
+        }
+
+        private Component topicTrump(Button btnNext) {
+            SpanLabel lb0 = new SpanLabel("Jokers and game-rank(declarer's current rank) cards are always trumps."
+                    + "The declarer can choose one suit to be a trump suit, or NT means no trump suit.");
+            Container content = BoxLayout.encloseY(lb0);
+            content.setScrollableY(true);
+            lb0 = new SpanLabel("Suppose declarer's current rank is 8, ♥ is the trump suit."
+                    + " Below is the trump card rank of a single deck, from high to low:");
+            content.add(lb0);
+
+            Hand hand = main.getPlayer().getHand();
+            List<Card> cards = new ArrayList<>();
+            cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+            cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
+            cards.add(new Card(Card.HEART, 8));
+            for (int r = 14; r >= 2; r--) {
+                if (r == 8) {
+                    continue;
+                }
+                cards.add(new Card(Card.HEART, r));
+            }
+            CardList img = new CardList(cards);
+
+            List<Card> addCards = new ArrayList<>();
+            addCards.add(new Card(Card.SPADE, 8));
+            addCards.add(new Card(Card.DIAMOND, 8));
+            addCards.add(new Card(Card.CLUB, 8));
+            img.insertCards(3, addCards);
+            img.scale(hand.displayWidthNormal(cards.size()), hand.cardHeight + 220);
+            content.add(img);
+
+            content.add(" ");
+            content.add("Quiz: For a single deck, how many trumps are there if no trump suit specified?");
+            RadioButton rb1 = new RadioButton("2");
+            RadioButton rb2 = new RadioButton("4");
+            RadioButton rb3 = new RadioButton("6");
+            RadioButton rb4 = new RadioButton("8");
+            ButtonGroup btnGroup = new ButtonGroup(rb1, rb2, rb3, rb4);
+            content.add(BoxLayout.encloseXNoGrow(rb1, rb2, rb3, rb4));
+            btnGroup.addActionListener((e) -> {
+                btnNext.setEnabled(rb3.isSelected());
+            });
+            return content;
+        }
     }
 
     class CardList extends DynamicImage {
@@ -245,13 +317,32 @@ public class Tutor extends Container {
             this.cards = cards;
         }
 
+        List<Card> addCards;
+        int aIndex = -1;
+
+        void insertCards(int idx, List<Card> aCards) {
+            addCards = aCards;
+            aIndex = idx;
+        }
+
         @Override
         protected void drawImageImpl(Graphics g, Object nativeGraphics, int x, int y, int w, int h) {
             if (cards == null || cards.isEmpty()) return;
             Hand hand = main.getPlayer().getHand();
+            int i = 0;
             for (Card c : cards) {
+                if (addCards != null && i == aIndex) {
+                    int y0 = y;
+                    for (Card a : addCards) {
+                        drawCard(g, a, x, y0, hand.cardWidth, hand.cardHeight);
+                        y0 += hand.cardHeight * 2 / 3;
+                    }
+                    x += hand.xPitch;
+                }
+
                 drawCard(g, c, x, y, hand.cardWidth, hand.cardHeight);
                 x += hand.xPitch;
+                i++;
             }
         }
 
