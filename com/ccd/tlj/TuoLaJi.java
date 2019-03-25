@@ -200,24 +200,10 @@ public class TuoLaJi {
         bPlay.addActionListener((e) -> {
             Object sgObj = Storage.getInstance().readObject("playerName");
             if (sgObj == null || Card.TLJ_PORT == 6658) {
-                TextField pName = new TextField("", Dict.get(lang, "Your Name"), 16, TextArea.ANY);
-                pName.setMaxSize(16);
-                if (sgObj != null) {
-                    pName.setText(sgObj.toString());
-                }
-                Command pNameCmd = new Command(Dict.get(lang, "OK")) {
-                    @Override
-                    public void actionPerformed(ActionEvent ev) {
-                        String playerName = savePlayerName(pName);
-                        if (playerName == null) return;
-                        bPlay.setEnabled(false);
-                        player.startPlay(playerName);
-                    }
-                };
-                Dialog.show("", pName, pNameCmd);
+                showPlayOption();
             } else {
                 bPlay.setEnabled(false);
-                this.player.startPlay(sgObj.toString());
+                this.player.startPlay(sgObj.toString(), "resume");
             }
         });
 
@@ -315,6 +301,38 @@ public class TuoLaJi {
         mainForm.show();
 
         this.player.connectServer(false);
+    }
+
+    void showPlayOption() {
+        Object sgObj = Storage.getInstance().readObject("playerName");
+        TextField pName = new TextField("", Dict.get(lang, "Your Name"), 16, TextArea.ANY);
+        pName.setMaxSize(16);
+        if (sgObj != null) {
+            pName.setText(sgObj.toString());
+        }
+        Command practiceCmd = new Command(Dict.get(lang, "Practice")) {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                String playerName = savePlayerName(pName);
+                if (playerName == null) {
+                    return;
+                }
+                btnPlay.setEnabled(false);
+                player.startPlay(playerName, "practice");
+            }
+        };
+        Command matchCmd = new Command(Dict.get(lang, "Match")) {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                String playerName = savePlayerName(pName);
+                if (playerName == null) {
+                    return;
+                }
+                btnPlay.setEnabled(false);
+                player.startPlay(playerName);
+            }
+        };
+        Dialog.show("", pName, practiceCmd, matchCmd);
     }
 
     public Player getPlayer() {

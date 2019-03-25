@@ -60,6 +60,8 @@ public class Player {
     private final Form mainForm;
     private final TuoLaJi main;
 
+    private String option;
+
     private UITimer gameTimer;
     private Runnable notifyPlayer = new Runnable() {
         @Override
@@ -96,6 +98,7 @@ public class Player {
     static final String actionBuryCards = "bury";
     static final String actionPlayCards = "play";
     static final String actionPartner = "partner";
+    static final String actionReact = "re";
 
     public void connectServer(boolean rejoin) {
         if (!Socket.isSupported()) {
@@ -107,27 +110,35 @@ public class Player {
         this.mySocket = new MySocket();
         Socket.connect(Card.TLJ_HOST, Card.TLJ_PORT, mySocket);
         if (rejoin) {
-            joinTable();
+            joinTable(this.option);
         }
     }
 
     public void startPlay(String playerName) {
-        Log.p(playerName);
-        this.playerName = playerName;
-        joinTable();
+        this.startPlay(playerName, null);
     }
 
-    public void joinTable() {
+    public void startPlay(String playerName, String option) {
+        this.playerName = playerName;
+        this.option = option;
+        joinTable(option);
+    }
+
+    public void joinTable(String option) {
         if (this.mySocket == null) {
             return;
         }
         this.tableOn = true;
         mySocket.checkConnection = true;
-        mySocket.addRequest(actionJoinTable, "\"id\":\"" + this.playerId
+        String data = "\"id\":\"" + this.playerId
                 + "\",\"name\":\"" + this.playerName
                 + "\",\"lang\":\"" + main.lang
                 + "\",\"ver\":\"" + main.version
-                + "\"");
+                + "\"";
+        if (option != null && !option.isEmpty()) {
+            data += ",\"opt\":\"" + option + "\"";
+        }
+        mySocket.addRequest(actionJoinTable, data);
     }
 
     public void disconnect() {
@@ -923,6 +934,7 @@ public class Player {
             main.enableButtons();
             byte[] buffer = new byte[4096];
             int count = 0;
+            int count1 = 0;
             try {
                 if (Card.DEBUG_MODE) Log.p("connected!");
                 while (isConnected() && !closeRequested) {
@@ -943,6 +955,7 @@ public class Player {
                     if (n > 0) {
                         checkConnection = false;
                         count = 0;
+                        count1 = 0;
                         String msg = "";
                         while ((n = is.read(buffer, 0, 4096)) > 0) {
                             msg += new String(buffer, 0, n);
@@ -950,10 +963,20 @@ public class Player {
                         }
                         processReceived(msg);
                     } else {
-                        if (checkConnection) count++;
+                        if (checkConnection) {
+                            count++;
+                        }
                         if (count > serverWaitCycle) {
                             Log.p("lost conncetion!");
                             break;
+                        }
+                        if (tableOn && infoLst.get(0).countDownTimer == null) {
+                            count1++;
+                            if (count1 > serverWaitCycle) {
+                                Log.p("request response");
+                                addRequest(actionReact, null);
+                                count1 = 0;
+                            }
                         }
                         Thread.sleep(500);
                     }
@@ -993,6 +1016,7 @@ public class Player {
                 FontImage.setMaterialIcon(timer, FontImage.MATERIAL_TIMER_OFF);
                 pInfo.dismissActions();
                 pInfo.countDownTimer.cancel();
+                pInfo.countDownTimer = null;
                 if (mySocket != null) {
                     mySocket.setCheckConnection();
                 }
@@ -1310,7 +1334,10 @@ public class Player {
         }
 
         void cancelTimer() {
-            if (countDownTimer != null) countDownTimer.cancel();
+            if (countDownTimer != null) {
+                countDownTimer.cancel();
+            }
+            countDownTimer = null;
 //            this.timer.setHidden(true, true); // setHidden does not work well
 //            this.timer.setText("");
 //            FontImage.setMaterialIcon(timer, '0');  // hide it

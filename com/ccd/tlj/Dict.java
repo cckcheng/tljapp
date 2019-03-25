@@ -16,7 +16,11 @@ public class Dict {
         switch (lang) {
             case "zh":
                 switch (lowerSrc) {
-                    case "Tutorial":
+                    case "match":
+                        return "比赛";
+                    case "practice":
+                        return "练习";
+                    case "tutorial":
                         return "入门";
                     case "ok":
                         return "确定";
