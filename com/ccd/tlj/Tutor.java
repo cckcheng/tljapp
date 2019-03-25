@@ -98,7 +98,7 @@ public class Tutor extends Container {
         lst.add(new Topic(idx++, "follow", "Follow Play"));
         lst.add(new Topic(idx++, "ruff", "Ruff & Over-ruff"));
 
-        lst.add(new Topic(idx++, "exchange", "Declarer: exchange cards"));
+        lst.add(new Topic(idx++, "exchange", "Exchange Cards"));
         lst.add(new Topic(idx++, "flop", "Flop Play"));
         basicTopicNum = lst.size();
 

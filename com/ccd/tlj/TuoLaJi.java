@@ -321,6 +321,7 @@ public class TuoLaJi {
                 player.startPlay(playerName, "practice");
             }
         };
+        FontImage.setMaterialIcon(practiceCmd, FontImage.MATERIAL_DIRECTIONS_WALK, "Button");
         Command matchCmd = new Command(Dict.get(lang, "Match")) {
             @Override
             public void actionPerformed(ActionEvent ev) {
@@ -332,6 +333,8 @@ public class TuoLaJi {
                 player.startPlay(playerName);
             }
         };
+        FontImage.setMaterialIcon(matchCmd, FontImage.MATERIAL_DIRECTIONS_RUN, "Button");
+
         Dialog.show("", pName, practiceCmd, matchCmd);
     }
 
