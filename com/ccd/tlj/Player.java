@@ -903,6 +903,9 @@ public class Player {
                         bRobot.setSelected(true);
                         robotOn = true;
                         break;
+                    case "opt":
+                        main.showPlayOption();
+                        break;
                 }
             }
         }
@@ -970,7 +973,7 @@ public class Player {
                             Log.p("lost conncetion!");
                             break;
                         }
-                        if (tableOn && infoLst.get(0).countDownTimer == null) {
+                        if (tableOn && !tableEnded && infoLst.get(0).countDownTimer == null) {
                             count1++;
                             if (count1 > serverWaitCycle) {
                                 Log.p("request response");

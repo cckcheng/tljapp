@@ -199,7 +199,7 @@ public class TuoLaJi {
         FontImage.setMaterialIcon(bPlay, FontImage.MATERIAL_PEOPLE);
         bPlay.addActionListener((e) -> {
             Object sgObj = Storage.getInstance().readObject("playerName");
-            if (sgObj == null || Card.TLJ_PORT == 6658) {
+            if (sgObj == null) {
                 showPlayOption();
             } else {
                 bPlay.setEnabled(false);
