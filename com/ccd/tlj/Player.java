@@ -928,7 +928,7 @@ public class Player {
                 } catch (InterruptedException ex) {
 
                 }
-                connectServer(true);
+                connectServer(!tableEnded);
             }
         }
 
@@ -995,7 +995,7 @@ public class Player {
             if (!closeRequested) {
                 // not expected, connect again
                 Log.p("re-connect");
-                connectServer(true);
+                connectServer(!tableEnded);
             }
         }
     }

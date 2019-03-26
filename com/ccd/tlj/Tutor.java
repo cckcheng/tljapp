@@ -164,13 +164,16 @@ public class Tutor extends Container {
                     content = topicCardRank(btnNext);
                     break;
                 case "combination":
+                    content = topicCombination(btnNext);
                     break;
                 case "trump":
                     content = topicTrump(btnNext);
                     break;
-                case "contract":
+                case "table":
                     break;
 
+                case "ruff":
+                    break;
                 case "lead":
                     break;
                 case "follow":
@@ -179,6 +182,7 @@ public class Tutor extends Container {
                     break;
                 case "flop":
                     break;
+
                 case "pass_declarer":
                     break;
                 case "pass_defender":
@@ -290,10 +294,9 @@ public class Tutor extends Container {
             addCards.add(new Card(Card.DIAMOND, 8));
             addCards.add(new Card(Card.CLUB, 8));
             img.insertCards(3, addCards);
-            img.scale(hand.displayWidthNormal(cards.size()), hand.cardHeight + 220);
+            img.scale(hand.displayWidthNormal(cards.size()), 2 * (hand.cardHeight + 10) + 50);
             content.add(img);
 
-            content.add(" ");
             content.add("Quiz: For a single deck, how many trumps are there if no trump suit specified?");
             RadioButton rb1 = new RadioButton("2");
             RadioButton rb2 = new RadioButton("4");
@@ -306,6 +309,96 @@ public class Tutor extends Container {
             });
             return content;
         }
+    }
+
+    private Component topicCombination(Button btnNext) {
+        SpanLabel lb0 = new SpanLabel("Pair, Trips, Quads (Sample as below)");
+        Container content = BoxLayout.encloseY(lb0);
+        content.setScrollableY(true);
+
+        Hand hand = main.getPlayer().getHand();
+        List<Card> cards = new ArrayList<>();
+        cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+        cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+        CardList imgPair = new CardList(cards);
+        imgPair.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+
+        cards = new ArrayList<>();
+        cards.add(new Card(Card.HEART, 8));
+        cards.add(new Card(Card.HEART, 8));
+        cards.add(new Card(Card.HEART, 8));
+        CardList imgTrips = new CardList(cards);
+        imgTrips.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+
+        cards = new ArrayList<>();
+        cards.add(new Card(Card.CLUB, 5));
+        cards.add(new Card(Card.CLUB, 5));
+        cards.add(new Card(Card.CLUB, 5));
+        cards.add(new Card(Card.CLUB, 5));
+        CardList imgQuads = new CardList(cards);
+        imgQuads.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+
+        Container subContainer = new Container();
+        subContainer.add(imgPair).add(imgTrips).add(imgQuads);
+        content.add(subContainer);
+
+        lb0 = new SpanLabel("Tractor(TuoLaJi): connected pairs (or trips/quads)."
+                + " Following samples are based on game-rank 10, trump suit ♦:");
+        content.add(lb0);
+
+        cards = new ArrayList<>();
+        cards.add(new Card(Card.CLUB, 6));
+        cards.add(new Card(Card.CLUB, 6));
+        cards.add(new Card(Card.CLUB, 5));
+        cards.add(new Card(Card.CLUB, 5));
+        CardList img1 = new CardList(cards);
+        img1.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+
+        cards = new ArrayList<>();
+        cards.add(new Card(Card.SPADE, 11));
+        cards.add(new Card(Card.SPADE, 11));
+        cards.add(new Card(Card.SPADE, 11));
+        cards.add(new Card(Card.SPADE, 9));
+        cards.add(new Card(Card.SPADE, 9));
+        cards.add(new Card(Card.SPADE, 9));
+        CardList img2 = new CardList(cards);
+        img2.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+
+        cards = new ArrayList<>();
+        cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+        cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+        cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
+        cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
+        cards.add(new Card(Card.DIAMOND, 10));
+        cards.add(new Card(Card.DIAMOND, 10));
+        cards.add(new Card(Card.CLUB, 10));
+        cards.add(new Card(Card.CLUB, 10));
+        cards.add(new Card(Card.DIAMOND, 14));
+        cards.add(new Card(Card.DIAMOND, 14));
+        CardList img3 = new CardList(cards);
+        img3.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+        subContainer = new Container();
+        subContainer.add(img1).add(img2).add(img3);
+        content.add(subContainer);
+
+        lb0 = new SpanLabel("When one of the combinations is led,"
+                + " the following player must try to play the same type of the combination."
+                + " Take quads as an example, the follow play preference is: quads, 1 trips + 1 single, 2-pair tractor,"
+                + " 2 pairs, 1 pair + 2 singles, 4 singles.");
+        content.add(lb0);
+        content.add("Special rule: quads can beat 2-pair tractor.");
+
+//        content.add("Quiz: For a single deck, how many trumps are there if no trump suit specified?");
+//        RadioButton rb1 = new RadioButton("2");
+//        RadioButton rb2 = new RadioButton("4");
+//        RadioButton rb3 = new RadioButton("6");
+//        RadioButton rb4 = new RadioButton("8");
+//        ButtonGroup btnGroup = new ButtonGroup(rb1, rb2, rb3, rb4);
+//        content.add(BoxLayout.encloseXNoGrow(rb1, rb2, rb3, rb4));
+//        btnGroup.addActionListener((e) -> {
+//            btnNext.setEnabled(rb3.isSelected());
+//        });
+        return content;
     }
 
     class CardList extends DynamicImage {
