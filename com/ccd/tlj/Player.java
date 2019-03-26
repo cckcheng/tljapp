@@ -904,6 +904,7 @@ public class Player {
                         robotOn = true;
                         break;
                     case "opt":
+                        tableOn = false;
                         main.showPlayOption();
                         break;
                 }
@@ -937,7 +938,7 @@ public class Player {
             main.enableButtons();
             byte[] buffer = new byte[4096];
             int count = 0;
-            int count1 = 0;
+//            int count1 = 0;
             try {
                 if (Card.DEBUG_MODE) Log.p("connected!");
                 while (isConnected() && !closeRequested) {
@@ -958,7 +959,7 @@ public class Player {
                     if (n > 0) {
                         checkConnection = false;
                         count = 0;
-                        count1 = 0;
+//                        count1 = 0;
                         String msg = "";
                         while ((n = is.read(buffer, 0, 4096)) > 0) {
                             msg += new String(buffer, 0, n);
@@ -968,19 +969,19 @@ public class Player {
                     } else {
                         if (checkConnection) {
                             count++;
-                        }
-                        if (count > serverWaitCycle) {
-                            Log.p("lost conncetion!");
-                            break;
-                        }
-                        if (tableOn && !tableEnded && infoLst.get(0).countDownTimer == null) {
-                            count1++;
-                            if (count1 > serverWaitCycle) {
-                                Log.p("request response");
-                                addRequest(actionReact, null);
-                                count1 = 0;
+                            if (count > serverWaitCycle) {
+                                Log.p("lost conncetion!");
+                                break;
                             }
                         }
+//                        if (tableOn && !tableEnded && infoLst.get(0).countDownTimer == null) {
+//                            count1++;
+//                            if (count1 > serverWaitCycle) {
+//                                Log.p("request response");
+//                                addRequest(actionReact, null);
+//                                count1 = 0;
+//                            }
+//                        }
                         Thread.sleep(500);
                     }
                 }
@@ -995,7 +996,7 @@ public class Player {
             if (!closeRequested) {
                 // not expected, connect again
                 Log.p("re-connect");
-                connectServer(!tableEnded);
+                connectServer(tableOn && !tableEnded);
             }
         }
     }
