@@ -4,6 +4,7 @@ import com.codename1.components.SpanLabel;
 import com.codename1.io.Storage;
 import com.codename1.ui.Button;
 import com.codename1.ui.ButtonGroup;
+import com.codename1.ui.CheckBox;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
@@ -11,6 +12,7 @@ import com.codename1.ui.Dialog;
 import com.codename1.ui.DynamicImage;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Graphics;
+import com.codename1.ui.Label;
 import com.codename1.ui.RadioButton;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
@@ -312,7 +314,7 @@ public class Tutor extends Container {
     }
 
     private Component topicCombination(Button btnNext) {
-        SpanLabel lb0 = new SpanLabel("Pair, Trips, Quads (Sample as below)");
+        SpanLabel lb0 = new SpanLabel("Pair, Trips, Quads (Samples as below)");
         Container content = BoxLayout.encloseY(lb0);
         content.setScrollableY(true);
 
@@ -388,16 +390,119 @@ public class Tutor extends Container {
         content.add(lb0);
         content.add("Special rule: quads can beat 2-pair tractor.");
 
-//        content.add("Quiz: For a single deck, how many trumps are there if no trump suit specified?");
-//        RadioButton rb1 = new RadioButton("2");
-//        RadioButton rb2 = new RadioButton("4");
-//        RadioButton rb3 = new RadioButton("6");
-//        RadioButton rb4 = new RadioButton("8");
-//        ButtonGroup btnGroup = new ButtonGroup(rb1, rb2, rb3, rb4);
-//        content.add(BoxLayout.encloseXNoGrow(rb1, rb2, rb3, rb4));
-//        btnGroup.addActionListener((e) -> {
-//            btnNext.setEnabled(rb3.isSelected());
-//        });
+        lb0 = new SpanLabel("Quiz: Please select all the correct tractors (Assumption: game-rank 10, trump suit ♦)");
+        content.add(lb0);
+
+        subContainer = new Container();
+        CheckBox cb1 = new CheckBox();
+        subContainer.add(cb1);
+        content.add(subContainer);
+        cards = new ArrayList<>();
+        cards.add(new Card(Card.SPADE, 8));
+        cards.add(new Card(Card.SPADE, 8));
+        cards.add(new Card(Card.SPADE, 7));
+        cards.add(new Card(Card.SPADE, 7));
+        CardList img = new CardList(cards);
+        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+        subContainer.add(img);
+
+        subContainer = new Container();
+        CheckBox cb2 = new CheckBox();
+        subContainer.add(cb2);
+        content.add(subContainer);
+        cards = new ArrayList<>();
+        cards.add(new Card(Card.CLUB, 14));
+        cards.add(new Card(Card.CLUB, 14));
+        cards.add(new Card(Card.CLUB, 13));
+        cards.add(new Card(Card.CLUB, 13));
+        cards.add(new Card(Card.CLUB, 13));
+        img = new CardList(cards);
+        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+        subContainer.add(img);
+        Label hint2 = new Label("Mixed pair and trips");
+        hint2.setVisible(false);
+        subContainer.add(hint2);
+
+        subContainer = new Container();
+        CheckBox cb3 = new CheckBox();
+        subContainer.add(cb3);
+        content.add(subContainer);
+        cards = new ArrayList<>();
+        cards.add(new Card(Card.HEART, 11));
+        cards.add(new Card(Card.HEART, 11));
+        cards.add(new Card(Card.HEART, 9));
+        cards.add(new Card(Card.HEART, 9));
+        img = new CardList(cards);
+        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+        subContainer.add(img);
+        Label hint3 = new Label("Connected, since 10 is out!");
+        hint3.setVisible(false);
+        subContainer.add(hint3);
+
+        subContainer = new Container();
+        CheckBox cb4 = new CheckBox();
+        subContainer.add(cb4);
+        content.add(subContainer);
+        cards = new ArrayList<>();
+        cards.add(new Card(Card.DIAMOND, 7));
+        cards.add(new Card(Card.DIAMOND, 7));
+        cards.add(new Card(Card.DIAMOND, 7));
+        cards.add(new Card(Card.DIAMOND, 5));
+        cards.add(new Card(Card.DIAMOND, 5));
+        cards.add(new Card(Card.DIAMOND, 5));
+        img = new CardList(cards);
+        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+        subContainer.add(img);
+        Label hint4 = new Label("Not connected");
+        hint4.setVisible(false);
+        subContainer.add(hint4);
+
+        subContainer = new Container();
+        CheckBox cb5 = new CheckBox();
+        subContainer.add(cb5);
+        content.add(subContainer);
+        cards = new ArrayList<>();
+        cards.add(new Card(Card.SPADE, 10));
+        cards.add(new Card(Card.SPADE, 10));
+        cards.add(new Card(Card.HEART, 10));
+        cards.add(new Card(Card.HEART, 10));
+        img = new CardList(cards);
+        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+        subContainer.add(img);
+        Label hint5 = new Label("Same rank, not qualify!");
+        hint5.setVisible(false);
+        subContainer.add(hint5);
+
+        content.add(" ");
+        CheckBox cb0 = new CheckBox("Show Hint");
+        content.add(cb0);
+        cb0.addActionListener((e) -> {
+            hint2.setVisible(cb0.isSelected());
+            hint3.setVisible(cb0.isSelected());
+            hint4.setVisible(cb0.isSelected());
+            hint5.setVisible(cb0.isSelected());
+        });
+
+        cb1.addActionListener((e) -> {
+            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
+                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected());
+        });
+        cb2.addActionListener((e) -> {
+            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
+                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected());
+        });
+        cb3.addActionListener((e) -> {
+            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
+                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected());
+        });
+        cb4.addActionListener((e) -> {
+            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
+                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected());
+        });
+        cb5.addActionListener((e) -> {
+            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
+                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected());
+        });
         return content;
     }
 
