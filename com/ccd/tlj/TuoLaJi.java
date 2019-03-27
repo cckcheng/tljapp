@@ -41,7 +41,7 @@ public class TuoLaJi {
 
     static public int BACKGROUND_COLOR = Card.DEBUG_MODE ? 0xffffff : 0x008000;
     private Form current;
-    private Resources theme;
+    public Resources theme;
 
     private String uniqueID = null;
 

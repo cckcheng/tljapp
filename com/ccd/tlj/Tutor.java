@@ -9,6 +9,7 @@ import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
+import com.codename1.ui.Display;
 import com.codename1.ui.DynamicImage;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Graphics;
@@ -172,6 +173,7 @@ public class Tutor extends Container {
                     content = topicTrump(btnNext);
                     break;
                 case "table":
+                    content = topicTable(btnNext);
                     break;
 
                 case "ruff":
@@ -266,6 +268,15 @@ public class Tutor extends Container {
             btnGroup.addActionListener((e) -> {
                 btnNext.setEnabled(rb4.isSelected());
             });
+            return content;
+        }
+
+        private Component topicTable(Button btnNext) {
+            SpanLabel lb0 = new SpanLabel("Below is the game layout:");
+            Container content = BoxLayout.encloseY(lb0);
+            content.setScrollableY(true);
+            content.add(main.theme.getImage("h2.png").scaledWidth(Display.getInstance().getDisplayWidth()));
+            btnNext.setEnabled(true);
             return content;
         }
 
