@@ -352,6 +352,10 @@ public class Player {
                         p0.contractor.setText(point1 + "");
                     }
                 }
+                int lead = parseInteger(data.get("lead"));
+                if (lead > 0) {
+                    p0.setLeadSign(true);
+                }
             }
         } else {
             p0.userHelp.showInfo(info);
@@ -558,7 +562,10 @@ public class Player {
                     pp.contractor.setText(point1 + "");
                 }
             }
-
+            int lead = parseInteger(rawData.get("lead"));
+            if (lead > 0) {
+                pp.setLeadSign(true);
+            }
         }
     }
 
@@ -708,6 +715,12 @@ public class Player {
         }
     }
 
+    void setLeadingIcon(PlayerInfo pp) {
+        for (PlayerInfo p : infoLst) {
+            p.setLeadSign(p == pp);
+        }
+    }
+
     private void playCards(Map<String, Object> data) {
         int seat = parseInteger(data.get("seat"));
         int actionSeat = parseInteger(data.get("next"));
@@ -736,6 +749,10 @@ public class Player {
             PlayerInfo pp = this.playerMap.get(seat);
             if (pp != null) {
                 displayCards(pp, cards);
+                int lead = parseInteger(data.get("lead"));
+                if (lead > 0) {
+                    setLeadingIcon(pp);
+                }
 
                 boolean isPartner = parseBoolean(data.get("isPartner"));
                 if (isPartner) {
@@ -1046,6 +1063,7 @@ public class Player {
 
         Container central;
         Container buttonContainer;
+        FontImage leadIcon;
 
         Button btnBid;
         Button btnPlus;
@@ -1078,6 +1096,8 @@ public class Player {
             timer.getAllStyles().setFgColor(TIMER_COLOR);
             timer.getAllStyles().setFont(Hand.fontRank);
 //            timer.setHidden(true, true);    // setHidden Does not work
+
+            leadIcon = FontImage.createMaterial(FontImage.MATERIAL_MOOD, timer.getUnselectedStyle());
 
             if (loc.equals("bottom")) {
                 Command commonCmd = new Command("Play") {   // for pass, bury and play
@@ -1156,7 +1176,7 @@ public class Player {
                 });
 
                 btnPlay = new Button(commonCmd);
-//                btnPlay.setUIID("play");
+//                btnPlay.setUIID("myLabel");
 //                btnPlay.setSize(new Dimension(100, 40)); // does not work
 //                btnPlay.getAllStyles().setBgImage(backImage);
                 btnPlay.getAllStyles().setBgImage(main.back);
@@ -1197,6 +1217,14 @@ public class Player {
             return mainInfo.getAbsoluteY();
         }
 
+        void setLeadSign(boolean isLead) {
+            if (isLead) {
+                mainInfo.setIcon(leadIcon);
+            } else {
+                mainInfo.setIcon(null);
+            }
+        }
+
         void dismissActions() {
             if (actionButtons == null) {
                 return;
@@ -1212,6 +1240,7 @@ public class Player {
             points.setText("");
             hand.clearPlayCards(this);
             this.isContractSide = false;
+            mainInfo.setIcon(null);
             if (location.equals("bottom")) {
                 userHelp.clear();
                 userHelp.setLanguage(main.lang);
