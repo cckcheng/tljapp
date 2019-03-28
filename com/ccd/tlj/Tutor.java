@@ -97,17 +97,13 @@ public class Tutor extends Container {
         lst.add(new Topic(idx++, "combination", "Card Combinations"));
         lst.add(new Topic(idx++, "table", "Table Layout"));
 
-        lst.add(new Topic(idx++, "lead", "Leading Play"));
-        lst.add(new Topic(idx++, "follow", "Follow Play"));
-        lst.add(new Topic(idx++, "ruff", "Ruff & Over-ruff"));
-
+        lst.add(new Topic(idx++, "bid", "Bidding"));
         lst.add(new Topic(idx++, "exchange", "Exchange Cards"));
-        lst.add(new Topic(idx++, "flop", "Flop Play"));
+        lst.add(new Topic(idx++, "basic", "Basic Play"));
         basicTopicNum = lst.size();
+        lst.add(new Topic(idx++, "flop", "Flop Play"));
+        lst.add(new Topic(idx++, "advanced", "Advanced Play"));
 
-        lst.add(new Topic(idx++, "pass_declarer", "Pass to partner: declaring side"));
-        lst.add(new Topic(idx++, "pass_defender", "Pass to partner: defenders"));
-        lst.add(new Topic(idx++, "choose_side", "Choose the correct side"));
         return lst;
     }
 
@@ -180,22 +176,16 @@ public class Tutor extends Container {
                     content = topicTable(btnNext);
                     break;
 
-                case "ruff":
+                case "bid":
                     break;
-                case "lead":
-                    break;
-                case "follow":
+                case "basic":
                     break;
                 case "exchange":
                     break;
+
                 case "flop":
                     break;
-
-                case "pass_declarer":
-                    break;
-                case "pass_defender":
-                    break;
-                case "choose_side":
+                case "advanced":
                     break;
 
                 default:
