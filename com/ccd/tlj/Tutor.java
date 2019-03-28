@@ -157,7 +157,11 @@ public class Tutor extends Container {
                 nextTopic.enableButton(true);
                 nextTopic.showContent();
             });
-            dlg.add(BorderLayout.SOUTH, BoxLayout.encloseXNoGrow(btnNext, new Button(okCmd)));
+            if (idx < topics.size() - 1) {
+                dlg.add(BorderLayout.SOUTH, BoxLayout.encloseXNoGrow(btnNext, new Button(okCmd)));
+            } else {
+                dlg.add(BorderLayout.SOUTH, new Button(okCmd));
+            }
             Component content = null;
             switch (id) {
                 case "point_cards":
@@ -272,7 +276,7 @@ public class Tutor extends Container {
         }
 
         private Component topicTable(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("Below is the game layout:");
+            SpanLabel lb0 = new SpanLabel("Game table illustrated as below:");
             Container content = BoxLayout.encloseY(lb0);
             content.setScrollableY(true);
             content.add(main.theme.getImage("h2.png").scaledWidth(Display.getInstance().getDisplayWidth()));
@@ -325,7 +329,7 @@ public class Tutor extends Container {
     }
 
     private Component topicCombination(Button btnNext) {
-        SpanLabel lb0 = new SpanLabel("Pair, Trips, Quads (Samples as below)");
+        SpanLabel lb0 = new SpanLabel("PAIR, TRIPS, QUADS (Samples as below)");
         Container content = BoxLayout.encloseY(lb0);
         content.setScrollableY(true);
 
@@ -355,7 +359,7 @@ public class Tutor extends Container {
         subContainer.add(imgPair).add(imgTrips).add(imgQuads);
         content.add(subContainer);
 
-        lb0 = new SpanLabel("Tractor(TuoLaJi): connected pairs (or trips/quads)."
+        lb0 = new SpanLabel("TuoLaJi(Tractor): connected pairs (or trips/quads)."
                 + " Following samples are based on game-rank 10, trump suit ♦:");
         content.add(lb0);
 
@@ -399,7 +403,7 @@ public class Tutor extends Container {
                 + " Take quads as an example, the follow play preference is: quads, 1 trips + 1 single, 2-pair tractor,"
                 + " 2 pairs, 1 pair + 2 singles, 4 singles.");
         content.add(lb0);
-        content.add("Special rule: quads can beat 2-pair tractor.");
+        content.add("Special rule: Quads can beat 2-pair tractor, so it is also called Bomb.");
 
         lb0 = new SpanLabel("Quiz: Please select all the correct tractors (Assumption: game-rank 10, trump suit ♦)");
         content.add(lb0);
