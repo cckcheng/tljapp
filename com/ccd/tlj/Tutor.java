@@ -62,17 +62,17 @@ public class Tutor extends Container {
                 index1.add(topic.button);
             }
 
-            GridLayout layout2 = new GridLayout(2);
-            layout2.setAutoFit(true);
-            Container index2 = new Container(layout2);
+//            GridLayout layout2 = new GridLayout(2);
+//            layout2.setAutoFit(true);
+//            Container index2 = new Container(layout2);
             for (int x = basicTopicNum; x < topics.size(); x++) {
                 Topic topic = topics.get(x);
                 if (x > currentIndex) topic.enableButton(false);
-                index2.add(topic.button);
+                index1.add(topic.button);
             }
 
             index.add(index1);
-            index.add(index2);
+//            index.add(index2);
             this.add(index);
             Button bExit = new Button(Dict.get(main.lang, "Exit"));
             FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
@@ -177,15 +177,20 @@ public class Tutor extends Container {
                     break;
 
                 case "bid":
+                    content = topicBidding(btnNext);
                     break;
                 case "basic":
+                    content = topicBasicPlay(btnNext);
                     break;
                 case "exchange":
+                    content = topicExchange(btnNext);
                     break;
 
                 case "flop":
+                    content = topicFlop(btnNext);
                     break;
                 case "advanced":
+                    content = topicAdvanced(btnNext);
                     break;
 
                 default:
@@ -252,13 +257,12 @@ public class Tutor extends Container {
             content.add(" ");
             content.add("Quiz: ♥5, ♥9, ♥Q, ♥K, ♥K, ♥10");
             content.add("For the above play sequence, which player won this round?");
-            RadioButton rb1 = new RadioButton("First");
             RadioButton rb2 = new RadioButton("Second");
             RadioButton rb3 = new RadioButton("Third");
             RadioButton rb4 = new RadioButton("Fouth");
             RadioButton rb5 = new RadioButton("Fifth");
-            ButtonGroup btnGroup = new ButtonGroup(rb1, rb2, rb3, rb4, rb5);
-            content.add(BoxLayout.encloseXNoGrow(rb1, rb2, rb3, rb4, rb5));
+            ButtonGroup btnGroup = new ButtonGroup(rb2, rb3, rb4, rb5);
+            content.add(BoxLayout.encloseXNoGrow(rb2, rb3, rb4, rb5));
             btnGroup.addActionListener((e) -> {
                 btnNext.setEnabled(rb4.isSelected());
             });
@@ -266,11 +270,87 @@ public class Tutor extends Container {
         }
 
         private Component topicTable(Button btnNext) {
+            btnNext.setEnabled(false);
             SpanLabel lb0 = new SpanLabel("Game table illustrated as below:");
             Container content = BoxLayout.encloseY(lb0);
             content.setScrollableY(true);
+            content.setScrollableX(true);
             content.add(main.theme.getImage("h2.png").scaledWidth(Display.getInstance().getDisplayWidth()));
+
+            content.add("Quiz: Based on the sample table, which player is the declarer?");
+            RadioButton rb1_1 = new RadioButton("#4");
+            RadioButton rb1_2 = new RadioButton("#5");
+            RadioButton rb1_3 = new RadioButton("#6");
+            ButtonGroup btnGroup1 = new ButtonGroup(rb1_1, rb1_2, rb1_3);
+            RadioButton rb2_1 = new RadioButton("190");
+            RadioButton rb2_2 = new RadioButton("75");
+            ButtonGroup btnGroup2 = new ButtonGroup(rb2_1, rb2_2);
+            RadioButton rb3_1 = new RadioButton("115");
+            RadioButton rb3_2 = new RadioButton("120");
+            ButtonGroup btnGroup3 = new ButtonGroup(rb3_1, rb3_2);
+
+            content.add(BoxLayout.encloseXNoGrow(rb1_1, rb1_2, rb1_3));
+            btnGroup1.addActionListener((e) -> {
+                if (rb1_2.isSelected()) {
+                    content.add("What is the contract point?");
+                    content.add(BoxLayout.encloseXNoGrow(rb2_1, rb2_2));
+                    rb1_1.setEnabled(false);
+                    rb1_2.setEnabled(false);
+                    rb1_3.setEnabled(false);
+                }
+            });
+            btnGroup2.addActionListener((e) -> {
+                if (rb2_1.isSelected()) {
+                    content.add("To win the game, how many more points need to be collected by the defenders?");
+                    content.add(BoxLayout.encloseXNoGrow(rb3_1, rb3_2));
+                    rb2_1.setEnabled(false);
+                    rb2_2.setEnabled(false);
+                }
+            });
+            btnGroup3.addActionListener((e) -> {
+                btnNext.setEnabled(rb3_1.isSelected());
+            });
+
+            return content;
+        }
+
+        private Component topicBidding(Button btnNext) {
+            SpanLabel lb0 = new SpanLabel("Bidding");
+            Container content = BoxLayout.encloseY(lb0);
+            content.setScrollableY(true);
             btnNext.setEnabled(true);
+            return content;
+        }
+
+        private Component topicExchange(Button btnNext) {
+            SpanLabel lb0 = new SpanLabel("Declarer will have a chance to exchange 6 cards after setting trump.");
+            Container content = BoxLayout.encloseY(lb0);
+            content.setScrollableY(true);
+            btnNext.setEnabled(true);
+            return content;
+        }
+
+        private Component topicBasicPlay(Button btnNext) {
+            SpanLabel lb0 = new SpanLabel("Basic Play");
+            Container content = BoxLayout.encloseY(lb0);
+            content.setScrollableY(true);
+            btnNext.setEnabled(true);
+            return content;
+        }
+
+        private Component topicFlop(Button btnNext) {
+            SpanLabel lb0 = new SpanLabel("Flop Play");
+            Container content = BoxLayout.encloseY(lb0);
+            content.setScrollableY(true);
+            btnNext.setEnabled(true);
+            return content;
+        }
+
+        private Component topicAdvanced(Button btnNext) {
+            SpanLabel lb0 = new SpanLabel("Advanced Play");
+            Container content = BoxLayout.encloseY(lb0);
+            content.setScrollableY(true);
+            content.add("Congratulations. Good luck and enjoy the game!");
             return content;
         }
 
