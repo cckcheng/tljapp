@@ -146,7 +146,7 @@ public class Tutor extends Container {
                 }
             };
             Button btnNext = new Button("Next");
-            btnNext.setEnabled(idx < currentIndex);
+            btnNext.setEnabled(false);
             btnNext.addActionListener((e) -> {
                 dlg.dispose();
                 Topic nextTopic = topics.get(idx + 1);
@@ -315,9 +315,17 @@ public class Tutor extends Container {
         }
 
         private Component topicBidding(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("Bidding");
+            SpanLabel lb0 = new SpanLabel("To be a successful declarer, your hand need to be stronger than average."
+                    + " Apparently, the lower the contract point, the harder the contract to be made. On the bidding stage,"
+                    + " there is a recommended minimum bid point right behind your current rank."
+                    + " As a beginner, you can take that advice.");
             Container content = BoxLayout.encloseY(lb0);
             content.setScrollableY(true);
+            lb0 = new SpanLabel("Once you become the declarer, you need choose the trump suit."
+                    + " In order to set a suit to trump suit, you must have the game-rank card of that suit (or a Joker for NT)."
+                    + " E.g. suppose your current rank is 6, you want specify Spade as trump,"
+                    + " then you must show ♠6 to other players.");
+            content.add(lb0);
             btnNext.setEnabled(true);
             return content;
         }
@@ -331,9 +339,15 @@ public class Tutor extends Container {
         }
 
         private Component topicBasicPlay(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("Basic Play");
+            SpanLabel lb0 = new SpanLabel("Leading");
             Container content = BoxLayout.encloseY(lb0);
             content.setScrollableY(true);
+            lb0 = new SpanLabel("When you are at the leading position, usually you should play your strong combinations of cards."
+                    + " Quads, tractors, trips are considered the strong combinations, especially in a higher rank."
+                    + " Obviously, the longer, the stronger."
+                    + " Of course, if none of the opponents showed void sign of the suit you led,"
+                    + " you should cash the Ace(s) first.");
+            content.add(lb0);
             btnNext.setEnabled(true);
             return content;
         }
