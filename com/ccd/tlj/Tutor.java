@@ -102,7 +102,7 @@ public class Tutor extends Container {
         lst.add(new Topic(idx++, "basic", "Basic Play"));
         basicTopicNum = lst.size();
         lst.add(new Topic(idx++, "flop", "Flop Play"));
-        lst.add(new Topic(idx++, "advanced", "Advanced Play"));
+//        lst.add(new Topic(idx++, "advanced", "Advanced Play"));
 
         return lst;
     }
@@ -282,29 +282,41 @@ public class Tutor extends Container {
             RadioButton rb1_2 = new RadioButton("#5");
             RadioButton rb1_3 = new RadioButton("#6");
             ButtonGroup btnGroup1 = new ButtonGroup(rb1_1, rb1_2, rb1_3);
+            content.add(BoxLayout.encloseXNoGrow(rb1_1, rb1_2, rb1_3));
+
             RadioButton rb2_1 = new RadioButton("190");
             RadioButton rb2_2 = new RadioButton("75");
             ButtonGroup btnGroup2 = new ButtonGroup(rb2_1, rb2_2);
+            rb2_1.setEnabled(false);
+            rb2_2.setEnabled(false);
+
             RadioButton rb3_1 = new RadioButton("115");
             RadioButton rb3_2 = new RadioButton("120");
             ButtonGroup btnGroup3 = new ButtonGroup(rb3_1, rb3_2);
+            rb3_1.setEnabled(false);
+            rb3_2.setEnabled(false);
 
-            content.add(BoxLayout.encloseXNoGrow(rb1_1, rb1_2, rb1_3));
+            content.add("What is the contract point?");
+            content.add(BoxLayout.encloseXNoGrow(rb2_1, rb2_2));
+            content.add("To win the game, how many more points need to be collected by the defenders?");
+            content.add(BoxLayout.encloseXNoGrow(rb3_1, rb3_2));
+
             btnGroup1.addActionListener((e) -> {
                 if (rb1_2.isSelected()) {
-                    content.add("What is the contract point?");
-                    content.add(BoxLayout.encloseXNoGrow(rb2_1, rb2_2));
                     rb1_1.setEnabled(false);
                     rb1_2.setEnabled(false);
                     rb1_3.setEnabled(false);
+                    rb2_1.setEnabled(true);
+                    rb2_2.setEnabled(true);
                 }
             });
             btnGroup2.addActionListener((e) -> {
                 if (rb2_1.isSelected()) {
-                    content.add("To win the game, how many more points need to be collected by the defenders?");
-                    content.add(BoxLayout.encloseXNoGrow(rb3_1, rb3_2));
                     rb2_1.setEnabled(false);
                     rb2_2.setEnabled(false);
+//                    content.scrollComponentToVisible(addon);  // not work
+                    rb3_1.setEnabled(true);
+                    rb3_2.setEnabled(true);
                 }
             });
             btnGroup3.addActionListener((e) -> {
@@ -322,7 +334,7 @@ public class Tutor extends Container {
             Container content = BoxLayout.encloseY(lb0);
             content.setScrollableY(true);
             lb0 = new SpanLabel("Once you become the declarer, you need choose the trump suit."
-                    + " In order to set a suit to trump suit, you must have the game-rank card of that suit (or a Joker for NT)."
+                    + " In order to set a suit to trumps, you must have the game-rank card of that suit (or a Joker for NT)."
                     + " E.g. suppose your current rank is 6, you want specify Spade as trump,"
                     + " then you must show ♠6 to other players.");
             content.add(lb0);
@@ -331,30 +343,133 @@ public class Tutor extends Container {
         }
 
         private Component topicExchange(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("Declarer will have a chance to exchange 6 cards after setting trump.");
+            SpanLabel lb0 = new SpanLabel("Declarer have a chance to exchange 6 cards after setting trump.");
             Container content = BoxLayout.encloseY(lb0);
+            lb0 = new SpanLabel("At this point, you have to decide how to find your partner."
+                    + " The partner definition is in this way: a player who plays a specific card will be my partner."
+                    + " In general, the specific card (Partner Card) is an Ace (not trump)."
+                    + " E.g. the Partner Card is: 2nd ♠A, it means who plays the second ♠A will be the declarer's partner.");
+            content.add(lb0);
+            content.add("The following are some good examples after the exchange:");
+
+            Container subContainer = new Container();
+            content.add(subContainer);
+
+            Hand hand = main.getPlayer().getHand();
+            List<Card> cards = new ArrayList<>();
+            cards.add(new Card(Card.SPADE, 14));
+            cards.add(new Card(Card.SPADE, 10));
+            CardList img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+            subContainer.add(img);
+
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.SPADE, 14));
+            cards.add(new Card(Card.SPADE, 13));
+            cards.add(new Card(Card.SPADE, 5));
+            img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+            subContainer.add(img);
+
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.SPADE, 13));
+            cards.add(new Card(Card.SPADE, 13));
+            cards.add(new Card(Card.SPADE, 10));
+            img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()), hand.cardHeight + 10);
+            subContainer.add(img);
+
+            lb0 = new SpanLabel("For the first 2 examples, you declare the Partner Card: 2nd ♠A."
+                    + " Then you play ♠A first, play ♠K next(if you have one).");
+            content.add(lb0);
+            lb0 = new SpanLabel("For the third examples, you declare the Partner Card: 1st ♠A."
+                    + " Then you play ♠K seperately.");
+            content.add(lb0);
+
+            lb0 = new SpanLabel("Normally, at the very beginning, no player knows how strong the declarer's hand is."
+                    + " So nobody is willing to take the risk to be the partner of the declarer too early.");
+            content.add(lb0);
+
             content.setScrollableY(true);
             btnNext.setEnabled(true);
             return content;
         }
 
         private Component topicBasicPlay(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("Leading");
+            Label lb0 = TuoLaJi.boldText("Leading");
             Container content = BoxLayout.encloseY(lb0);
             content.setScrollableY(true);
-            lb0 = new SpanLabel("When you are at the leading position, usually you should play your strong combinations of cards."
-                    + " Quads, tractors, trips are considered the strong combinations, especially in a higher rank."
+            SpanLabel lb = new SpanLabel("When you are at the leading position, usually you should play your strong combinations of cards."
+                    + " Quads, Tractors, Trips are considered the strong combinations, especially in a higher rank."
                     + " Obviously, the longer, the stronger."
                     + " Of course, if none of the opponents showed void sign of the suit you led,"
                     + " you should cash the Ace(s) first.");
+            content.add(lb);
+            lb = new SpanLabel("After that, you should always try to pass to your partner."
+                    + " So as to keep the leading right in your side longer and get more points.");
+            content.add(lb);
+            lb0 = TuoLaJi.boldText("Follow Play");
             content.add(lb0);
+            lb = new SpanLabel("When your partner is winning this round, you discard point card(s)."
+                    + " Otherwise, you should avoid to play point card(s).");
+            content.add(lb);
+            lb = new SpanLabel("If you are void in the suit led, you can ruff and take the leading right."
+                    + " The valid ruff must be in the same type of card combination led.");
+            content.add(lb);
+
             btnNext.setEnabled(true);
             return content;
         }
 
         private Component topicFlop(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("Flop Play");
-            Container content = BoxLayout.encloseY(lb0);
+            SpanLabel lb0 = new SpanLabel("Sometimes you can try to play multiple combinations together - Flop Play."
+                    + " Following are some examples:");
+            Container content = BoxLayout.encloseYBottomLast(lb0);
+
+            Container subContainer = new Container();
+            content.add(subContainer);
+
+            Hand hand = main.getPlayer().getHand();
+            List<Card> cards = new ArrayList<>();
+            cards.add(new Card(Card.SPADE, 14));
+            cards.add(new Card(Card.SPADE, 14));
+            cards.add(new Card(Card.SPADE, 13));
+            cards.add(new Card(Card.SPADE, 13));
+            cards.add(new Card(Card.SPADE, 13));
+            CardList img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+            subContainer.add(img);
+
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.SPADE, 14));
+            cards.add(new Card(Card.SPADE, 14));
+            cards.add(new Card(Card.SPADE, 14));
+            cards.add(new Card(Card.SPADE, 13));
+            cards.add(new Card(Card.SPADE, 13));
+            img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+            subContainer.add(img);
+
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.SPADE, 12));
+            cards.add(new Card(Card.SPADE, 12));
+            cards.add(new Card(Card.SPADE, 11));
+            cards.add(new Card(Card.SPADE, 11));
+            cards.add(new Card(Card.SPADE, 5));
+            cards.add(new Card(Card.SPADE, 5));
+            cards.add(new Card(Card.SPADE, 5));
+            cards.add(new Card(Card.SPADE, 5));
+            img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()), hand.cardHeight + 10);
+            subContainer.add(img);
+
+            lb0 = new SpanLabel("Flop Play is powerful, but has potential risks."
+                    + " If the Flop Play is invalid, there will be penalty points (10 points per card took back)."
+                    + " E.g. you try to play AKK, but other player has AA,"
+                    + " so you are forced to play KK and take back A, then 10 points will be added to your opponents.");
+            content.add(lb0);
+
+            content.add(TuoLaJi.boldText("Congratulations. Good luck and enjoy the game!"));
             content.setScrollableY(true);
             btnNext.setEnabled(true);
             return content;

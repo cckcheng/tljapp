@@ -643,7 +643,7 @@ public class TuoLaJi {
         return content;
     }
 
-    private Label boldText(String txt) {
+    public static Label boldText(String txt) {
         Label boldLabel = new Label(txt);
         boldLabel.getAllStyles().setFont(Hand.fontGeneral);
         return boldLabel;
