@@ -451,6 +451,7 @@ public class Tutor extends Container {
             subContainer.add(img);
 
             cards = new ArrayList<>();
+            cards.add(new Card(Card.SPADE, 14));
             cards.add(new Card(Card.SPADE, 12));
             cards.add(new Card(Card.SPADE, 12));
             cards.add(new Card(Card.SPADE, 11));
