@@ -289,9 +289,11 @@ public class TuoLaJi {
             rbEn.setSelected(true);
         }
 
-        entry.add(this.btnTutor)
-                .add(this.btnPlay)
-                .add(this.btnHelp)
+        Object fObj = Storage.getInstance().readObject("fintutor");
+        int finTutor = Player.parseInteger(fObj);
+        entry.add(this.btnTutor);
+        if (finTutor > 0) entry.add(this.btnPlay);
+        entry.add(this.btnHelp)
                 .add(this.btnSetting)
                 .add(this.btnExit);
         entry.add(BoxLayout.encloseX(rbEn, rbZh));
