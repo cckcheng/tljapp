@@ -94,6 +94,12 @@ public class TuoLaJi {
         }
     }
 
+    public void showPlayButton() {
+        if (this.entry.getComponentIndex(this.btnPlay) < 0) {
+            this.entry.addComponent(1, this.btnPlay);
+        }
+    }
+
     public void refreshButtons() {
         this.lbTitle.setText(Dict.get(lang, title));
         if (this.btnPlay.isEnabled()) {

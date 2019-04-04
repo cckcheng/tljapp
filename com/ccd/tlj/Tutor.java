@@ -158,6 +158,7 @@ public class Tutor extends Container {
             } else {
                 dlg.add(BorderLayout.SOUTH, new Button(okCmd));
                 Storage.getInstance().writeObject("fintutor", 1);
+                main.showPlayButton();
             }
             Component content = null;
             switch (id) {
