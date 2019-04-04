@@ -52,6 +52,7 @@ public class Tutor extends Container {
 
             index = new Container(BoxLayout.y());
             index.setScrollableY(true);
+            index.add("Before playing games, please finish this tutorial first:");
 
             GridLayout layout1 = new GridLayout(2);
             layout1.setAutoFit(true);
@@ -265,8 +266,33 @@ public class Tutor extends Container {
             RadioButton rb5 = new RadioButton("Fifth");
             ButtonGroup btnGroup = new ButtonGroup(rb2, rb3, rb4, rb5);
             content.add(BoxLayout.encloseXNoGrow(rb2, rb3, rb4, rb5));
+            content.add("How many points does the winner get?");
+            RadioButton rb1_1 = new RadioButton("15");
+            RadioButton rb1_2 = new RadioButton("30");
+            RadioButton rb1_3 = new RadioButton("35");
+            RadioButton rb1_4 = new RadioButton("40");
+            rb1_1.setEnabled(false);
+            rb1_2.setEnabled(false);
+            rb1_3.setEnabled(false);
+            rb1_4.setEnabled(false);
+            ButtonGroup btnGroup1 = new ButtonGroup(rb1_1, rb1_2, rb1_3, rb1_4);
+            content.add(BoxLayout.encloseXNoGrow(rb1_1, rb1_2, rb1_3, rb1_4));
+
             btnGroup.addActionListener((e) -> {
-                btnNext.setEnabled(rb4.isSelected());
+                if (rb4.isSelected()) {
+                    rb2.setEnabled(false);
+                    rb3.setEnabled(false);
+                    rb4.setEnabled(false);
+                    rb5.setEnabled(false);
+                    rb1_1.setEnabled(true);
+                    rb1_2.setEnabled(true);
+                    rb1_3.setEnabled(true);
+                    rb1_4.setEnabled(true);
+                }
+            });
+
+            btnGroup1.addActionListener((e) -> {
+                btnNext.setEnabled(rb1_3.isSelected());
             });
             return content;
         }

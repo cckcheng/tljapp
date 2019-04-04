@@ -4,6 +4,7 @@ import com.codename1.io.JSONParser;
 import com.codename1.io.Log;
 import com.codename1.io.Socket;
 import com.codename1.io.SocketConnection;
+import com.codename1.io.Storage;
 import com.codename1.ui.Button;
 import com.codename1.ui.ButtonGroup;
 import com.codename1.ui.CheckBox;
@@ -637,6 +638,10 @@ public class Player {
             this.pointsInfo.setText(points + Dict.get(main.lang, " points"));
         } else {
             this.tableEnded = true;
+            int finPrac = Player.parseInteger(Storage.getInstance().readObject("finprac"));
+            if (finPrac < 1) {
+                Storage.getInstance().writeObject("finprac", finPrac + 1);
+            }
         }
         final String summary = trimmedString(data.get("summary"));
         int seat = parseInteger(data.get("seat"));  // the contractor

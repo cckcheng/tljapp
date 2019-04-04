@@ -94,11 +94,14 @@ public class Dict {
     }
 
     public static final int PLAY = 1;
+    public static final int PNAME = 2;
 
     static public String get(final String lang, int k) {
         switch (k) {
             case PLAY:
                 return lang.equals("zh") ? "出牌" : "Play";
+            case PNAME:
+                return lang.equals("zh") ? "必填" : "Required";
         }
 
         return "Unknown";

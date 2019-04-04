@@ -96,7 +96,7 @@ public class TuoLaJi {
 
     public void showPlayButton() {
         if (this.entry.getComponentIndex(this.btnPlay) < 0) {
-            this.entry.addComponent(1, this.btnPlay);
+            this.entry.addComponent(this.entry.getComponentIndex(this.btnHelp), this.btnPlay);
         }
     }
 
@@ -313,7 +313,8 @@ public class TuoLaJi {
 
     void showPlayOption() {
         Object sgObj = Storage.getInstance().readObject("playerName");
-        TextField pName = new TextField("", Dict.get(lang, "Your Name"), 16, TextArea.ANY);
+        TextField pName = new TextField("", Dict.get(lang, "Your Name")
+                + "(" + Dict.get(lang, Dict.PNAME) + ")", 16, TextArea.ANY);
         pName.setMaxSize(16);
         if (sgObj != null) {
             pName.setText(sgObj.toString());
@@ -342,6 +343,8 @@ public class TuoLaJi {
             }
         };
         FontImage.setMaterialIcon(matchCmd, FontImage.MATERIAL_DIRECTIONS_RUN, "Button");
+        int finPrac = Player.parseInteger(Storage.getInstance().readObject("finprac"));
+        matchCmd.setEnabled(finPrac > 0);
 
         Dialog.show("", pName, practiceCmd, matchCmd);
     }
