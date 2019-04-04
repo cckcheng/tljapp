@@ -324,6 +324,7 @@ public class TuoLaJi {
             public void actionPerformed(ActionEvent ev) {
                 String playerName = savePlayerName(pName);
                 if (playerName == null) {
+                    btnPlay.setEnabled(true);
                     return;
                 }
                 btnPlay.setEnabled(false);
@@ -336,6 +337,7 @@ public class TuoLaJi {
             public void actionPerformed(ActionEvent ev) {
                 String playerName = savePlayerName(pName);
                 if (playerName == null) {
+                    btnPlay.setEnabled(true);
                     return;
                 }
                 btnPlay.setEnabled(false);
@@ -536,7 +538,7 @@ public class TuoLaJi {
 
         SpanLabel lb = new SpanLabel("本游戏为六人四付找朋友打法，采用竞叫上庄，庄家叫主后拿底牌并扣底，\n然后找一个朋友（也可以不找，一个打五个，打成后升级翻倍）");
         content.add(lb);
-        lb = new SpanLabel("如果被闲家扣底，则底牌分翻4倍（对子抠底则再乘以2,三张则再乘3, ...）");
+        lb = new SpanLabel("如果被闲家抠底，则底牌分翻4倍（对子抠底则再乘以2,三张则再乘3, ...）");
         content.add(lb);
         lb = new SpanLabel("四张相同牌为炸弹，可以炸2对的拖拉机");
         content.add(lb);

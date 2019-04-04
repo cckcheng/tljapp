@@ -698,7 +698,7 @@ public class Player {
     private void showInfo(Map<String, Object> data) {
         final String info = trimmedString(data.get("info"));
         int x = hand.displayWidth(6) + 15;
-        if (!info.isEmpty()) {
+        if (!info.isEmpty() && !info.equals(".")) {
             mainForm.setGlassPane((g, rect) -> {
                 g.setColor(INFO_COLOR);
                 g.setFont(Hand.fontGeneral);
@@ -717,6 +717,8 @@ public class Player {
                     str = str.substring(idx + 1);
                 }
             });
+        } else {
+            mainForm.setGlassPane(null);
         }
     }
 
