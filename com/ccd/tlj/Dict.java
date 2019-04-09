@@ -24,6 +24,10 @@ public class Dict {
                         return "入门";
                     case "ok":
                         return "确定";
+                    case "done":
+                        return "完成";
+                    case "next":
+                        return "继续";
                     case "cancel":
                         return "取消";
                     case "no":
@@ -66,14 +70,24 @@ public class Dict {
 
                     case "partner":
                         return "找朋友";
+                    case "first":
                     case "1st":
                         return "第一";
+                    case "second":
                     case "2nd":
                         return "第二";
+                    case "third":
                     case "3rd":
                         return "第三";
+                    case "fourth":
                     case "4th":
                         return "第四";
+                    case "fifth":
+                    case "5th":
+                        return "第五";
+                    case "sixth":
+                    case "6th":
+                        return "第六";
 
                     case "points":
                         return "分";

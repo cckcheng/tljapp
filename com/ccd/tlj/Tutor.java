@@ -21,7 +21,9 @@ import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.GridLayout;
 import com.codename1.ui.layouts.LayeredLayout;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -37,11 +39,17 @@ public class Tutor extends Container {
     }
 
     int currentIndex = 0;
+    String currentLang = "";
     Container index;
     List<Topic> topics;
 
     public void showTopic() {
-        if (index == null) {
+        if (!currentLang.equals(main.lang)) {
+            if (index != null) {
+                this.removeAll();
+            }
+            currentLang = main.lang;
+
             int idx = 0;
             Object sObj = Storage.getInstance().readObject("tutor");
             if (sObj != null) idx = Player.parseInteger(sObj);
@@ -52,7 +60,12 @@ public class Tutor extends Container {
 
             index = new Container(BoxLayout.y());
             index.setScrollableY(true);
-            index.add("Before playing games, please finish this tutorial first:");
+
+            if (currentLang.equals("zh")) {
+                index.add(TuoLaJi.boldText("入门教程"));
+            } else {
+                index.add("Before playing games, please finish this tutorial first:");
+            }
 
             GridLayout layout1 = new GridLayout(2);
             layout1.setAutoFit(true);
@@ -92,17 +105,17 @@ public class Tutor extends Container {
     private List<Topic> allTopics() {
         int idx = 0;
         List<Topic> lst = new ArrayList<>();
-        lst.add(new Topic(idx++, "point_cards", "Point Cards"));
-        lst.add(new Topic(idx++, "card_rank", "Card Rank"));
-        lst.add(new Topic(idx++, "trump", "Trump"));
-        lst.add(new Topic(idx++, "combination", "Card Combinations"));
-        lst.add(new Topic(idx++, "table", "Table Layout"));
+        lst.add(new Topic(idx++, "point_cards", currentLang.equals("zh") ? "分数牌" : "Point Cards"));
+        lst.add(new Topic(idx++, "card_rank", currentLang.equals("zh") ? "牌的大小" : "Card Rank"));
+        lst.add(new Topic(idx++, "trump", currentLang.equals("zh") ? "将牌" : "Trump"));
+        lst.add(new Topic(idx++, "combination", currentLang.equals("zh") ? "牌型" : "Card Combinations"));
+        lst.add(new Topic(idx++, "table", currentLang.equals("zh") ? "名词解释" : "Table Layout"));
 
-        lst.add(new Topic(idx++, "bid", "Bidding"));
-        lst.add(new Topic(idx++, "exchange", "Exchange Cards"));
-        lst.add(new Topic(idx++, "basic", "Basic Play"));
+        lst.add(new Topic(idx++, "bid", currentLang.equals("zh") ? "竞叫" : "Bidding"));
+        lst.add(new Topic(idx++, "exchange", currentLang.equals("zh") ? "扣底" : "Exchange Cards"));
+        lst.add(new Topic(idx++, "basic", currentLang.equals("zh") ? "基本打法" : "Basic Play"));
         basicTopicNum = lst.size();
-        lst.add(new Topic(idx++, "flop", "Flop Play"));
+        lst.add(new Topic(idx++, "flop", currentLang.equals("zh") ? "甩牌" : "Flop Play"));
 //        lst.add(new Topic(idx++, "advanced", "Advanced Play"));
 
         return lst;
@@ -140,13 +153,13 @@ public class Tutor extends Container {
 
         void showContent() {
             Dialog dlg = new Dialog(new BorderLayout());
-            Command okCmd = new Command("Done") {
+            Command okCmd = new Command(Dict.get(currentLang, "Done")) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     dlg.dispose();
                 }
             };
-            Button btnNext = new Button("Next");
+            Button btnNext = new Button(Dict.get(currentLang, "Next"));
             btnNext.setEnabled(false);
             btnNext.addActionListener((e) -> {
                 dlg.dispose();
@@ -209,7 +222,16 @@ public class Tutor extends Container {
         Component topicPointCards(Button btnNext) {
             SpanLabel lb0 = new SpanLabel("Point cards are value cards. To win a game, defenders need to earn enough points(money) to beat the contract"
                     + "(final points, bid by declarer). Here are the whole point cards in a single deck:");
+            if (currentLang.equals("zh")) {
+                lb0 = new SpanLabel("拖拉机由升级演变而来，是抢分的游戏。");
+            }
             Container content = BoxLayout.encloseY(lb0);
+            content.setScrollableY(true);
+            if (currentLang.equals("zh")) {
+                content.setScrollableX(true);
+                content.add("防守方需要拿满一定的分数来击败庄家，进而升级，否则庄家升级。");
+                content.add("下面是一副牌中所有的分数牌:");
+            }
 
             Hand hand = main.getPlayer().getHand();
             List<Card> cards = new ArrayList<>();
@@ -229,9 +251,15 @@ public class Tutor extends Container {
             img.scale(hand.displayWidthNormal(cards.size()), hand.cardHeight + 10);
             content.add(img);
 
-            content.add("Card 5: 5 points; Card 10: 10 points; Card K: 10 points.");
-            content.add(" ");
-            content.add("Quiz: What is the total points in a single deck?");
+            if (currentLang.equals("zh")) {
+                content.add("其中每张5计5分，每张10计10分，每张K也是10分");
+                content.add(" ");
+                content.add("问题：一副牌共有多少分?");
+            } else {
+                content.add("Card 5: 5 points; Card 10: 10 points; Card K: 10 points.");
+                content.add(" ");
+                content.add("Quiz: What is the total points in a single deck?");
+            }
 
             RadioButton rb1 = new RadioButton("40");
             RadioButton rb2 = new RadioButton("80");
@@ -249,24 +277,43 @@ public class Tutor extends Container {
 
         private Component topicCardRank(Button btnNext) {
             SpanLabel lb0 = new SpanLabel("Within a suit, the highest ranked card is Ace, then K,Q,J,10,9,8,7,6,5,4,3,2.");
+            if (currentLang.equals("zh")) {
+                lb0 = new SpanLabel("对单独一门花色而言，最大牌为A，然后是K,Q,J,10,9,8,7,6,5,4,3,2");
+            }
             Container content = BoxLayout.encloseY(lb0);
             content.setScrollableY(true);
-            lb0 = new SpanLabel("The leading player can play one or more cards of a single suit,"
-                    + " then other players must play same number of cards of the same suit, in a couter-clockwise order."
-                    + " The player who played the highest ranked card won this round, and get all the points included."
-                    + " If two more players played the highest ranked card, the first player won.");
-            content.add(lb0);
+
+            if (currentLang.equals("zh")) {
+                content.setScrollableX(true);
+                content.add("每个牌手按逆时针顺序依次出牌，出牌最大者赢得这一轮，并得到下轮出牌权");
+                content.add("当两个人出牌大小相同时，先出为大");
+            } else {
+                lb0 = new SpanLabel("The leading player can play one or more cards of a single suit,"
+                        + " then other players must play same number of cards of the same suit, in a couter-clockwise order."
+                        + " The player who played the highest ranked card won this round, and get all the points included."
+                        + " If two more players played the highest ranked card, the first player won.");
+                content.add(lb0);
+            }
 
             content.add(" ");
-            content.add("Quiz: ♥5, ♥9, ♥Q, ♥K, ♥K, ♥10");
-            content.add("For the above play sequence, which player won this round?");
-            RadioButton rb2 = new RadioButton("Second");
-            RadioButton rb3 = new RadioButton("Third");
-            RadioButton rb4 = new RadioButton("Fouth");
-            RadioButton rb5 = new RadioButton("Fifth");
+            if (currentLang.equals("zh")) {
+                content.add("问题: ♥5, ♥9, ♥Q, ♥K, ♥K, ♥10");
+                content.add("按以上出牌顺序，第几个牌手获胜?");
+            } else {
+                content.add("Quiz: ♥5, ♥9, ♥Q, ♥K, ♥K, ♥10");
+                content.add("For the above play sequence, which player won this round?");
+            }
+            RadioButton rb2 = new RadioButton(Dict.get(currentLang, "Second"));
+            RadioButton rb3 = new RadioButton(Dict.get(currentLang, "Third"));
+            RadioButton rb4 = new RadioButton(Dict.get(currentLang, "Fourth"));
+            RadioButton rb5 = new RadioButton(Dict.get(currentLang, "Fifth"));
             ButtonGroup btnGroup = new ButtonGroup(rb2, rb3, rb4, rb5);
             content.add(BoxLayout.encloseXNoGrow(rb2, rb3, rb4, rb5));
-            content.add("How many points does the winner get?");
+            if (currentLang.equals("zh")) {
+                content.add("赢家得多少分?");
+            } else {
+                content.add("How many points does the winner get?");
+            }
             RadioButton rb1_1 = new RadioButton("15");
             RadioButton rb1_2 = new RadioButton("30");
             RadioButton rb1_3 = new RadioButton("35");
@@ -298,7 +345,6 @@ public class Tutor extends Container {
         }
 
         private Component topicTable(Button btnNext) {
-            btnNext.setEnabled(false);
             SpanLabel lb0 = new SpanLabel("Game table illustrated as below:");
             Container content = BoxLayout.encloseY(lb0);
             content.setScrollableY(true);
@@ -541,8 +587,11 @@ public class Tutor extends Container {
             img.insertCards(3, addCards);
             img.scale(hand.displayWidthNormal(cards.size()), 2 * (hand.cardHeight + 10) + 50);
             content.add(img);
+            lb0 = new SpanLabel("Please be aware of the difference between the ♥8(primary) and the other 8s(secondary).");
+            content.add(lb0);
 
-            content.add("Quiz: For a single deck, how many trumps are there if no trump suit specified?");
+            lb0 = new SpanLabel("Quiz: For a single deck, how many trumps are there if no trump suit specified?");
+            content.add(lb0);
             RadioButton rb1 = new RadioButton("2");
             RadioButton rb2 = new RadioButton("4");
             RadioButton rb3 = new RadioButton("6");

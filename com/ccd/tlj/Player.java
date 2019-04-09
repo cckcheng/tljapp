@@ -640,7 +640,7 @@ public class Player {
             this.tableEnded = true;
             int finPrac = Player.parseInteger(Storage.getInstance().readObject("finprac"));
             if (finPrac < 1) {
-                Storage.getInstance().writeObject("finprac", finPrac + 1);
+                Storage.getInstance().writeObject("finprac", 1);
             }
         }
         final String summary = trimmedString(data.get("summary"));
