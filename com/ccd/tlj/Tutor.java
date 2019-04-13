@@ -345,86 +345,146 @@ public class Tutor extends Container {
         }
 
         private Component topicTable(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("Game table illustrated as below:");
-            Container content = BoxLayout.encloseY(lb0);
-            content.setScrollableY(true);
-            content.setScrollableX(true);
-            content.add(main.theme.getImage("h2.png").scaledWidth(Display.getInstance().getDisplayWidth()));
+            if (currentLang.equals("zh")) {
+                Container content = new Container(BoxLayout.y());
+                content.setScrollableY(true);
+                content.setScrollableX(true);
+                Container p = new Container();
+                content.add(p);
+                p.add(TuoLaJi.boldText("庄：")).add("庄家，叫分最低者");
+                p = new Container();
+                content.add(p);
+                p.add(TuoLaJi.boldText("帮：")).add("帮庄，庄家的同伙");
+                p = new Container();
+                content.add(p);
+                p.add(TuoLaJi.boldText("定约分：")).add("庄家最终所叫分数");
+                p = new Container();
+                content.add(p);
+                p.add(TuoLaJi.boldText("大光：")).add("闲家一分未得，庄家及同伴升三级");
+                p = new Container();
+                content.add(p);
+                p.add(TuoLaJi.boldText("小光：")).add("闲家得分小于定约分的一半，庄家及同伴升两级");
+                p = new Container();
+                content.add(p);
+                p.add(TuoLaJi.boldText("跳级：")).add("闲家得分超过定约分后，每多80分，闲家多升一级");
+                p = new Container();
+                content.add(p);
+                p.add(TuoLaJi.boldText("一打五：")).add("庄家不找朋友，一个对五个，打成后升级翻倍");
+                btnNext.setEnabled(true);
+                return content;
+            } else {
+                SpanLabel lb0 = new SpanLabel("Game table illustrated as below:");
+                Container content = BoxLayout.encloseY(lb0);
+                content.setScrollableY(true);
+                content.setScrollableX(true);
+                content.add(main.theme.getImage("h2.png").scaledWidth(Display.getInstance().getDisplayWidth()));
 
-            content.add("Quiz: Based on the sample table, which player is the declarer?");
-            RadioButton rb1_1 = new RadioButton("#4");
-            RadioButton rb1_2 = new RadioButton("#5");
-            RadioButton rb1_3 = new RadioButton("#6");
-            ButtonGroup btnGroup1 = new ButtonGroup(rb1_1, rb1_2, rb1_3);
-            content.add(BoxLayout.encloseXNoGrow(rb1_1, rb1_2, rb1_3));
+                 content.add("Quiz: Based on the sample table, which player is the declarer?");
+                 RadioButton rb1_1 = new RadioButton("#4");
+                 RadioButton rb1_2 = new RadioButton("#5");
+                 RadioButton rb1_3 = new RadioButton("#6");
+                 ButtonGroup btnGroup1 = new ButtonGroup(rb1_1, rb1_2, rb1_3);
+                 content.add(BoxLayout.encloseXNoGrow(rb1_1, rb1_2, rb1_3));
 
-            RadioButton rb2_1 = new RadioButton("190");
-            RadioButton rb2_2 = new RadioButton("75");
-            ButtonGroup btnGroup2 = new ButtonGroup(rb2_1, rb2_2);
-            rb2_1.setEnabled(false);
-            rb2_2.setEnabled(false);
+                 RadioButton rb2_1 = new RadioButton("190");
+                 RadioButton rb2_2 = new RadioButton("75");
+                 ButtonGroup btnGroup2 = new ButtonGroup(rb2_1, rb2_2);
+                 rb2_1.setEnabled(false);
+                 rb2_2.setEnabled(false);
 
-            RadioButton rb3_1 = new RadioButton("115");
-            RadioButton rb3_2 = new RadioButton("120");
-            ButtonGroup btnGroup3 = new ButtonGroup(rb3_1, rb3_2);
-            rb3_1.setEnabled(false);
-            rb3_2.setEnabled(false);
+                 RadioButton rb3_1 = new RadioButton("115");
+                 RadioButton rb3_2 = new RadioButton("120");
+                 ButtonGroup btnGroup3 = new ButtonGroup(rb3_1, rb3_2);
+                 rb3_1.setEnabled(false);
+                 rb3_2.setEnabled(false);
 
-            content.add("What is the contract point?");
-            content.add(BoxLayout.encloseXNoGrow(rb2_1, rb2_2));
-            content.add("To win the game, how many more points need to be collected by the defenders?");
-            content.add(BoxLayout.encloseXNoGrow(rb3_1, rb3_2));
+                 content.add("What is the contract point?");
+                 content.add(BoxLayout.encloseXNoGrow(rb2_1, rb2_2));
+                 content.add("To win the game, how many more points need to be collected by the defenders?");
+                 content.add(BoxLayout.encloseXNoGrow(rb3_1, rb3_2));
 
-            btnGroup1.addActionListener((e) -> {
-                if (rb1_2.isSelected()) {
-                    rb1_1.setEnabled(false);
-                    rb1_2.setEnabled(false);
-                    rb1_3.setEnabled(false);
-                    rb2_1.setEnabled(true);
-                    rb2_2.setEnabled(true);
-                }
-            });
-            btnGroup2.addActionListener((e) -> {
-                if (rb2_1.isSelected()) {
-                    rb2_1.setEnabled(false);
-                    rb2_2.setEnabled(false);
-//                    content.scrollComponentToVisible(addon);  // not work
-                    rb3_1.setEnabled(true);
-                    rb3_2.setEnabled(true);
-                }
-            });
-            btnGroup3.addActionListener((e) -> {
-                btnNext.setEnabled(rb3_1.isSelected());
-            });
+                 btnGroup1.addActionListener((e) -> {
+                     if (rb1_2.isSelected()) {
+                         rb1_1.setEnabled(false);
+                         rb1_2.setEnabled(false);
+                         rb1_3.setEnabled(false);
+                         rb2_1.setEnabled(true);
+                         rb2_2.setEnabled(true);
+                     }
+                 });
+                 btnGroup2.addActionListener((e) -> {
+                     if (rb2_1.isSelected()) {
+                         rb2_1.setEnabled(false);
+                         rb2_2.setEnabled(false);
+                         //                    content.scrollComponentToVisible(addon);  // not work
+                         rb3_1.setEnabled(true);
+                         rb3_2.setEnabled(true);
+                     }
+                 });
+                 btnGroup3.addActionListener((e) -> {
+                     btnNext.setEnabled(rb3_1.isSelected());
+                 });
 
-            return content;
+                return content;
+            }
         }
 
         private Component topicBidding(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("To be a successful declarer, your hand need to be stronger than average."
-                    + " Apparently, the lower the contract point, the harder the contract to be made. On the bidding stage,"
-                    + " there is a recommended minimum bid point right behind your current rank."
-                    + " As a beginner, you can take that advice.");
-            Container content = BoxLayout.encloseY(lb0);
+            Container content = new Container(BoxLayout.y());
             content.setScrollableY(true);
-            lb0 = new SpanLabel("Once you become the declarer, you need choose the trump suit."
-                    + " In order to set a suit to trumps, you must have the game-rank card of that suit (or a Joker for NT)."
-                    + " E.g. suppose your current rank is 6, you want specify Spade as trump,"
-                    + " then you must show ♠6 to other players.");
-            content.add(lb0);
+            SpanLabel lb0 = null;
+            if (currentLang.equals("zh")) {
+                content.setScrollableX(true);
+                content.add("显而易见，叫分越低便越难打成");
+                content.add("初学者可以参考自己名字后面的最低竞叫分");
+            } else {
+                lb0 = new SpanLabel("To be a successful declarer, your hand need to be stronger than average."
+                        + " Apparently, the lower the contract point, the harder the contract to be made. On the bidding stage,"
+                        + " there is a recommended minimum bid point right behind your current rank."
+                        + " As a beginner, you can take that advice.");
+                content.add(lb0);
+            }
+            if (currentLang.equals("zh")) {
+                content.add("  ");
+                content.add("上庄后需要叫主，即指定哪一门花色为将牌");
+                content.add("叫主规则：打6想叫黑桃主，庄家手中必须要有♠6");
+                content.add("        如果想打无将，则手中必须有王");
+            } else {
+                lb0 = new SpanLabel("Once you become the declarer, you need choose the trump suit."
+                        + " In order to set a suit to trumps, you must have the game-rank card of that suit (or a Joker for NT)."
+                        + " E.g. suppose your current rank is 6, you want specify Spade as trump,"
+                        + " then you must show ♠6 to other players.");
+                content.add(lb0);
+            }
             btnNext.setEnabled(true);
             return content;
         }
 
         private Component topicExchange(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("Declarer have a chance to exchange 6 cards after setting trump.");
-            Container content = BoxLayout.encloseY(lb0);
-            lb0 = new SpanLabel("At this point, you have to decide how to find your partner."
-                    + " The partner definition is in this way: a player who plays a specific card will be my partner."
-                    + " In general, the specific card (Partner Card) is an Ace (not trump)."
-                    + " E.g. the Partner Card is: 2nd ♠A, it means who plays the second ♠A will be the declarer's partner.");
-            content.add(lb0);
-            content.add("The following are some good examples after the exchange:");
+            Container content = new Container(BoxLayout.y());
+            content.setScrollableY(true);
+            SpanLabel lb0 = null;
+            if (currentLang.equals("zh")) {
+                content.setScrollableX(true);
+                content.add("庄家叫主后会拿到6张底牌");
+                content.add("此时需要确定怎样找朋友，以及如何扣底");
+                content.add("将分牌扣底需要格外谨慎，如果被闲家抠底，则底分要翻4倍");
+                content.add("（对子抠底再乘2，三张抠底再乘3，以此类推）");
+                content.add(" ");
+                content.add("找朋友通常是叫第几个A:");
+                content.add("例如: 第二个♠A，就是说谁出第二个♠A即为庄家的同伙");
+
+                content.add("扣底后，下面是几个较好的示例：");
+            } else {
+                lb0 = new SpanLabel("Declarer have a chance to exchange 6 cards after setting trump.");
+                content.add(lb0);
+                lb0 = new SpanLabel("At this point, you have to decide how to find your partner."
+                        + " The partner definition is in this way: a player who plays a specific card will be my partner."
+                        + " In general, the specific card (Partner Card) is an Ace (not trump)."
+                        + " E.g. the Partner Card is: 2nd ♠A, it means who plays the second ♠A will be the declarer's partner.");
+                content.add(lb0);
+                content.add("The following are some good examples after the exchange:");
+            }
 
             Container subContainer = new Container();
             content.add(subContainer);
@@ -453,53 +513,76 @@ public class Tutor extends Container {
             img.scale(hand.displayWidthNormal(cards.size()), hand.cardHeight + 10);
             subContainer.add(img);
 
-            lb0 = new SpanLabel("For the first 2 examples, you declare the Partner Card: 2nd ♠A."
-                    + " Then you play ♠A first, play ♠K next(if you have one).");
-            content.add(lb0);
-            lb0 = new SpanLabel("For the third examples, you declare the Partner Card: 1st ♠A."
-                    + " Then you play ♠K seperately.");
-            content.add(lb0);
+            if (currentLang.equals("zh")) {
+                content.add("当出完这门花色后，同伴可以假设庄家这门已经绝了，从而方便把牌权还给庄家");
+            } else {
+                lb0 = new SpanLabel("For the first 2 examples, you declare the Partner Card: 2nd ♠A."
+                        + " Then you play ♠A first, play ♠K next(if you have one).");
+                content.add(lb0);
+                lb0 = new SpanLabel("For the third examples, you declare the Partner Card: 1st ♠A."
+                        + " Then you play ♠K seperately.");
+                content.add(lb0);
 
-            lb0 = new SpanLabel("Normally, at the very beginning, no player knows how strong the declarer's hand is."
-                    + " So nobody is willing to take the risk to be the partner of the declarer too early.");
-            content.add(lb0);
+                lb0 = new SpanLabel("Normally, at the very beginning, no player knows how strong the declarer's hand is."
+                        + " So nobody is willing to take the risk to be the partner of the declarer too early.");
+                content.add(lb0);
+            }
 
-            content.setScrollableY(true);
             btnNext.setEnabled(true);
             return content;
         }
 
         private Component topicBasicPlay(Button btnNext) {
-            Label lb0 = TuoLaJi.boldText("Leading");
-            Container content = BoxLayout.encloseY(lb0);
-            content.setScrollableY(true);
-            SpanLabel lb = new SpanLabel("When you are at the leading position, usually you should play your strong combinations of cards."
-                    + " Quads, Tractors, Trips are considered the strong combinations, especially in a higher rank."
-                    + " Obviously, the longer, the stronger."
-                    + " Of course, if none of the opponents showed void sign of the suit you led,"
-                    + " you should cash the Ace(s) first.");
-            content.add(lb);
-            lb = new SpanLabel("After that, you should always try to pass to your partner."
-                    + " So as to keep the leading right in your side longer and get more points.");
-            content.add(lb);
-            lb0 = TuoLaJi.boldText("Follow Play");
-            content.add(lb0);
-            lb = new SpanLabel("When your partner is winning this round, you discard point card(s)."
-                    + " Otherwise, you should avoid to play point card(s).");
-            content.add(lb);
-            lb = new SpanLabel("If you are void in the suit led, you can ruff and take the leading right."
-                    + " The valid ruff must be in the same type of card combination led.");
-            content.add(lb);
-
+            Container content = null;
+            if (currentLang.equals("zh")) {
+                content = new Container(BoxLayout.y());
+                content.setScrollableY(true);
+                content.setScrollableX(true);
+                content.add("当你领先出牌时，通常应打出手中的强牌：四条（炸弹）、拖拉机以及三条，尤其是当牌点较大时");
+                content.add("当然，如果敌方没有绝门，你应该先出那门的A，然后再出其他的");
+                content.add("当手中强牌出完后，一定要设法传牌给同伴，将牌权保持在自己一方，才能多得分数");
+                content.add(" ");
+                content.add("跟牌则相对简单：如果自己一方大，则尽量垫分，否则避免垫分");
+            } else {
+                Label lb0 = TuoLaJi.boldText("Leading");
+                content = BoxLayout.encloseY(lb0);
+                content.setScrollableY(true);
+                SpanLabel lb = new SpanLabel("When you are at the leading position, usually you should play your strong combinations of cards."
+                        + " Quads, Tractors, Trips are considered the strong combinations, especially in a higher rank."
+                        + " Obviously, the longer, the stronger."
+                        + " Of course, if none of the opponents showed void sign of the suit you led,"
+                        + " you should cash the Ace(s) first.");
+                content.add(lb);
+                lb = new SpanLabel("After that, you should always try to pass to your partner."
+                        + " So as to keep the leading right in your side longer and get more points.");
+                content.add(lb);
+                lb0 = TuoLaJi.boldText("Follow Play");
+                content.add(lb0);
+                lb = new SpanLabel("When your partner is winning this round, you discard point card(s)."
+                        + " Otherwise, you should avoid to play point card(s).");
+                content.add(lb);
+                lb = new SpanLabel("If you are void in the suit led, you can ruff and take the leading right."
+                        + " The valid ruff must be in the same type of card combination led.");
+                content.add(lb);
+            }
             btnNext.setEnabled(true);
             return content;
         }
 
         private Component topicFlop(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("Sometimes you can try to play multiple combinations together - Flop Play."
-                    + " Following are some examples:");
-            Container content = BoxLayout.encloseYBottomLast(lb0);
-
+            Container content = null;
+            SpanLabel lb0 = null;
+            if (currentLang.equals("zh")) {
+                content = new Container(BoxLayout.yLast());
+                content.setScrollableY(true);
+                content.setScrollableX(true);
+                content.add("甩牌示例：");
+            } else {
+                lb0 = new SpanLabel("Sometimes you can try to play multiple combinations together - Flop Play."
+                        + " Following are some examples:");
+                content = BoxLayout.encloseYBottomLast(lb0);
+                content.setScrollableY(true);
+            }
             Container subContainer = new Container();
             content.add(subContainer);
 
@@ -538,14 +621,19 @@ public class Tutor extends Container {
             img.scale(hand.displayWidthNormal(cards.size()), hand.cardHeight + 10);
             subContainer.add(img);
 
-            lb0 = new SpanLabel("Flop Play is powerful, but has potential risks."
-                    + " If the Flop Play is invalid, there will be penalty points (10 points per card took back)."
-                    + " E.g. you try to play AKK, but other player has AA,"
-                    + " so you are forced to play KK and take back A, then 10 points will be added to your opponents.");
-            content.add(lb0);
+            if (currentLang.equals("zh")) {
+                content.add("甩牌有风险，如果失败会被罚分（每拿回一张罚10分）");
+                content.add("例如：你想甩AKK,但其他玩家手中有AA,那你只能出KK,并加10分给敌对一方");
+                content.add("教程结束！祝你好运！");
+            } else {
+                lb0 = new SpanLabel("Flop Play is powerful, but has potential risks."
+                        + " If the Flop Play is invalid, there will be penalty points (10 points per card took back)."
+                        + " E.g. you try to play AKK, but other player has AA,"
+                        + " so you are forced to play KK and take back A, then 10 points will be added to your opponents.");
+                content.add(lb0);
 
-            content.add(TuoLaJi.boldText("Congratulations. Good luck and enjoy the game!"));
-            content.setScrollableY(true);
+                content.add(TuoLaJi.boldText("Congratulations. Good luck and enjoy the game!"));
+            }
             btnNext.setEnabled(true);
             return content;
         }
@@ -559,14 +647,22 @@ public class Tutor extends Container {
         }
 
         private Component topicTrump(Button btnNext) {
-            SpanLabel lb0 = new SpanLabel("Jokers and game-rank(declarer's current rank) cards are always trumps."
-                    + "The declarer can choose one suit to be a trump suit, or NT means no trump suit.");
-            Container content = BoxLayout.encloseY(lb0);
-            content.setScrollableY(true);
-            lb0 = new SpanLabel("Suppose declarer's current rank is 8, ♥ is the trump suit."
-                    + " Below is the trump card rank of a single deck, from high to low:");
-            content.add(lb0);
-
+            SpanLabel lb0 = null;
+            Container content = null;
+            if (currentLang.equals("zh")) {
+                content = new Container(BoxLayout.y());
+                content.setScrollableY(true);
+                content.setScrollableX(true);
+                content.add("下面以打8为例，♥主，从大到小展示了一副牌中所有的将牌（主牌）");
+            } else {
+                lb0 = new SpanLabel("Jokers and game-rank(declarer's current rank) cards are always trumps."
+                        + "The declarer can choose one suit to be a trump suit, or NT means no trump suit.");
+                content = BoxLayout.encloseY(lb0);
+                content.setScrollableY(true);
+                lb0 = new SpanLabel("Suppose declarer's current rank is 8, ♥ is the trump suit."
+                        + " Below is the trump card rank of a single deck, from high to low:");
+                content.add(lb0);
+            }
             Hand hand = main.getPlayer().getHand();
             List<Card> cards = new ArrayList<>();
             cards.add(new Card(Card.JOKER, Card.BigJokerRank));
@@ -587,11 +683,17 @@ public class Tutor extends Container {
             img.insertCards(3, addCards);
             img.scale(hand.displayWidthNormal(cards.size()), 2 * (hand.cardHeight + 10) + 50);
             content.add(img);
-            lb0 = new SpanLabel("Please be aware of the difference between the ♥8(primary) and the other 8s(secondary).");
-            content.add(lb0);
 
-            lb0 = new SpanLabel("Quiz: For a single deck, how many trumps are there if no trump suit specified?");
-            content.add(lb0);
+            if (currentLang.equals("zh")) {
+                content.add("请注意主8（♥8）与副8的区别");
+                content.add("问题：如果打无将(无主)，一副牌总共有几张将牌？");
+            } else {
+                lb0 = new SpanLabel("Please be aware of the difference between the ♥8(primary) and the other 8s(secondary).");
+                content.add(lb0);
+
+                lb0 = new SpanLabel("Quiz: For a single deck, how many trumps are there if no trump suit specified?");
+                content.add(lb0);
+            }
             RadioButton rb1 = new RadioButton("2");
             RadioButton rb2 = new RadioButton("4");
             RadioButton rb3 = new RadioButton("6");
@@ -606,10 +708,18 @@ public class Tutor extends Container {
     }
 
     private Component topicCombination(Button btnNext) {
-        SpanLabel lb0 = new SpanLabel("PAIR, TRIPS, QUADS (Samples as below)");
-        Container content = BoxLayout.encloseY(lb0);
-        content.setScrollableY(true);
-
+        SpanLabel lb0 = null;
+        Container content = null;
+        if (currentLang.equals("zh")) {
+            content = new Container(BoxLayout.yLast());
+            content.setScrollableY(true);
+            content.setScrollableX(true);
+            content.add("下面的示例展示了对子、三条、四条：");
+        } else {
+            lb0 = new SpanLabel("PAIR, TRIPS, QUADS (Samples as below)");
+            content = BoxLayout.encloseY(lb0);
+            content.setScrollableY(true);
+        }
         Hand hand = main.getPlayer().getHand();
         List<Card> cards = new ArrayList<>();
         cards.add(new Card(Card.JOKER, Card.BigJokerRank));
@@ -636,9 +746,14 @@ public class Tutor extends Container {
         subContainer.add(imgPair).add(imgTrips).add(imgQuads);
         content.add(subContainer);
 
-        lb0 = new SpanLabel("TuoLaJi(Tractor): connected pairs (or trips/quads)."
-                + " Following samples are based on game-rank 10, trump suit ♦:");
-        content.add(lb0);
+        if (currentLang.equals("zh")) {
+            content.add("拖拉机：相连的对子（或者三条，四条）");
+            content.add("下面的例子是假定打10，方片主：");
+        } else {
+            lb0 = new SpanLabel("TuoLaJi(Tractor): connected pairs (or trips/quads)."
+                    + " Following samples are based on game-rank 10, trump suit ♦:");
+            content.add(lb0);
+        }
 
         cards = new ArrayList<>();
         cards.add(new Card(Card.CLUB, 6));
@@ -675,16 +790,20 @@ public class Tutor extends Container {
         subContainer.add(img1).add(img2).add(img3);
         content.add(subContainer);
 
-        lb0 = new SpanLabel("When one of the combinations is led,"
-                + " the following player must try to play the same type of the combination."
-                + " Take quads as an example, the follow play preference is: quads, 1 trips + 1 single, 2-pair tractor,"
-                + " 2 pairs, 1 pair + 2 singles, 4 singles.");
-        content.add(lb0);
-        content.add("Special rule: Quads can beat 2-pair tractor, so it is also called Bomb.");
+        if (currentLang.equals("zh")) {
+            content.add("特殊规则：四条也称为炸弹，可以大过两对的拖拉机");
+            content.add("测验：选出下面所有合格的拖拉机（假定打10，方片主）");
+        } else {
+            lb0 = new SpanLabel("When one of the combinations is led,"
+                    + " the following player must try to play the same type of the combination."
+                    + " Take quads as an example, the follow play preference is: quads, 1 trips + 1 single, 2-pair tractor,"
+                    + " 2 pairs, 1 pair + 2 singles, 4 singles.");
+            content.add(lb0);
+            content.add("Special rule: Quads can beat 2-pair tractor, so it is also called Bomb.");
 
-        lb0 = new SpanLabel("Quiz: Please select all the correct tractors (Assumption: game-rank 10, trump suit ♦)");
-        content.add(lb0);
-
+            lb0 = new SpanLabel("Quiz: Please select all the correct tractors (Assumption: game-rank 10, trump suit ♦)");
+            content.add(lb0);
+        }
         subContainer = new Container();
         CheckBox cb1 = new CheckBox();
         subContainer.add(cb1);
@@ -697,7 +816,8 @@ public class Tutor extends Container {
         CardList img = new CardList(cards);
         img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
         subContainer.add(img);
-        Label hint1 = new Label("No doubt");
+        String hint = currentLang.equals("zh") ? "毫无疑问" : "No doubt";
+        Label hint1 = new Label(hint);
         hint1.setVisible(false);
         subContainer.add(hint1);
 
@@ -714,7 +834,8 @@ public class Tutor extends Container {
         img = new CardList(cards);
         img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
         subContainer.add(img);
-        Label hint2 = new Label("Mixed pair and trips");
+        hint = currentLang.equals("zh") ? "混合的对子和三条" : "Mixed pair and trips";
+        Label hint2 = new Label(hint);
         hint2.setVisible(false);
         subContainer.add(hint2);
 
@@ -730,7 +851,8 @@ public class Tutor extends Container {
         img = new CardList(cards);
         img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
         subContainer.add(img);
-        Label hint3 = new Label("9 and J is connected now, since 10 is out!");
+        hint = currentLang.equals("zh") ? "打10！9和J是相连的" : "9 and J is connected now, since 10 is out!";
+        Label hint3 = new Label(hint);
         hint3.setVisible(false);
         subContainer.add(hint3);
 
@@ -748,7 +870,8 @@ public class Tutor extends Container {
         img = new CardList(cards);
         img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
         subContainer.add(img);
-        Label hint4 = new Label("Not connected");
+        hint = currentLang.equals("zh") ? "不相连" : "Not connected";
+        Label hint4 = new Label(hint);
         hint4.setVisible(false);
         subContainer.add(hint4);
 
@@ -764,7 +887,8 @@ public class Tutor extends Container {
         img = new CardList(cards);
         img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
         subContainer.add(img);
-        Label hint5 = new Label("Two pair with same rank, not qualify!");
+        hint = currentLang.equals("zh") ? "同级的两对，不算" : "Two pair with same rank, not qualify!";
+        Label hint5 = new Label(hint);
         hint5.setVisible(false);
         subContainer.add(hint5);
 
@@ -784,12 +908,14 @@ public class Tutor extends Container {
         img = new CardList(cards);
         img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
         subContainer.add(img);
-        Label hint6 = new Label("Nice one! The longer, the better!");
+        hint = currentLang.equals("zh") ? "好牌！" : "Nice one! The longer, the better!";
+        Label hint6 = new Label(hint);
         hint6.setVisible(false);
         subContainer.add(hint6);
 
         content.add(" ");
-        CheckBox cb0 = new CheckBox("Show Hint");
+        hint = currentLang.equals("zh") ? "提示" : "Show Hint";
+        CheckBox cb0 = new CheckBox(hint);
         content.add(cb0);
         cb0.addActionListener((e) -> {
             hint1.setVisible(cb0.isSelected());
