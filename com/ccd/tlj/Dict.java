@@ -34,6 +34,8 @@ public class Dict {
                         return "否";
                     case "error":
                         return "错误";
+                    case "score":
+                        return "得分";
 
                     case "play":
                         return "开局";

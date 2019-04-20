@@ -42,8 +42,16 @@ public class Tutor extends Container {
     String currentLang = "";
     Container index;
     List<Topic> topics;
+    int totalScore = 0;
 
     public void showTopic() {
+        if (Card.DEBUG_MODE) {
+            Storage.getInstance().clearStorage();
+        }
+        totalScore = Player.parseInteger(Storage.getInstance().readObject("tutor_score"));
+        if (totalScore < 0) {
+            totalScore = 0;
+        }
         if (!currentLang.equals(main.lang)) {
             if (index != null) {
                 this.removeAll();
@@ -151,6 +159,9 @@ public class Tutor extends Container {
             };
         }
 
+        Label lbScore;
+        float initScore = 0f;
+        boolean scored = false;
         void showContent() {
             Dialog dlg = new Dialog(new BorderLayout());
             Command okCmd = new Command(Dict.get(currentLang, "Done")) {
@@ -167,28 +178,45 @@ public class Tutor extends Container {
                 nextTopic.enableButton(true);
                 nextTopic.showContent();
             });
+
+            lbScore = new Label(Dict.get(currentLang, "Score") + ": " + totalScore);
+
             if (idx < topics.size() - 1) {
-                dlg.add(BorderLayout.SOUTH, BoxLayout.encloseXNoGrow(btnNext, new Button(okCmd)));
+                dlg.add(BorderLayout.SOUTH, BoxLayout.encloseXNoGrow(lbScore, btnNext, new Button(okCmd)));
             } else {
                 dlg.add(BorderLayout.SOUTH, new Button(okCmd));
                 Storage.getInstance().writeObject("fintutor", 1);
                 main.showPlayButton();
             }
+
+            int score = Player.parseInteger(Storage.getInstance().readObject(this.id));
+            scored = score >= 0;
+
             Component content = null;
             switch (id) {
                 case "point_cards":
+                    initScore = 10;
                     content = topicPointCards(btnNext);
                     break;
                 case "card_rank":
+                    initScore = 20;
                     content = topicCardRank(btnNext);
                     break;
                 case "combination":
+                    initScore = currentLang.equals("zh") ? 60 : 30;
                     content = topicCombination(btnNext);
                     break;
                 case "trump":
+                    initScore = 10;
                     content = topicTrump(btnNext);
                     break;
                 case "table":
+                    if (currentLang.equals("zh")) {
+                        initScore = 0;
+                        scored = true;
+                    } else {
+                        initScore = 30;
+                    }
                     content = topicTable(btnNext);
                     break;
 
@@ -270,7 +298,21 @@ public class Tutor extends Container {
             content.add(BoxLayout.encloseXNoGrow(rb1, rb2, rb3, rb4, rb5));
 
             btnGroup.addActionListener((e) -> {
-                btnNext.setEnabled(rb3.isSelected());
+                if (rb3.isSelected()) {
+                    if (!scored) {
+                        scored = true;
+                        int thisScore = Math.round(this.initScore);
+                        Storage.getInstance().writeObject(this.id, thisScore);
+                        totalScore += thisScore;
+                        lbScore.setText(Dict.get(currentLang, "Score") + ": " + totalScore);
+                        Storage.getInstance().writeObject("tutor_score", totalScore);
+                    }
+                    btnNext.setEnabled(true);
+                } else {
+                    initScore -= 2.5f;
+                    e.getComponent().setEnabled(false);
+                    btnNext.setEnabled(false);
+                }
             });
             return content;
         }
@@ -335,11 +377,28 @@ public class Tutor extends Container {
                     rb1_2.setEnabled(true);
                     rb1_3.setEnabled(true);
                     rb1_4.setEnabled(true);
+                } else {
+                    initScore -= 3.3f;
+                    e.getComponent().setEnabled(false);
                 }
             });
 
             btnGroup1.addActionListener((e) -> {
-                btnNext.setEnabled(rb1_3.isSelected());
+                if (rb1_3.isSelected()) {
+                    if (!scored) {
+                        scored = true;
+                        int thisScore = Math.round(this.initScore);
+                        Storage.getInstance().writeObject(this.id, thisScore);
+                        totalScore += thisScore;
+                        lbScore.setText(Dict.get(currentLang, "Score") + ": " + totalScore);
+                        Storage.getInstance().writeObject("tutor_score", totalScore);
+                    }
+                    btnNext.setEnabled(true);
+                } else {
+                    initScore -= 3.3f;
+                    e.getComponent().setEnabled(false);
+                    btnNext.setEnabled(false);
+                }
             });
             return content;
         }
@@ -379,51 +438,70 @@ public class Tutor extends Container {
                 content.setScrollableX(true);
                 content.add(main.theme.getImage("h2.png").scaledWidth(Display.getInstance().getDisplayWidth()));
 
-                 content.add("Quiz: Based on the sample table, which player is the declarer?");
-                 RadioButton rb1_1 = new RadioButton("#4");
-                 RadioButton rb1_2 = new RadioButton("#5");
-                 RadioButton rb1_3 = new RadioButton("#6");
-                 ButtonGroup btnGroup1 = new ButtonGroup(rb1_1, rb1_2, rb1_3);
-                 content.add(BoxLayout.encloseXNoGrow(rb1_1, rb1_2, rb1_3));
+                content.add("Quiz: Based on the sample table, which player is the declarer?");
+                RadioButton rb1_1 = new RadioButton("#4");
+                RadioButton rb1_2 = new RadioButton("#5");
+                RadioButton rb1_3 = new RadioButton("#6");
+                ButtonGroup btnGroup1 = new ButtonGroup(rb1_1, rb1_2, rb1_3);
+                content.add(BoxLayout.encloseXNoGrow(rb1_1, rb1_2, rb1_3));
 
-                 RadioButton rb2_1 = new RadioButton("190");
-                 RadioButton rb2_2 = new RadioButton("75");
-                 ButtonGroup btnGroup2 = new ButtonGroup(rb2_1, rb2_2);
-                 rb2_1.setEnabled(false);
-                 rb2_2.setEnabled(false);
+                RadioButton rb2_1 = new RadioButton("190");
+                RadioButton rb2_2 = new RadioButton("75");
+                ButtonGroup btnGroup2 = new ButtonGroup(rb2_1, rb2_2);
+                rb2_1.setEnabled(false);
+                rb2_2.setEnabled(false);
 
-                 RadioButton rb3_1 = new RadioButton("115");
-                 RadioButton rb3_2 = new RadioButton("120");
-                 ButtonGroup btnGroup3 = new ButtonGroup(rb3_1, rb3_2);
-                 rb3_1.setEnabled(false);
-                 rb3_2.setEnabled(false);
+                RadioButton rb3_1 = new RadioButton("115");
+                RadioButton rb3_2 = new RadioButton("120");
+                ButtonGroup btnGroup3 = new ButtonGroup(rb3_1, rb3_2);
+                rb3_1.setEnabled(false);
+                rb3_2.setEnabled(false);
 
-                 content.add("What is the contract point?");
-                 content.add(BoxLayout.encloseXNoGrow(rb2_1, rb2_2));
-                 content.add("To win the game, how many more points need to be collected by the defenders?");
-                 content.add(BoxLayout.encloseXNoGrow(rb3_1, rb3_2));
+                content.add("What is the contract point?");
+                content.add(BoxLayout.encloseXNoGrow(rb2_1, rb2_2));
+                content.add("To win the game, how many more points need to be collected by the defenders?");
+                content.add(BoxLayout.encloseXNoGrow(rb3_1, rb3_2));
 
-                 btnGroup1.addActionListener((e) -> {
-                     if (rb1_2.isSelected()) {
-                         rb1_1.setEnabled(false);
-                         rb1_2.setEnabled(false);
-                         rb1_3.setEnabled(false);
-                         rb2_1.setEnabled(true);
-                         rb2_2.setEnabled(true);
-                     }
-                 });
-                 btnGroup2.addActionListener((e) -> {
-                     if (rb2_1.isSelected()) {
-                         rb2_1.setEnabled(false);
-                         rb2_2.setEnabled(false);
-                         //                    content.scrollComponentToVisible(addon);  // not work
-                         rb3_1.setEnabled(true);
-                         rb3_2.setEnabled(true);
-                     }
-                 });
-                 btnGroup3.addActionListener((e) -> {
-                     btnNext.setEnabled(rb3_1.isSelected());
-                 });
+                btnGroup1.addActionListener((e) -> {
+                    if (rb1_2.isSelected()) {
+                        rb1_1.setEnabled(false);
+                        rb1_2.setEnabled(false);
+                        rb1_3.setEnabled(false);
+                        rb2_1.setEnabled(true);
+                        rb2_2.setEnabled(true);
+                    } else {
+                        initScore -= 5f;
+                        e.getComponent().setEnabled(false);
+                    }
+                });
+                btnGroup2.addActionListener((e) -> {
+                    if (rb2_1.isSelected()) {
+                        rb2_1.setEnabled(false);
+                        rb2_2.setEnabled(false);
+                        rb3_1.setEnabled(true);
+                        rb3_2.setEnabled(true);
+                    } else {
+                        initScore -= 10f;
+                        e.getComponent().setEnabled(false);
+                    }
+                });
+                btnGroup3.addActionListener((e) -> {
+                    if (rb3_1.isSelected()) {
+                        if (!scored) {
+                            scored = true;
+                            int thisScore = Math.round(this.initScore);
+                            Storage.getInstance().writeObject(this.id, thisScore);
+                            totalScore += thisScore;
+                            lbScore.setText(Dict.get(currentLang, "Score") + ": " + totalScore);
+                            Storage.getInstance().writeObject("tutor_score", totalScore);
+                        }
+                        btnNext.setEnabled(true);
+                    } else {
+                        initScore -= 10f;
+                        e.getComponent().setEnabled(false);
+                        btnNext.setEnabled(false);
+                    }
+                });
 
                 return content;
             }
@@ -637,6 +715,353 @@ public class Tutor extends Container {
             btnNext.setEnabled(true);
             return content;
         }
+        private Component topicCombination(Button btnNext) {
+            SpanLabel lb0 = null;
+            Container content = null;
+            if (currentLang.equals("zh")) {
+                content = new Container(BoxLayout.yLast());
+                content.setScrollableY(true);
+                content.setScrollableX(true);
+                content.add("下面的示例展示了对子、三条、四条：");
+            } else {
+                lb0 = new SpanLabel("PAIR, TRIPS, QUADS (Samples as below)");
+                content = BoxLayout.encloseY(lb0);
+                content.setScrollableY(true);
+            }
+            Hand hand = main.getPlayer().getHand();
+            List<Card> cards = new ArrayList<>();
+            cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+            cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+            CardList imgPair = new CardList(cards);
+            imgPair.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.HEART, 8));
+            cards.add(new Card(Card.HEART, 8));
+            cards.add(new Card(Card.HEART, 8));
+            CardList imgTrips = new CardList(cards);
+            imgTrips.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.CLUB, 5));
+            cards.add(new Card(Card.CLUB, 5));
+            cards.add(new Card(Card.CLUB, 5));
+            cards.add(new Card(Card.CLUB, 5));
+            CardList imgQuads = new CardList(cards);
+            imgQuads.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+
+            Container subContainer = new Container();
+            subContainer.add(imgPair).add(imgTrips).add(imgQuads);
+            content.add(subContainer);
+
+            if (currentLang.equals("zh")) {
+                content.add("拖拉机：相连的对子（或者三条，四条）");
+                content.add("下面的例子是假定打10，方片主：");
+            } else {
+                lb0 = new SpanLabel("TuoLaJi(Tractor): connected pairs (or trips/quads)."
+                        + " Following samples are based on game-rank 10, trump suit ♦:");
+                content.add(lb0);
+            }
+
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.CLUB, 6));
+            cards.add(new Card(Card.CLUB, 6));
+            cards.add(new Card(Card.CLUB, 5));
+            cards.add(new Card(Card.CLUB, 5));
+            CardList img1 = new CardList(cards);
+            img1.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.SPADE, 11));
+            cards.add(new Card(Card.SPADE, 11));
+            cards.add(new Card(Card.SPADE, 11));
+            cards.add(new Card(Card.SPADE, 9));
+            cards.add(new Card(Card.SPADE, 9));
+            cards.add(new Card(Card.SPADE, 9));
+            CardList img2 = new CardList(cards);
+            img2.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+            cards.add(new Card(Card.JOKER, Card.BigJokerRank));
+            cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
+            cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
+            cards.add(new Card(Card.DIAMOND, 10));
+            cards.add(new Card(Card.DIAMOND, 10));
+            cards.add(new Card(Card.CLUB, 10));
+            cards.add(new Card(Card.CLUB, 10));
+            cards.add(new Card(Card.DIAMOND, 14));
+            cards.add(new Card(Card.DIAMOND, 14));
+            CardList img3 = new CardList(cards);
+            img3.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
+            subContainer = new Container();
+            subContainer.add(img1).add(img2).add(img3);
+            content.add(subContainer);
+
+            if (currentLang.equals("zh")) {
+                content.add("特殊规则：四条也称为炸弹，可以大过两对的拖拉机");
+                content.add("测验：选出下面所有合格的拖拉机（假定打10，方片主）");
+            } else {
+                lb0 = new SpanLabel("When one of the combinations is led,"
+                        + " the following player must try to play the same type of the combination."
+                        + " Take quads as an example, the follow play preference is: quads, 1 trips + 1 single, 2-pair tractor,"
+                        + " 2 pairs, 1 pair + 2 singles, 4 singles.");
+                content.add(lb0);
+                content.add("Special rule: Quads can beat 2-pair tractor, so it is also called Bomb.");
+
+                lb0 = new SpanLabel("Quiz: Please select all the correct tractors (Assumption: game-rank 10, trump suit ♦)");
+                content.add(lb0);
+            }
+            subContainer = new Container();
+            CheckBox cb1 = new CheckBox();
+            subContainer.add(cb1);
+            content.add(subContainer);
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.SPADE, 8));
+            cards.add(new Card(Card.SPADE, 8));
+            cards.add(new Card(Card.SPADE, 7));
+            cards.add(new Card(Card.SPADE, 7));
+            CardList img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+            subContainer.add(img);
+            String hint = currentLang.equals("zh") ? "毫无疑问" : "No doubt";
+            Label hint1 = new Label(hint);
+            hint1.setVisible(false);
+            subContainer.add(hint1);
+
+            subContainer = new Container();
+            CheckBox cb2 = new CheckBox();
+            subContainer.add(cb2);
+            content.add(subContainer);
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.CLUB, 14));
+            cards.add(new Card(Card.CLUB, 14));
+            cards.add(new Card(Card.CLUB, 13));
+            cards.add(new Card(Card.CLUB, 13));
+            cards.add(new Card(Card.CLUB, 13));
+            img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+            subContainer.add(img);
+            hint = currentLang.equals("zh") ? "混合的对子和三条" : "Mixed pair and trips";
+            Label hint2 = new Label(hint);
+            hint2.setVisible(false);
+            subContainer.add(hint2);
+
+            subContainer = new Container();
+            CheckBox cb3 = new CheckBox();
+            subContainer.add(cb3);
+            content.add(subContainer);
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.HEART, 11));
+            cards.add(new Card(Card.HEART, 11));
+            cards.add(new Card(Card.HEART, 9));
+            cards.add(new Card(Card.HEART, 9));
+            img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+            subContainer.add(img);
+            hint = currentLang.equals("zh") ? "打10！9和J是相连的" : "9 and J is connected now, since 10 is out!";
+            Label hint3 = new Label(hint);
+            hint3.setVisible(false);
+            subContainer.add(hint3);
+
+            subContainer = new Container();
+            CheckBox cb4 = new CheckBox();
+            subContainer.add(cb4);
+            content.add(subContainer);
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.DIAMOND, 7));
+            cards.add(new Card(Card.DIAMOND, 7));
+            cards.add(new Card(Card.DIAMOND, 7));
+            cards.add(new Card(Card.DIAMOND, 5));
+            cards.add(new Card(Card.DIAMOND, 5));
+            cards.add(new Card(Card.DIAMOND, 5));
+            img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+            subContainer.add(img);
+            hint = currentLang.equals("zh") ? "不相连" : "Not connected";
+            Label hint4 = new Label(hint);
+            hint4.setVisible(false);
+            subContainer.add(hint4);
+
+            subContainer = new Container();
+            CheckBox cb5 = new CheckBox();
+            subContainer.add(cb5);
+            content.add(subContainer);
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.SPADE, 10));
+            cards.add(new Card(Card.SPADE, 10));
+            cards.add(new Card(Card.HEART, 10));
+            cards.add(new Card(Card.HEART, 10));
+            img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+            subContainer.add(img);
+            hint = currentLang.equals("zh") ? "同级的两对，不算" : "Two pair with same rank, not qualify!";
+            Label hint5 = new Label(hint);
+            hint5.setVisible(false);
+            subContainer.add(hint5);
+
+            subContainer = new Container();
+            CheckBox cb6 = new CheckBox();
+            subContainer.add(cb6);
+            content.add(subContainer);
+            cards = new ArrayList<>();
+            cards.add(new Card(Card.DIAMOND, 10));
+            cards.add(new Card(Card.DIAMOND, 10));
+            cards.add(new Card(Card.SPADE, 10));
+            cards.add(new Card(Card.SPADE, 10));
+            cards.add(new Card(Card.DIAMOND, 14));
+            cards.add(new Card(Card.DIAMOND, 14));
+            cards.add(new Card(Card.DIAMOND, 13));
+            cards.add(new Card(Card.DIAMOND, 13));
+            img = new CardList(cards);
+            img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
+            subContainer.add(img);
+            hint = currentLang.equals("zh") ? "好牌！" : "Nice one! The longer, the better!";
+            Label hint6 = new Label(hint);
+            hint6.setVisible(false);
+            subContainer.add(hint6);
+
+            content.add(" ");
+            hint = currentLang.equals("zh") ? "提示" : "Show Hint";
+            CheckBox cb0 = new CheckBox(hint);
+            content.add(cb0);
+            cb0.addActionListener((e) -> {
+                hint1.setVisible(cb0.isSelected());
+                hint2.setVisible(cb0.isSelected());
+                hint3.setVisible(cb0.isSelected());
+                hint4.setVisible(cb0.isSelected());
+                hint5.setVisible(cb0.isSelected());
+                hint6.setVisible(cb0.isSelected());
+            });
+
+            cb1.addActionListener((e) -> {
+                if (cb1.isSelected() && !cb2.isSelected()
+                        && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected()) {
+                    if (!scored) {
+                        scored = true;
+                        int thisScore = Math.round(this.initScore);
+                        Storage.getInstance().writeObject(this.id, thisScore);
+                        totalScore += thisScore;
+                        lbScore.setText(Dict.get(currentLang, "Score") + ": " + totalScore);
+                        Storage.getInstance().writeObject("tutor_score", totalScore);
+                    }
+                    btnNext.setEnabled(true);
+                } else {
+                    btnNext.setEnabled(false);
+                }
+                if (!cb1.isSelected()) {
+                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                    cb1.setEnabled(false);
+                    cb1.setSelected(true);
+                }
+            });
+            cb2.addActionListener((e) -> {
+                if (cb1.isSelected() && !cb2.isSelected()
+                        && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected()) {
+                    if (!scored) {
+                        scored = true;
+                        int thisScore = Math.round(this.initScore);
+                        Storage.getInstance().writeObject(this.id, thisScore);
+                        totalScore += thisScore;
+                        lbScore.setText(Dict.get(currentLang, "Score") + ": " + totalScore);
+                        Storage.getInstance().writeObject("tutor_score", totalScore);
+                    }
+                    btnNext.setEnabled(true);
+                } else {
+                    btnNext.setEnabled(false);
+                }
+                if (cb2.isSelected()) {
+                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                } else {
+                    cb2.setEnabled(false);
+                }
+            });
+            cb3.addActionListener((e) -> {
+                if (cb1.isSelected() && !cb2.isSelected()
+                        && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected()) {
+                    if (!scored) {
+                        scored = true;
+                        int thisScore = Math.round(this.initScore);
+                        Storage.getInstance().writeObject(this.id, thisScore);
+                        totalScore += thisScore;
+                        lbScore.setText(Dict.get(currentLang, "Score") + ": " + totalScore);
+                        Storage.getInstance().writeObject("tutor_score", totalScore);
+                    }
+                    btnNext.setEnabled(true);
+                } else {
+                    btnNext.setEnabled(false);
+                }
+                if (!cb3.isSelected()) {
+                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                    cb3.setEnabled(false);
+                    cb3.setSelected(true);
+                }
+            });
+            cb4.addActionListener((e) -> {
+                if (cb1.isSelected() && !cb2.isSelected()
+                        && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected()) {
+                    if (!scored) {
+                        scored = true;
+                        int thisScore = Math.round(this.initScore);
+                        Storage.getInstance().writeObject(this.id, thisScore);
+                        totalScore += thisScore;
+                        lbScore.setText(Dict.get(currentLang, "Score") + ": " + totalScore);
+                        Storage.getInstance().writeObject("tutor_score", totalScore);
+                    }
+                    btnNext.setEnabled(true);
+                } else {
+                    btnNext.setEnabled(false);
+                }
+                if (cb4.isSelected()) {
+                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                } else {
+                    cb4.setEnabled(false);
+                }
+            });
+            cb5.addActionListener((e) -> {
+                if (cb1.isSelected() && !cb2.isSelected()
+                        && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected()) {
+                    if (!scored) {
+                        scored = true;
+                        int thisScore = Math.round(this.initScore);
+                        Storage.getInstance().writeObject(this.id, thisScore);
+                        totalScore += thisScore;
+                        lbScore.setText(Dict.get(currentLang, "Score") + ": " + totalScore);
+                        Storage.getInstance().writeObject("tutor_score", totalScore);
+                    }
+                    btnNext.setEnabled(true);
+                } else {
+                    btnNext.setEnabled(false);
+                }
+                if (cb5.isSelected()) {
+                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                } else {
+                    cb5.setEnabled(false);
+                }
+            });
+            cb6.addActionListener((e) -> {
+                if (cb1.isSelected() && !cb2.isSelected()
+                        && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected()) {
+                    if (!scored) {
+                        scored = true;
+                        int thisScore = Math.round(this.initScore);
+                        Storage.getInstance().writeObject(this.id, thisScore);
+                        totalScore += thisScore;
+                        lbScore.setText(Dict.get(currentLang, "Score") + ": " + totalScore);
+                        Storage.getInstance().writeObject("tutor_score", totalScore);
+                    }
+                    btnNext.setEnabled(true);
+                } else {
+                    btnNext.setEnabled(false);
+                }
+                if (!cb6.isSelected()) {
+                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                    cb6.setEnabled(false);
+                    cb6.setSelected(true);
+                }
+            });
+            return content;
+        }
 
         private Component topicAdvanced(Button btnNext) {
             SpanLabel lb0 = new SpanLabel("Advanced Play");
@@ -701,256 +1126,24 @@ public class Tutor extends Container {
             ButtonGroup btnGroup = new ButtonGroup(rb1, rb2, rb3, rb4);
             content.add(BoxLayout.encloseXNoGrow(rb1, rb2, rb3, rb4));
             btnGroup.addActionListener((e) -> {
-                btnNext.setEnabled(rb3.isSelected());
+                if (rb3.isSelected()) {
+                    if (!scored) {
+                        scored = true;
+                        int thisScore = Math.round(this.initScore);
+                        Storage.getInstance().writeObject(this.id, thisScore);
+                        totalScore += thisScore;
+                        lbScore.setText(Dict.get(currentLang, "Score") + ": " + totalScore);
+                        Storage.getInstance().writeObject("tutor_score", totalScore);
+                    }
+                    btnNext.setEnabled(true);
+                } else {
+                    initScore -= 3.3f;
+                    e.getComponent().setEnabled(false);
+                    btnNext.setEnabled(false);
+                }
             });
             return content;
         }
-    }
-
-    private Component topicCombination(Button btnNext) {
-        SpanLabel lb0 = null;
-        Container content = null;
-        if (currentLang.equals("zh")) {
-            content = new Container(BoxLayout.yLast());
-            content.setScrollableY(true);
-            content.setScrollableX(true);
-            content.add("下面的示例展示了对子、三条、四条：");
-        } else {
-            lb0 = new SpanLabel("PAIR, TRIPS, QUADS (Samples as below)");
-            content = BoxLayout.encloseY(lb0);
-            content.setScrollableY(true);
-        }
-        Hand hand = main.getPlayer().getHand();
-        List<Card> cards = new ArrayList<>();
-        cards.add(new Card(Card.JOKER, Card.BigJokerRank));
-        cards.add(new Card(Card.JOKER, Card.BigJokerRank));
-        CardList imgPair = new CardList(cards);
-        imgPair.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
-
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.HEART, 8));
-        cards.add(new Card(Card.HEART, 8));
-        cards.add(new Card(Card.HEART, 8));
-        CardList imgTrips = new CardList(cards);
-        imgTrips.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
-
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.CLUB, 5));
-        cards.add(new Card(Card.CLUB, 5));
-        cards.add(new Card(Card.CLUB, 5));
-        cards.add(new Card(Card.CLUB, 5));
-        CardList imgQuads = new CardList(cards);
-        imgQuads.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
-
-        Container subContainer = new Container();
-        subContainer.add(imgPair).add(imgTrips).add(imgQuads);
-        content.add(subContainer);
-
-        if (currentLang.equals("zh")) {
-            content.add("拖拉机：相连的对子（或者三条，四条）");
-            content.add("下面的例子是假定打10，方片主：");
-        } else {
-            lb0 = new SpanLabel("TuoLaJi(Tractor): connected pairs (or trips/quads)."
-                    + " Following samples are based on game-rank 10, trump suit ♦:");
-            content.add(lb0);
-        }
-
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.CLUB, 6));
-        cards.add(new Card(Card.CLUB, 6));
-        cards.add(new Card(Card.CLUB, 5));
-        cards.add(new Card(Card.CLUB, 5));
-        CardList img1 = new CardList(cards);
-        img1.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
-
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.SPADE, 11));
-        cards.add(new Card(Card.SPADE, 11));
-        cards.add(new Card(Card.SPADE, 11));
-        cards.add(new Card(Card.SPADE, 9));
-        cards.add(new Card(Card.SPADE, 9));
-        cards.add(new Card(Card.SPADE, 9));
-        CardList img2 = new CardList(cards);
-        img2.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
-
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.JOKER, Card.BigJokerRank));
-        cards.add(new Card(Card.JOKER, Card.BigJokerRank));
-        cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
-        cards.add(new Card(Card.JOKER, Card.SmallJokerRank));
-        cards.add(new Card(Card.DIAMOND, 10));
-        cards.add(new Card(Card.DIAMOND, 10));
-        cards.add(new Card(Card.CLUB, 10));
-        cards.add(new Card(Card.CLUB, 10));
-        cards.add(new Card(Card.DIAMOND, 14));
-        cards.add(new Card(Card.DIAMOND, 14));
-        CardList img3 = new CardList(cards);
-        img3.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight + 10);
-        subContainer = new Container();
-        subContainer.add(img1).add(img2).add(img3);
-        content.add(subContainer);
-
-        if (currentLang.equals("zh")) {
-            content.add("特殊规则：四条也称为炸弹，可以大过两对的拖拉机");
-            content.add("测验：选出下面所有合格的拖拉机（假定打10，方片主）");
-        } else {
-            lb0 = new SpanLabel("When one of the combinations is led,"
-                    + " the following player must try to play the same type of the combination."
-                    + " Take quads as an example, the follow play preference is: quads, 1 trips + 1 single, 2-pair tractor,"
-                    + " 2 pairs, 1 pair + 2 singles, 4 singles.");
-            content.add(lb0);
-            content.add("Special rule: Quads can beat 2-pair tractor, so it is also called Bomb.");
-
-            lb0 = new SpanLabel("Quiz: Please select all the correct tractors (Assumption: game-rank 10, trump suit ♦)");
-            content.add(lb0);
-        }
-        subContainer = new Container();
-        CheckBox cb1 = new CheckBox();
-        subContainer.add(cb1);
-        content.add(subContainer);
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.SPADE, 8));
-        cards.add(new Card(Card.SPADE, 8));
-        cards.add(new Card(Card.SPADE, 7));
-        cards.add(new Card(Card.SPADE, 7));
-        CardList img = new CardList(cards);
-        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
-        subContainer.add(img);
-        String hint = currentLang.equals("zh") ? "毫无疑问" : "No doubt";
-        Label hint1 = new Label(hint);
-        hint1.setVisible(false);
-        subContainer.add(hint1);
-
-        subContainer = new Container();
-        CheckBox cb2 = new CheckBox();
-        subContainer.add(cb2);
-        content.add(subContainer);
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.CLUB, 14));
-        cards.add(new Card(Card.CLUB, 14));
-        cards.add(new Card(Card.CLUB, 13));
-        cards.add(new Card(Card.CLUB, 13));
-        cards.add(new Card(Card.CLUB, 13));
-        img = new CardList(cards);
-        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
-        subContainer.add(img);
-        hint = currentLang.equals("zh") ? "混合的对子和三条" : "Mixed pair and trips";
-        Label hint2 = new Label(hint);
-        hint2.setVisible(false);
-        subContainer.add(hint2);
-
-        subContainer = new Container();
-        CheckBox cb3 = new CheckBox();
-        subContainer.add(cb3);
-        content.add(subContainer);
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.HEART, 11));
-        cards.add(new Card(Card.HEART, 11));
-        cards.add(new Card(Card.HEART, 9));
-        cards.add(new Card(Card.HEART, 9));
-        img = new CardList(cards);
-        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
-        subContainer.add(img);
-        hint = currentLang.equals("zh") ? "打10！9和J是相连的" : "9 and J is connected now, since 10 is out!";
-        Label hint3 = new Label(hint);
-        hint3.setVisible(false);
-        subContainer.add(hint3);
-
-        subContainer = new Container();
-        CheckBox cb4 = new CheckBox();
-        subContainer.add(cb4);
-        content.add(subContainer);
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.DIAMOND, 7));
-        cards.add(new Card(Card.DIAMOND, 7));
-        cards.add(new Card(Card.DIAMOND, 7));
-        cards.add(new Card(Card.DIAMOND, 5));
-        cards.add(new Card(Card.DIAMOND, 5));
-        cards.add(new Card(Card.DIAMOND, 5));
-        img = new CardList(cards);
-        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
-        subContainer.add(img);
-        hint = currentLang.equals("zh") ? "不相连" : "Not connected";
-        Label hint4 = new Label(hint);
-        hint4.setVisible(false);
-        subContainer.add(hint4);
-
-        subContainer = new Container();
-        CheckBox cb5 = new CheckBox();
-        subContainer.add(cb5);
-        content.add(subContainer);
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.SPADE, 10));
-        cards.add(new Card(Card.SPADE, 10));
-        cards.add(new Card(Card.HEART, 10));
-        cards.add(new Card(Card.HEART, 10));
-        img = new CardList(cards);
-        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
-        subContainer.add(img);
-        hint = currentLang.equals("zh") ? "同级的两对，不算" : "Two pair with same rank, not qualify!";
-        Label hint5 = new Label(hint);
-        hint5.setVisible(false);
-        subContainer.add(hint5);
-
-        subContainer = new Container();
-        CheckBox cb6 = new CheckBox();
-        subContainer.add(cb6);
-        content.add(subContainer);
-        cards = new ArrayList<>();
-        cards.add(new Card(Card.DIAMOND, 10));
-        cards.add(new Card(Card.DIAMOND, 10));
-        cards.add(new Card(Card.SPADE, 10));
-        cards.add(new Card(Card.SPADE, 10));
-        cards.add(new Card(Card.DIAMOND, 14));
-        cards.add(new Card(Card.DIAMOND, 14));
-        cards.add(new Card(Card.DIAMOND, 13));
-        cards.add(new Card(Card.DIAMOND, 13));
-        img = new CardList(cards);
-        img.scale(hand.displayWidthNormal(cards.size()) + 20, hand.cardHeight);
-        subContainer.add(img);
-        hint = currentLang.equals("zh") ? "好牌！" : "Nice one! The longer, the better!";
-        Label hint6 = new Label(hint);
-        hint6.setVisible(false);
-        subContainer.add(hint6);
-
-        content.add(" ");
-        hint = currentLang.equals("zh") ? "提示" : "Show Hint";
-        CheckBox cb0 = new CheckBox(hint);
-        content.add(cb0);
-        cb0.addActionListener((e) -> {
-            hint1.setVisible(cb0.isSelected());
-            hint2.setVisible(cb0.isSelected());
-            hint3.setVisible(cb0.isSelected());
-            hint4.setVisible(cb0.isSelected());
-            hint5.setVisible(cb0.isSelected());
-            hint6.setVisible(cb0.isSelected());
-        });
-
-        cb1.addActionListener((e) -> {
-            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
-                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected());
-        });
-        cb2.addActionListener((e) -> {
-            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
-                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected());
-        });
-        cb3.addActionListener((e) -> {
-            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
-                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected());
-        });
-        cb4.addActionListener((e) -> {
-            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
-                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected());
-        });
-        cb5.addActionListener((e) -> {
-            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
-                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected());
-        });
-        cb6.addActionListener((e) -> {
-            btnNext.setEnabled(cb1.isSelected() && !cb2.isSelected()
-                    && cb3.isSelected() && !cb4.isSelected() && !cb5.isSelected() && cb6.isSelected());
-        });
-        return content;
     }
 
     class CardList extends DynamicImage {

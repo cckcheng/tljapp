@@ -910,6 +910,7 @@ public class Player {
                         playCards(data);
                         break;
                     case "gameover":
+                        hand.clearCards();
                         startNotifyTimer(data);
                         cancelTimers();
                         gameSummary(data);

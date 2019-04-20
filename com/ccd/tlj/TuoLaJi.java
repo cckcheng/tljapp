@@ -346,6 +346,13 @@ public class TuoLaJi {
         };
         FontImage.setMaterialIcon(matchCmd, FontImage.MATERIAL_DIRECTIONS_RUN, "Button");
         int finPrac = Player.parseInteger(Storage.getInstance().readObject("finprac"));
+        if (finPrac < 1) {
+            int totalScore = Player.parseInteger(Storage.getInstance().readObject("tutor_score"));
+            if (totalScore >= 80) {
+                finPrac = 1;
+                Storage.getInstance().writeObject("finprac", 1);
+            }
+        }
         matchCmd.setEnabled(finPrac > 0);
 
         Dialog.show("", pName, practiceCmd, matchCmd);
