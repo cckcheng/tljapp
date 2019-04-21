@@ -161,6 +161,7 @@ public class Tutor extends Container {
 
         Label lbScore;
         float initScore = 0f;
+        float unitScore = 0f;
         boolean scored = false;
         void showContent() {
             Dialog dlg = new Dialog(new BorderLayout());
@@ -196,18 +197,27 @@ public class Tutor extends Container {
             switch (id) {
                 case "point_cards":
                     initScore = 10;
+                    unitScore = 2.5f;
                     content = topicPointCards(btnNext);
                     break;
                 case "card_rank":
                     initScore = 20;
+                    unitScore = 3.3f;
                     content = topicCardRank(btnNext);
                     break;
                 case "combination":
-                    initScore = currentLang.equals("zh") ? 60 : 30;
+                    if (currentLang.equals("zh")) {
+                        initScore = 60;
+                        unitScore = 10.0f;
+                    } else {
+                        initScore = 48;
+                        unitScore = 8.0f;
+                    }
                     content = topicCombination(btnNext);
                     break;
                 case "trump":
                     initScore = 10;
+                    unitScore = 3.3f;
                     content = topicTrump(btnNext);
                     break;
                 case "table":
@@ -215,7 +225,8 @@ public class Tutor extends Container {
                         initScore = 0;
                         scored = true;
                     } else {
-                        initScore = 30;
+                        initScore = 12;
+                        unitScore = 4;
                     }
                     content = topicTable(btnNext);
                     break;
@@ -309,7 +320,7 @@ public class Tutor extends Container {
                     }
                     btnNext.setEnabled(true);
                 } else {
-                    initScore -= 2.5f;
+                    initScore -= unitScore;
                     e.getComponent().setEnabled(false);
                     btnNext.setEnabled(false);
                 }
@@ -378,7 +389,7 @@ public class Tutor extends Container {
                     rb1_3.setEnabled(true);
                     rb1_4.setEnabled(true);
                 } else {
-                    initScore -= 3.3f;
+                    initScore -= unitScore;
                     e.getComponent().setEnabled(false);
                 }
             });
@@ -395,7 +406,7 @@ public class Tutor extends Container {
                     }
                     btnNext.setEnabled(true);
                 } else {
-                    initScore -= 3.3f;
+                    initScore -= unitScore;
                     e.getComponent().setEnabled(false);
                     btnNext.setEnabled(false);
                 }
@@ -470,7 +481,7 @@ public class Tutor extends Container {
                         rb2_1.setEnabled(true);
                         rb2_2.setEnabled(true);
                     } else {
-                        initScore -= 5f;
+                        initScore -= unitScore / 2;
                         e.getComponent().setEnabled(false);
                     }
                 });
@@ -481,7 +492,7 @@ public class Tutor extends Container {
                         rb3_1.setEnabled(true);
                         rb3_2.setEnabled(true);
                     } else {
-                        initScore -= 10f;
+                        initScore -= unitScore;
                         e.getComponent().setEnabled(false);
                     }
                 });
@@ -497,7 +508,7 @@ public class Tutor extends Container {
                         }
                         btnNext.setEnabled(true);
                     } else {
-                        initScore -= 10f;
+                        initScore -= unitScore;
                         e.getComponent().setEnabled(false);
                         btnNext.setEnabled(false);
                     }
@@ -950,7 +961,7 @@ public class Tutor extends Container {
                     btnNext.setEnabled(false);
                 }
                 if (!cb1.isSelected()) {
-                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                    this.initScore -= unitScore;
                     cb1.setEnabled(false);
                     cb1.setSelected(true);
                 }
@@ -971,7 +982,7 @@ public class Tutor extends Container {
                     btnNext.setEnabled(false);
                 }
                 if (cb2.isSelected()) {
-                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                    this.initScore -= unitScore;
                 } else {
                     cb2.setEnabled(false);
                 }
@@ -992,7 +1003,7 @@ public class Tutor extends Container {
                     btnNext.setEnabled(false);
                 }
                 if (!cb3.isSelected()) {
-                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                    this.initScore -= unitScore;
                     cb3.setEnabled(false);
                     cb3.setSelected(true);
                 }
@@ -1013,7 +1024,7 @@ public class Tutor extends Container {
                     btnNext.setEnabled(false);
                 }
                 if (cb4.isSelected()) {
-                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                    this.initScore -= unitScore;
                 } else {
                     cb4.setEnabled(false);
                 }
@@ -1034,7 +1045,7 @@ public class Tutor extends Container {
                     btnNext.setEnabled(false);
                 }
                 if (cb5.isSelected()) {
-                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                    this.initScore -= unitScore;
                 } else {
                     cb5.setEnabled(false);
                 }
@@ -1055,7 +1066,7 @@ public class Tutor extends Container {
                     btnNext.setEnabled(false);
                 }
                 if (!cb6.isSelected()) {
-                    this.initScore -= currentLang.equals("zh") ? 10f : 5f;
+                    this.initScore -= unitScore;
                     cb6.setEnabled(false);
                     cb6.setSelected(true);
                 }
@@ -1137,7 +1148,7 @@ public class Tutor extends Container {
                     }
                     btnNext.setEnabled(true);
                 } else {
-                    initScore -= 3.3f;
+                    initScore -= unitScore;
                     e.getComponent().setEnabled(false);
                     btnNext.setEnabled(false);
                 }
