@@ -126,6 +126,20 @@ public class Hand extends Component {
         }
     }
 
+    public List<Card> getCardsBySuite(char s) {
+        switch (s) {
+            case Card.SPADE:
+                return this.spades;
+            case Card.HEART:
+                return this.hearts;
+            case Card.DIAMOND:
+                return this.diamonds;
+            case Card.CLUB:
+                return this.clubs;
+        }
+        return this.trumps;
+    }
+
     private void removeCard(Card c) {
         if (this.upperList.contains(c)) {
             this.upperList.remove(c);
@@ -698,9 +712,49 @@ public class Hand extends Component {
     synchronized public boolean validSelection() {
         Player.PlayerInfo pp = player.getLeadingPlayer();
         if (pp != null) {
-            return this.selected.size() == pp.cards.size();
+            if (this.selected.size() != pp.cards.size()) {
+                return false;
+            }
+            Card c0 = pp.cards.get(0);
+            if (c0.isTrump(player.currentTrump, player.gameRank)) {
+                if (this.trumps.size() > pp.cards.size()) {
+                    return this.trumps.containsAll(this.selected);
+                } else if (this.trumps.size() > 0) {
+                    return this.selected.containsAll(this.trumps);
+                }
+            } else {
+                List<Card> cardList = this.getCardsBySuite(c0.suite);
+                if (cardList.size() > pp.cards.size()) {
+                    return cardList.containsAll(this.selected);
+                } else if (cardList.size() > 0) {
+                    return this.selected.containsAll(cardList);
+                }
+            }
+            return true;
         }
-        return this.selected.size() > 0;
+
+        if (this.selected.size() < 1) {
+            return false;
+        }
+        if (this.selected.size() == 1) {
+            return true;
+        }
+
+        Card c0 = this.selected.get(0);
+        boolean isTrump = c0.isTrump(player.currentTrump, player.gameRank);
+        for (int x = 1; x < this.selected.size(); x++) {
+            Card c = this.selected.get(x);
+            if (isTrump) {
+                if (!c.isTrump(player.currentTrump, player.gameRank)) {
+                    return false;
+                }
+            } else {
+                if (c.suite != c0.suite || c.isTrump(player.currentTrump, player.gameRank)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /*

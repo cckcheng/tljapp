@@ -795,8 +795,8 @@ public class Player {
         }
     }
 
-    private char currentTrump;
-    private int gameRank;
+    protected char currentTrump;
+    protected int gameRank;
     synchronized private void setTrump(Map<String, Object> data) {
         if (this.hand.isEmpty()) return;
         String trump = data.get("trump").toString();
