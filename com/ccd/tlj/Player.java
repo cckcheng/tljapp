@@ -301,6 +301,7 @@ public class Player {
         for (PlayerInfo pp : this.infoLst) {
             pp.reset();
         }
+        this.leadingPlayer = null;
     }
 
     private void refreshTable(Map<String, Object> data) {
@@ -579,7 +580,12 @@ public class Player {
         return "" + parseInteger(bid);
     }
 
+    private PlayerInfo leadingPlayer;
+
     public PlayerInfo getLeadingPlayer() {
+        if (this.leadingPlayer != null) {
+            return this.leadingPlayer;
+        }
         for (int x = 1; x < this.infoLst.size(); x++) {
             PlayerInfo pp = this.infoLst.get(x);
             if (!pp.cards.isEmpty()) {
@@ -784,6 +790,7 @@ public class Player {
             for (PlayerInfo pp : this.infoLst) {
                 this.hand.clearPlayCards(pp);
             }
+            this.leadingPlayer = null;
         }
 
         if (actionSeat > 0) {
@@ -791,6 +798,9 @@ public class Player {
             if (pp != null) {
                 int actTime = parseInteger(data.get("acttime"));
                 pp.showTimer(actTime > 1 ? actTime : this.timeout, this.contractPoint, "play");
+                if (this.leadingPlayer == null) {
+                    this.leadingPlayer = pp;
+                }
             }
         }
     }

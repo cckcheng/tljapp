@@ -7,7 +7,12 @@ import com.codename1.ui.Font;
 import com.codename1.ui.Graphics;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -693,6 +698,8 @@ public class Hand extends Component {
         Card c = selectCard(x, y, x0, x1, x2, y0, y1, y2);
         if (c == null) return;
 //        if (c != null) dragged.add(c);
+
+        boolean isFirst = this.selected.isEmpty();
         if (this.selected.contains(c)) {
             this.selected.remove(c);
         } else {
@@ -704,32 +711,250 @@ public class Hand extends Component {
             if (b.getName().equals("bury")) {
                 b.setEnabled(this.selected.size() == 6);
             } else {
+                if (isFirst) {
+                    Player.PlayerInfo pp = player.getLeadingPlayer();
+                    if (pp == null || pp.cards.isEmpty()) {
+                        // leading play, auto select strong combinations
+                        autoSelect(c);
+                    }
+                }
                 b.setEnabled(validSelection());
+            }
+        }
+    }
+
+    void autoSelect(Card c) {
+        List<Card> cardList = c.isTrump(player.currentTrump, player.gameRank)
+                ? this.trumps : this.getCardsBySuite(c.suite);
+        if (cardList.size() < 2) {
+            return;
+        }
+        int cnt0 = 0;
+        List<Card> preSelection = new ArrayList<>();
+        Map<String, Integer> countMap = new HashMap<>();
+        List<String> highers = new ArrayList<>();
+        List<String> lowers = new ArrayList<>();
+        int tRank0 = c.trumpRank(player.currentTrump, player.gameRank);
+        for (Card a : cardList) {
+            if (a.rank == c.rank) {
+                if (a.suite == c.suite) {
+                    cnt0++;
+                    preSelection.add(a);
+                }
+            } else {
+                int tRank = a.trumpRank(player.currentTrump, player.gameRank);
+                String ck = "0" + tRank;
+                if (ck.length() > 2) {
+                    ck = ck.substring(1);
+                }
+                ck += a.suite;
+                int cnt = 1;
+                if (countMap.containsKey(ck)) {
+                    cnt += countMap.get(ck);
+                    if (tRank > tRank0) {
+                        if (!highers.contains(ck)) {
+                            highers.add(ck);
+                        }
+                    } else {
+                        if (!lowers.contains(ck)) {
+                            lowers.add(ck);
+                        }
+                    }
+                }
+                countMap.put(ck, cnt);
+            }
+        }
+        if (cnt0 < 2) {
+            return;
+        }
+        if (cnt0 > 3) {
+            this.selected.remove(c);
+            this.selected.addAll(preSelection);
+            return;
+        }
+
+        if (!highers.isEmpty()) {
+            Collections.sort(highers, new Comparator<String>() {
+                @Override
+                public int compare(String s1, String s2) {
+                    if (s1.substring(0, 2).equals(s2.substring(0, 2))) {
+                        return countMap.get(s1) > countMap.get(s2) ? 1 : -1;
+                    }
+                    return s1.compareTo(s2);
+                }
+            });
+        }
+        if (!lowers.isEmpty()) {
+            Collections.sort(lowers, new Comparator<String>() {
+                @Override
+                public int compare(String s1, String s2) {
+                    if (s1.substring(0, 2).equals(s2.substring(0, 2))) {
+                        return countMap.get(s1) < countMap.get(s2) ? 1 : -1;
+                    }
+                    return s2.compareTo(s1);
+                }
+            });
+        }
+
+        if (cnt0 == 3) {
+            Set<String> matched = new HashSet<>();
+            if (!highers.isEmpty()) {
+                int nextRank = tRank0 + 1;
+                for (int i = 0; i < highers.size(); i++) {
+                    String ck = highers.get(i);
+                    int rnk = Player.parseInteger(ck.substring(0, 2));
+                    if (rnk == nextRank) {
+                        if (countMap.get(ck) < 3) {
+                            continue;
+                        } else {
+                            matched.add(ck);
+                            nextRank++;
+                        }
+                    } else if (rnk > nextRank) {
+                        break;
+                    }
+                }
+            }
+
+            if (!lowers.isEmpty()) {
+                int nextRank = tRank0 - 1;
+                for (int i = 0; i < lowers.size(); i++) {
+                    String ck = lowers.get(i);
+                    int rnk = Player.parseInteger(ck.substring(0, 2));
+                    if (rnk == nextRank) {
+                        if (countMap.get(ck) < 3) {
+                            continue;
+                        } else {
+                            matched.add(ck);
+                            nextRank--;
+                        }
+                    } else if (rnk < nextRank) {
+                        break;
+                    }
+                }
+            }
+
+            if (!matched.isEmpty()) {
+                this.selected.remove(c);
+                this.selected.addAll(preSelection);
+
+                String pCk = "";
+                int cnt = 0;
+                for (Card a : cardList) {
+                    int tRank = a.trumpRank(player.currentTrump, player.gameRank);
+                    String ck = "0" + tRank;
+                    if (ck.length() > 2) {
+                        ck = ck.substring(1);
+                    }
+                    ck += a.suite;
+                    if (matched.contains(ck)) {
+                        if (pCk.equals(ck)) {
+                            cnt++;
+                        } else {
+                            pCk = ck;
+                            cnt = 1;
+                        }
+                        if (cnt <= 3) {
+                            this.selected.add(a);
+                        }
+                    }
+                }
+                return;
+            }
+        }
+
+        Set<String> matched = new HashSet<>();
+        if (!highers.isEmpty()) {
+            int nextRank = tRank0 + 1;
+            for (int i = 0; i < highers.size(); i++) {
+                String ck = highers.get(i);
+                int rnk = Player.parseInteger(ck.substring(0, 2));
+                if (rnk == nextRank) {
+                    if (countMap.get(ck) < 2) {
+                        continue;
+                    } else {
+                        matched.add(ck);
+                        nextRank++;
+                    }
+                } else if (rnk > nextRank) {
+                    break;
+                }
+            }
+        }
+
+        if (!lowers.isEmpty()) {
+            int nextRank = tRank0 - 1;
+            for (int i = 0; i < lowers.size(); i++) {
+                String ck = lowers.get(i);
+                int rnk = Player.parseInteger(ck.substring(0, 2));
+                if (rnk == nextRank) {
+                    if (countMap.get(ck) < 2) {
+                        continue;
+                    } else {
+                        matched.add(ck);
+                        nextRank--;
+                    }
+                } else if (rnk < nextRank) {
+                    break;
+                }
+            }
+        }
+
+        if (matched.isEmpty()) {
+            if (cnt0 > 2) {
+                this.selected.remove(c);
+                this.selected.addAll(preSelection);
+            }
+            return;
+        }
+
+        for (Card a : preSelection) {
+            if (!a.equals(c)) {
+                this.selected.add(a);
+                break;
+            }
+        }
+
+        String pCk = "";
+        int cnt = 0;
+        for (Card a : cardList) {
+            int tRank = a.trumpRank(player.currentTrump, player.gameRank);
+            String ck = "0" + tRank;
+            if (ck.length() > 2) {
+                ck = ck.substring(1);
+            }
+            ck += a.suite;
+            if (matched.contains(ck)) {
+                if (pCk.equals(ck)) {
+                    cnt++;
+                } else {
+                    pCk = ck;
+                    cnt = 1;
+                }
+                if (cnt <= 2) {
+                    this.selected.add(a);
+                }
             }
         }
     }
 
     synchronized public boolean validSelection() {
         Player.PlayerInfo pp = player.getLeadingPlayer();
-        if (pp != null) {
+        if (pp != null && !pp.cards.isEmpty()) {
             if (this.selected.size() != pp.cards.size()) {
                 return false;
             }
+
             Card c0 = pp.cards.get(0);
-            if (c0.isTrump(player.currentTrump, player.gameRank)) {
-                if (this.trumps.size() > pp.cards.size()) {
-                    return this.trumps.containsAll(this.selected);
-                } else if (this.trumps.size() > 0) {
-                    return this.selected.containsAll(this.trumps);
-                }
-            } else {
-                List<Card> cardList = this.getCardsBySuite(c0.suite);
-                if (cardList.size() > pp.cards.size()) {
-                    return cardList.containsAll(this.selected);
-                } else if (cardList.size() > 0) {
-                    return this.selected.containsAll(cardList);
-                }
+            List<Card> cardList = c0.isTrump(player.currentTrump, player.gameRank)
+                    ? this.trumps : this.getCardsBySuite(c0.suite);
+
+            if (cardList.size() > pp.cards.size()) {
+                return cardList.containsAll(this.selected);
+            } else if (cardList.size() > 0) {
+                return this.selected.containsAll(cardList);
             }
+
             return true;
         }
 
