@@ -801,6 +801,15 @@ public class Player {
                 if (this.leadingPlayer == null) {
                     this.leadingPlayer = pp;
                 }
+
+                if (pp.location.equals("bottom")) {
+                    String sugCards = trimmedString(data.get("sug"));   // suggested cards by AI
+                    if (!sugCards.isEmpty()) {
+                        hand.autoSelectCards(sugCards);
+                    } else {
+                        hand.autoSelectCards();
+                    }
+                }
             }
         }
     }

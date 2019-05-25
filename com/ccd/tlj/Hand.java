@@ -267,6 +267,83 @@ public class Hand extends Component {
         this.repaint();
     }
 
+    synchronized public void autoSelectCards() {
+        if (!this.selected.isEmpty()) {
+            return;
+        }
+
+        Player.PlayerInfo pp = player.getLeadingPlayer();
+        if (pp == null || pp.cards.isEmpty()) {
+            return;
+        }
+        Card c0 = pp.cards.get(0);
+        List<Card> cardList = c0.isTrump(player.currentTrump, player.gameRank)
+                ? this.trumps : this.getCardsBySuite(c0.suite);
+        if (cardList.isEmpty() || cardList.size() > pp.cards.size()) {
+            return;
+        }
+
+        this.selected.addAll(cardList);
+
+    }
+
+    synchronized public void autoSelectCards(String cards) {
+        if (!this.selected.isEmpty()) {
+            return;
+        }
+        if (cards == null || cards.isEmpty()) {
+            return;
+        }
+        int x = cards.indexOf(',');
+        List<String> cList = new ArrayList<>();
+        while (x > 0) {
+            String s = cards.substring(0, x).trim();
+            if (s.length() < 2) {
+                continue;
+            }
+
+            cList.add(s);
+            cards = cards.substring(x + 1);
+            x = cards.indexOf(',');
+        }
+
+        if (!cards.isEmpty()) {
+            cList.add(cards);
+        }
+
+        if (cList.isEmpty()) {
+            return;
+        }
+
+        String s0 = cList.get(0);
+        Card c0 = Card.create(s0);
+        if (c0 == null) {
+            return;
+        }
+        List<Card> cardList = c0.isTrump(player.currentTrump, player.gameRank)
+                ? this.trumps : this.getCardsBySuite(c0.suite);
+
+        if (cardList.size() < cList.size()) {
+            return;
+        }
+        List<Card> preSelection = new ArrayList<>();
+        for (Card c : cardList) {
+            String s = c.suite + "" + c.rank;
+            int idx = cList.indexOf(s);
+            if (idx < 0) {
+                continue;
+            }
+            preSelection.add(c);
+            cList.remove(idx);
+        }
+
+        if (!cList.isEmpty()) {
+            return;
+        }
+        this.selected.addAll(preSelection);
+        this.repaint();
+    }
+
     synchronized public void removeCards(String cards) {
         if (cards == null || cards.isEmpty()) {
             return;
