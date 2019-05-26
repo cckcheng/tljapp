@@ -813,13 +813,14 @@ public class Hand extends Component {
         List<String> lowers = new ArrayList<>();
         int tRank0 = c.trumpRank(player.currentTrump, player.gameRank);
         for (Card a : cardList) {
-            if (a.rank == c.rank) {
-                if (a.suite == c.suite) {
-                    cnt0++;
-                    preSelection.add(a);
-                }
+            if (a.rank == c.rank && a.suite == c.suite) {
+                cnt0++;
+                preSelection.add(a);
             } else {
                 int tRank = a.trumpRank(player.currentTrump, player.gameRank);
+                if (tRank == tRank0) {
+                    continue;
+                }
                 String ck = "0" + tRank;
                 if (ck.length() > 2) {
                     ck = ck.substring(1);
@@ -841,6 +842,7 @@ public class Hand extends Component {
                 countMap.put(ck, cnt);
             }
         }
+
         if (cnt0 < 2) {
             return;
         }
