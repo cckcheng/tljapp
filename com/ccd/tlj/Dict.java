@@ -57,6 +57,8 @@ public class Dict {
                         return "连接中";
                     case "network error":
                         return "联网失败";
+                    case "start over":
+                        return "重新开始";
 
                     case "robot":
                         return "托管";

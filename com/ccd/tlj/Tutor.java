@@ -185,7 +185,22 @@ public class Tutor extends Container {
             if (idx < topics.size() - 1) {
                 dlg.add(BorderLayout.SOUTH, BoxLayout.encloseXNoGrow(lbScore, btnNext, new Button(okCmd)));
             } else {
-                dlg.add(BorderLayout.SOUTH, new Button(okCmd));
+//                dlg.add(BorderLayout.SOUTH, new Button(okCmd));
+                Button btnStartOver = new Button(Dict.get(currentLang, "Start Over"));
+                btnStartOver.addActionListener((e) -> {
+                    dlg.dispose();
+                    Storage.getInstance().writeObject("tutor", 0);
+                    Storage.getInstance().writeObject("tutor_score", 0);
+                    totalScore = 0;
+                    for (Topic tp : topics) {
+                        Storage.getInstance().writeObject(tp.id, null);
+                        tp.enableButton(false);
+                    }
+                    Topic nextTopic = topics.get(0);
+                    nextTopic.enableButton(true);
+                    nextTopic.showContent();
+                });
+                dlg.add(BorderLayout.SOUTH, BoxLayout.encloseXNoGrow(lbScore, new Button(okCmd), btnStartOver));
                 Storage.getInstance().writeObject("fintutor", 1);
                 main.showPlayButton();
             }
