@@ -101,6 +101,8 @@ public class Player {
     static final String actionPartner = "partner";
     static final String actionReact = "re";
 
+    static boolean checkOnce = true;
+    static String tljHost = Card.TLJ_HOST;
     public void connectServer(boolean rejoin) {
         if (!Socket.isSupported()) {
             Dialog.show("Alert", "Socket is not supported", "OK", "");
@@ -109,7 +111,7 @@ public class Player {
 
         main.disableButtons();
         this.mySocket = new MySocket();
-        Socket.connect(Card.TLJ_HOST, Card.TLJ_PORT, mySocket);
+        Socket.connect(tljHost, Card.TLJ_PORT, mySocket);
         if (rejoin) {
             joinTable(this.option);
         }
@@ -639,6 +641,9 @@ public class Player {
             return;
         }
 
+        bRobot.setSelected(false);
+        this.robotOn = false;
+
         int points = parseInteger(data.get("pt0"));
         if (points != -1) {
             this.pointsInfo.setText(points + Dict.get(main.lang, " points"));
@@ -959,6 +964,14 @@ public class Player {
         public void connectionError(int errorCode, String message) {
 //            if (isConnected()) closeRequested = true;
 //            main.enableButtons();
+            if (checkOnce) {
+                if (tljHost.equals(Card.TLJ_HOST)) {
+                    tljHost = Card.TLJ_HOST_IP;
+                } else {
+                    tljHost = Card.TLJ_HOST;
+                }
+                checkOnce = false;
+            }
             main.onConnectionError();
             mySocket = null;    // reset connection
 //            Dialog.show("Error", message, "OK", "");

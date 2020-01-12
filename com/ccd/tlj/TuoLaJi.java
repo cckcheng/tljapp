@@ -129,12 +129,12 @@ public class TuoLaJi {
                         btn.setText(Dict.get(lang, "Connecting") + "...");
                         p.connectServer(false);
                     }
-                }).schedule(5000, false, this.formMain);
+                }).schedule(3000, false, this.formMain);
             }
         }
     }
 
-    public String version = "2.0";
+    public String version = "3.09";
     public final static String title = "Langley TuoLaJi";
 
     public String lang = "en";
