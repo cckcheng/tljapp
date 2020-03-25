@@ -58,7 +58,6 @@ public class Player {
     static final int TIME_OUT_SECONDS = 25;
     private final String playerId;
     private String playerName;
-    private final Form mainForm;
     private final TuoLaJi main;
 
     private String option;
@@ -74,14 +73,12 @@ public class Player {
 
     public Player(String playerId, TuoLaJi main) {
         this.playerId = playerId;
-        this.mainForm = main.formMain;
         this.main = main;
     }
 
     public Player(String playerId, String playerName, TuoLaJi main) {
         this.playerId = playerId;
         this.playerName = playerName;
-        this.mainForm = main.formMain;
         this.main = main;
     }
 
@@ -238,6 +235,7 @@ public class Player {
         if (pp != null) pp.showTimer(timeout, 0, "play");
         String def = trimmedString(data.get("def"));
         this.partnerInfo.setText(partnerDef(def));
+        this.widget.revalidate();
     }
 
     private boolean isValid(List<Card> cards, UserHelp uh) {
@@ -269,9 +267,9 @@ public class Player {
 
     public final List<PlayerInfo> infoLst = new ArrayList<>();
     public Map<Integer, PlayerInfo> playerMap = new HashMap<>();
-    private boolean tableOn = false;
+    public boolean tableOn = false;
     private boolean robotOn = false;
-    private boolean tableEnded = false;
+    public boolean tableEnded = false;
     private int timeout = 30;   // 30 seconds
     public boolean isPlaying = false;
     private int contractPoint = -1;
@@ -866,6 +864,7 @@ public class Player {
         gmInfo += Card.rankToString(gameRank);
         this.gameInfo.setText(gmInfo);
         this.isPlaying = true;
+        this.widget.revalidate();
     }
 
     static int serverWaitCycle = 10; // 10 times
@@ -1646,8 +1645,9 @@ public class Player {
             } else {
                 engLabel.setText(info);
             }
+            this.revalidate();
+//            widget.revalidate();
             Log.p(info);
-            widget.repaint();
         }
 
         void showHelp(int category) {
@@ -1693,6 +1693,7 @@ public class Player {
                     chnLabel.setText("必须出拖拉机");
                     break;
             }
+            this.revalidate();
         }
     }
 

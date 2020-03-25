@@ -540,7 +540,7 @@ public class TuoLaJi {
             current = getCurrentForm();
         }
 
-        if (this.isMainForm) {
+        if (this.isMainForm || this.player == null || this.player.tableEnded || !this.player.tableOn) {
             if (this.player != null) {
                 player.disconnect();
             }
