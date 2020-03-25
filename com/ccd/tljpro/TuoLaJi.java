@@ -1,4 +1,4 @@
-package com.ccd.tlj;
+package com.ccd.tljpro;
 
 
 import com.codename1.components.SpanLabel;
@@ -328,7 +328,7 @@ public class TuoLaJi {
 
     void showPlayOption() {
         Object sgObj = Storage.getInstance().readObject("playerName");
-        final TextField pName = new TextField("Your Name", Dict.get(lang, "Your Name")
+        final TextField pName = new TextField("", Dict.get(lang, "Your Name")
                 + "(" + Dict.get(lang, Dict.PNAME) + ")", 16, TextArea.ANY);
         pName.setMaxSize(16);
         if (sgObj != null) {
