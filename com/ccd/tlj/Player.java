@@ -290,7 +290,7 @@ public class Player {
         this.hand.setIsReady(false);
         this.hand.clearCards();
         candidateTrumps.clear();
-        mainForm.setGlassPane(null);
+        main.formTable.setGlassPane(null);
 
         isPlaying = false;
         timeout = 30;
@@ -430,6 +430,9 @@ public class Player {
         if (this.robotOn) {
             mySocket.addRequest(actionRobot, "\"on\":1");
         }
+
+//        main.validateTable();
+        this.widget.revalidate();
         if (Card.DEBUG_MODE) Log.p("refresh table: done");
     }
 
@@ -438,7 +441,7 @@ public class Player {
             int pauseSeconds = parseInteger(data.get("pause"));
             if (pauseSeconds - 5 > 0) {
                 gameTimer = new UITimer(this.notifyPlayer);
-                gameTimer.schedule((pauseSeconds - 5) * 1000, false, mainForm);
+                gameTimer.schedule((pauseSeconds - 5) * 1000, false, main.formTable);
             }
         }
     }
@@ -462,6 +465,7 @@ public class Player {
         return hand;
     }
 
+    private Container widget;
     public void createTable(Container table) {
         this.hand = new Hand(this);
 
@@ -517,8 +521,12 @@ public class Player {
         this.pointsInfo.getStyle().setFont(Hand.fontRank);
 
         table.add(hand);
-        table.add(bExit).add(this.lbGeneral).add(this.gameInfo).add(this.partnerInfo).add(this.pointsInfo);
-        table.add(bRobot);
+
+        this.widget = new Container(new LayeredLayout());
+        table.add(this.widget);
+
+        this.widget.add(bExit).add(this.lbGeneral).add(this.gameInfo).add(this.partnerInfo).add(this.pointsInfo);
+        this.widget.add(bRobot);
         LayeredLayout ll = (LayeredLayout) table.getLayout();
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
         ll.setInsets(bRobot, "auto 0 0 auto");   //top right bottom left
@@ -530,7 +538,7 @@ public class Player {
         ll.setReferenceComponentTop(this.partnerInfo, bExit, 1f);
 
         for (PlayerInfo pp : infoLst) {
-            pp.addItems(table);
+            pp.addItems(this.widget);
         }
     }
 
@@ -669,7 +677,7 @@ public class Player {
 
         int x = hand.displayWidth(6) + 15;
         if (!summary.isEmpty()) {
-            mainForm.setGlassPane((g, rect) -> {
+            this.main.formTable.setGlassPane((g, rect) -> {
                 g.setColor(INFO_COLOR);
                 g.setFont(Hand.fontGeneral);
                 int idx = -1;
@@ -707,10 +715,11 @@ public class Player {
     }
 
     private void showInfo(Map<String, Object> data) {
+        final Form curForm = main.getCurrentForm();
         final String info = trimmedString(data.get("info"));
         int x = hand.displayWidth(6) + 15;
         if (!info.isEmpty() && !info.equals(".")) {
-            mainForm.setGlassPane((g, rect) -> {
+            curForm.setGlassPane((g, rect) -> {
                 g.setColor(INFO_COLOR);
                 g.setFont(Hand.fontGeneral);
                 int idx = -1;
@@ -729,7 +738,7 @@ public class Player {
                 }
             });
         } else {
-            mainForm.setGlassPane(null);
+            curForm.setGlassPane(null);
         }
     }
 
@@ -817,6 +826,8 @@ public class Player {
                 }
             }
         }
+
+        this.widget.revalidate();
     }
 
     protected char currentTrump;
@@ -970,7 +981,6 @@ public class Player {
                 } else {
                     tljHost = Card.TLJ_HOST;
                 }
-                checkOnce = false;
             }
             main.onConnectionError();
             mySocket = null;    // reset connection
@@ -992,6 +1002,7 @@ public class Player {
 
         @Override
         public void connectionEstablished(InputStream is, OutputStream os) {
+            checkOnce = false;
             main.enableButtons();
             byte[] buffer = new byte[4096];
             int count = 0;
@@ -1399,6 +1410,7 @@ public class Player {
             }
             String info = name + ":" + Card.rankToString(rank, "");
             this.mainInfo.setText(info);
+            parent.revalidate();
         }
 
         void addMinBid(int minBid) {
@@ -1428,6 +1440,8 @@ public class Player {
             } else {
                 this.points.getStyle().setFgColor(POINT_COLOR);
             }
+//            parent.revalidate();
+            this.points.repaint();
         }
 
         int maxBid = -1;
@@ -1441,10 +1455,11 @@ public class Player {
 
             this.points.setText("");
             this.timer.setText(timeout + "");
-            FontImage.setMaterialIcon(timer, FontImage.MATERIAL_TIMER);
+            Display.getInstance().callSerially(()
+                    -> FontImage.setMaterialIcon(timer, FontImage.MATERIAL_TIMER));
             this.timer.setVisible(true);
             countDownTimer = new UITimer(new CountDown(this, timeout));
-            countDownTimer.schedule(950, true, mainForm);   // slightly less to 1 sec
+            countDownTimer.schedule(950, true, main.formTable);   // slightly less to 1 sec
 
             if (this.location.equals("bottom")) {
                 userHelp.clear();
@@ -1519,6 +1534,7 @@ public class Player {
 
                     buttonContainer.removeAll();
                     buttonContainer.add(BorderLayout.CENTER, buttons);
+                    buttonContainer.revalidate();
                     actionButtons = buttons;
                 } else if (act.equals("bury")) {
                     userHelp.showHelp(userHelp.BURY_CARDS);
@@ -1548,6 +1564,8 @@ public class Player {
 //                buttonContainer.setShouldCalcPreferredSize(true); // not work
 //                central.repaint();    // no difference
             }
+
+            parent.revalidate();
         }
 
         private void addCardButton(Container buttons, char suite, String rnk, ButtonGroup btnGroup) {
@@ -1629,7 +1647,7 @@ public class Player {
                 engLabel.setText(info);
             }
             Log.p(info);
-            mainForm.repaint();
+            widget.repaint();
         }
 
         void showHelp(int category) {

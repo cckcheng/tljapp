@@ -70,6 +70,10 @@ public class TuoLaJi {
     }
 
     public Form formMain = null;
+    public Form formTable = null;
+    public Form formHelp = null;
+    public Form formTutor = null;
+
     private Label lbTitle;
     private Button btnTutor = null;
     private Button btnPlay = null;
@@ -112,6 +116,14 @@ public class TuoLaJi {
         if (this.player != null) {
             this.player.refreshLang();
         }
+    }
+
+    public void validateTable() {
+        this.table.revalidate();
+    }
+
+    public Form getCurrentForm() {
+        return this.isMainForm ? this.formMain : this.formTable;
     }
 
     private Player player = null;
@@ -298,20 +310,25 @@ public class TuoLaJi {
         entry.add(this.btnTutor);
         entry.add(this.btnPlay);
         entry.add(this.btnHelp)
-                .add(this.btnSetting)
-                .add(this.btnExit);
+                .add(this.btnSetting);
+//                .add(this.btnExit);
         entry.add(BoxLayout.encloseX(rbEn, rbZh));
 
         mainForm.add(BorderLayout.CENTER, entry);
         this.currentComp = entry;
         mainForm.show();
 
+        this.formTable = new Form(new LayeredLayout());
+        this.formTable.getStyle().setBgColor(BACKGROUND_COLOR);
+        this.formTable.getToolbar().hideToolbar();
+        this.formTable.addComponent(this.table);
+
         this.player.connectServer(false);
     }
 
     void showPlayOption() {
         Object sgObj = Storage.getInstance().readObject("playerName");
-        TextField pName = new TextField("", Dict.get(lang, "Your Name")
+        final TextField pName = new TextField("Your Name", Dict.get(lang, "Your Name")
                 + "(" + Dict.get(lang, Dict.PNAME) + ")", 16, TextArea.ANY);
         pName.setMaxSize(16);
         if (sgObj != null) {
@@ -374,7 +391,40 @@ public class TuoLaJi {
     }
 
     private Component currentComp;
+    private boolean isMainForm = true;
+
     public void switchScene(final String scene) {
+        isMainForm = false;
+        switch (scene) {
+            case "entry":
+                this.formMain.showBack();
+                isMainForm = true;
+                break;
+            case "table":
+                this.formTable.show();
+                this.formTable.repaint();
+                break;
+            case "help":
+                this.formHelp.show();
+                break;
+            case "tutor":
+                if (this.formTutor == null) {
+                    this.formTutor = new Form("Tutor", new BorderLayout());
+                    this.formTutor.getStyle().setBgColor(BACKGROUND_COLOR);
+                    this.formTutor.getToolbar().hideToolbar();
+                    this.formTutor.addComponent(BorderLayout.CENTER, this.tutor);
+                    this.tutor.showTopic();
+                }
+
+                this.formTutor.show();
+                break;
+        }
+
+//        this.formMain.setGlassPane(null);
+//        this.formMain.repaint();
+    }
+
+    public void switchSceneDeprecated(final String scene) {
 //        this.formMain.removeAll();
         switch (scene) {
             case "entry":
@@ -489,9 +539,20 @@ public class TuoLaJi {
             ((Dialog)current).dispose();
             current = getCurrentForm();
         }
+
+        if (this.isMainForm) {
+            if (this.player != null) {
+                player.disconnect();
+            }
+            Display.getInstance().exitApplication();
+        }
     }
 
     public void destroy() {
+        if (this.player != null) {
+            player.disconnect();
+        }
+        Display.getInstance().exitApplication();
     }
 
     private String currentLang;
@@ -499,6 +560,10 @@ public class TuoLaJi {
     private void showHelp(final String lang) {
         if (this.help == null) {
             this.help = new Container(new LayeredLayout());
+            this.formHelp = new Form(new BorderLayout());
+            this.formHelp.getStyle().setBgColor(BACKGROUND_COLOR);
+            this.formHelp.getToolbar().hideToolbar();
+            this.formHelp.addComponent(BorderLayout.CENTER, this.help);
         } else {
             if (lang.equals(currentLang)) {
                 this.switchScene("help");

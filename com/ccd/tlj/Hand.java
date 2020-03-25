@@ -3,6 +3,7 @@ package com.ccd.tlj;
 import com.codename1.io.Log;
 import com.codename1.ui.Button;
 import com.codename1.ui.Component;
+import com.codename1.ui.Display;
 import com.codename1.ui.Font;
 import com.codename1.ui.Graphics;
 import java.util.ArrayList;
@@ -89,10 +90,28 @@ public class Hand extends Component {
     private void init() {
         int w = getWidth();
         int h = getHeight();
-        if (h > w) w = h;
-        this.cardWidth = w / 19;
-        this.cardHeight = this.cardWidth * 3 / 2;
-        this.xPitch = w / MAX_CARDS;
+        int wAlt = Display.getInstance().getDisplayWidth();
+        int hAlt = Display.getInstance().getDisplayHeight();
+        if (h > w) {
+            int tmp = w;
+            w = h;
+            h = tmp;
+        }
+
+        int w00 = w / 19;
+        int h00 = w00 * 3 / 2;
+        int h01 = h / 7;
+
+        if (h01 < h00) {
+            this.cardHeight = h01;
+            this.cardWidth = this.cardHeight * 2 / 3;
+        } else {
+            this.cardWidth = w00;
+            this.cardHeight = h00;
+        }
+
+//        this.xPitch = w / MAX_CARDS;
+        this.xPitch = this.cardWidth * 2 / 3;
         this.yPitch = (this.cardHeight - 10) / 5;
 
         this.hReserved = this.yPitch * 2 + 10;
@@ -664,13 +683,14 @@ public class Hand extends Component {
             g.setFont(fontRank);
             String s = c.rankToString();
             if (s.length() < 2) {
-                g.drawString(s, x0 + 2, y0);
+                g.drawString(s, x0 + 2, y0 - 3);
             } else {
-                g.drawString("" + s.charAt(0), x0 - 5, y0);
-                g.drawString("" + s.charAt(1), x0 + 20, y0);
+                g.drawString("" + s.charAt(0), x0 - 5, y0 - 3);
+                g.drawString("" + s.charAt(1), x0 + 20, y0 - 3);
             }
             g.setFont(fontSymbol);
-            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontRank.getHeight() - 5);
+//            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontRank.getHeight() - 5);
+            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontGeneral.getHeight());
         } else {
             g.setFont(fontSymbol);
             x0 += 5;
