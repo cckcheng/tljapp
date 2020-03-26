@@ -47,6 +47,7 @@ public class Player {
     static final String PARTNER = "帮";
 
 //    static final int POINT_COLOR = 0xd60e90;
+    static final int BLACK_COLOR = 0x00000;
     static final int GREY_COLOR = 0x505050;
     static final int INFO_COLOR = 0xa1ebfc;
     static final int POINT_COLOR = 0x3030ff;
@@ -429,9 +430,12 @@ public class Player {
             mySocket.addRequest(actionRobot, "\"on\":1");
         }
 
-//        main.validateTable();
+        hand.repaint();
         this.widget.revalidate();
-        if (Card.DEBUG_MODE) Log.p("refresh table: done");
+        main.validateTable();
+        if (Card.DEBUG_MODE) {
+            Log.p("refresh table: done");
+        }
     }
 
     private void startNotifyTimer(Map<String, Object> data) {
@@ -502,6 +506,7 @@ public class Player {
 
         this.lbGeneral = new Label("Game ");
         this.lbGeneral.getStyle().setFont(Hand.fontGeneral);
+        this.lbGeneral.getStyle().setFgColor(BLACK_COLOR);
 
         String gmInfo = "gmInfo";
         String ptInfo = "ptInfo";
@@ -525,13 +530,14 @@ public class Player {
 
         this.widget.add(bExit).add(this.lbGeneral).add(this.gameInfo).add(this.partnerInfo).add(this.pointsInfo);
         this.widget.add(bRobot);
+
         LayeredLayout ll = (LayeredLayout) table.getLayout();
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
         ll.setInsets(bRobot, "auto 0 0 auto");   //top right bottom left
-        ll.setInsets(this.lbGeneral, "0 auto auto 0")
-                .setInsets(this.partnerInfo, "0 0 auto auto")
+        ll.setInsets(this.lbGeneral, "-" + Hand.deltaGeneral + " auto auto 0")
+                .setInsets(this.partnerInfo, "-" + Hand.deltaGeneral + " 0 auto auto")
                 .setInsets(this.pointsInfo, "0 auto auto 20%")
-                .setInsets(this.gameInfo, "0 auto auto 0");
+                .setInsets(this.gameInfo, "-" + Hand.deltaRank + " auto auto 0");
         ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
         ll.setReferenceComponentTop(this.partnerInfo, bExit, 1f);
 
@@ -715,13 +721,14 @@ public class Player {
     private void showInfo(Map<String, Object> data) {
         final Form curForm = main.getCurrentForm();
         final String info = trimmedString(data.get("info"));
-        int x = hand.displayWidth(6) + 15;
         if (!info.isEmpty() && !info.equals(".")) {
+            int fontHeight = Hand.fontGeneral.getHeight();
+            int x = main.isMainForm ? fontHeight : hand.displayWidth(6) + 15;
             curForm.setGlassPane((g, rect) -> {
                 g.setColor(INFO_COLOR);
                 g.setFont(Hand.fontGeneral);
                 int idx = -1;
-                int y = this.infoLst.get(2).posY();
+                int y = main.isMainForm ? fontHeight * 2 : this.infoLst.get(2).posY();
                 String str = info;
                 while (!str.isEmpty()) {
                     idx = str.indexOf("\n");
@@ -731,7 +738,7 @@ public class Player {
                         g.drawString(str, x, y);
                         break;
                     }
-                    y += Hand.fontGeneral.getHeight();
+                    y += fontHeight;
                     str = str.substring(idx + 1);
                 }
             });
@@ -1134,6 +1141,8 @@ public class Player {
             this.location = loc;
 
             mainInfo = new Label(loc);
+            mainInfo.getAllStyles().setFgColor(BLACK_COLOR);
+            mainInfo.getAllStyles().setFont(Hand.fontPlain);
 
             points = new Label("        ");
             points.getAllStyles().setFont(Hand.fontRank);
@@ -1439,8 +1448,8 @@ public class Player {
             } else {
                 this.points.getStyle().setFgColor(POINT_COLOR);
             }
-//            parent.revalidate();
-            this.points.repaint();
+            parent.revalidate();
+//            this.points.repaint();
         }
 
         int maxBid = -1;
@@ -1562,6 +1571,7 @@ public class Player {
                 actionButtons.setVisible(true);
 //                buttonContainer.setShouldCalcPreferredSize(true); // not work
 //                central.repaint();    // no difference
+                buttonContainer.revalidate();
             }
 
             parent.revalidate();
@@ -1610,6 +1620,8 @@ public class Player {
 
         String curLang;
         UserHelp(String lang) {
+            chnLabel.getAllStyles().setFgColor(BLACK_COLOR);
+            engLabel.getAllStyles().setFgColor(BLACK_COLOR);
             chnLabel.getAllStyles().setAlignment(Component.CENTER);
             engLabel.getAllStyles().setAlignment(Component.CENTER);
             this.setLayout(new BoxLayout(BoxLayout.Y_AXIS_BOTTOM_LAST));

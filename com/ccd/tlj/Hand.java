@@ -658,10 +658,16 @@ public class Hand extends Component {
     int blackColor = 0x000000;
     int redColor = 0xff0000;
     int whiteColor = 0xffffff;
-    static public Font fontRank = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_LARGE);
-    static public Font fontGeneral = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_MEDIUM);
-    static public Font fontSymbol = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_SMALL);
+    static final int fontFace = Font.FACE_SYSTEM;
+//    static final int fontFace = Font.FACE_PROPORTIONAL;
+//    static final int fontFace = Font.FACE_MONOSPACE;
+    static public Font fontRank = Font.createSystemFont(fontFace, Font.STYLE_BOLD, Font.SIZE_LARGE);
+    static public Font fontGeneral = Font.createSystemFont(fontFace, Font.STYLE_BOLD, Font.SIZE_MEDIUM);
+    static public Font fontSymbol = Font.createSystemFont(fontFace, Font.STYLE_BOLD, Font.SIZE_SMALL);
+    static public Font fontPlain = Font.createSystemFont(fontFace, Font.STYLE_PLAIN, Font.SIZE_MEDIUM);
 
+    static final int deltaRank = fontRank.getDescent();
+    static final int deltaGeneral = fontGeneral.getDescent();
     private void drawCard(Graphics g, Card c, int cardW, int cardH, boolean selfHand) {
         int x0 = 5;
 //        int y0 = -cardH;
@@ -683,14 +689,15 @@ public class Hand extends Component {
             g.setFont(fontRank);
             String s = c.rankToString();
             if (s.length() < 2) {
-                g.drawString(s, x0 + 2, y0 - 3);
+                g.drawString(s, x0 + 2, y0 - deltaRank + cardH / 20);
             } else {
-                g.drawString("" + s.charAt(0), x0 - 5, y0 - 3);
-                g.drawString("" + s.charAt(1), x0 + 20, y0 - 3);
+                g.drawString("" + s.charAt(0), x0 - 5, y0 - deltaRank + cardH / 20);
+                g.drawString("" + s.charAt(1), x0 + 20, y0 - deltaRank + cardH / 20);
             }
             g.setFont(fontSymbol);
 //            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontRank.getHeight() - 5);
-            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontGeneral.getHeight());
+//            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontGeneral.getHeight());
+            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + cardH / 2);
         } else {
             g.setFont(fontSymbol);
             x0 += 5;
