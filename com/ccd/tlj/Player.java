@@ -430,8 +430,8 @@ public class Player {
             mySocket.addRequest(actionRobot, "\"on\":1");
         }
 
-        hand.repaint();
-        this.widget.revalidate();
+//        hand.repaint();
+//        this.widget.revalidate();
         main.validateTable();
         if (Card.DEBUG_MODE) {
             Log.p("refresh table: done");

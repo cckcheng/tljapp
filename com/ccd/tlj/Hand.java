@@ -127,6 +127,11 @@ public class Hand extends Component {
 //        this.yPL2 = this.yPR2 = getY() + h / 2 - 20;
 //        this.xPopp = getX() + w / 4;
 //        this.yPopp = getY() + h / 4 - 20;
+
+//        if (fontRank.getHeight() > this.cardHeight / 2) {
+//            this.xFontRank = fontGeneral;
+//            this.xDeltaRank = deltaGeneral;
+//        }
     }
 
     public void addCard(Card c) {
@@ -668,6 +673,10 @@ public class Hand extends Component {
 
     static final int deltaRank = fontRank.getDescent();
     static final int deltaGeneral = fontGeneral.getDescent();
+
+    Font xFontRank = fontRank;
+    int xDeltaRank = deltaRank;
+
     private void drawCard(Graphics g, Card c, int cardW, int cardH, boolean selfHand) {
         int x0 = 5;
 //        int y0 = -cardH;
@@ -686,13 +695,13 @@ public class Hand extends Component {
         }
 
         if (c.rank < Card.SmallJokerRank) {
-            g.setFont(fontRank);
+            g.setFont(this.xFontRank);
             String s = c.rankToString();
             if (s.length() < 2) {
-                g.drawString(s, x0 + 2, y0 - deltaRank + cardH / 20);
+                g.drawString(s, x0 + 2, y0 - this.xDeltaRank + cardH / 20);
             } else {
-                g.drawString("" + s.charAt(0), x0 - 5, y0 - deltaRank + cardH / 20);
-                g.drawString("" + s.charAt(1), x0 + 20, y0 - deltaRank + cardH / 20);
+                g.drawString("" + s.charAt(0), x0 - 5, y0 - this.xDeltaRank + cardH / 20);
+                g.drawString("" + s.charAt(1), x0 + cardW * 2 / 7, y0 - this.xDeltaRank + cardH / 20);
             }
             g.setFont(fontSymbol);
 //            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontRank.getHeight() - 5);
@@ -812,7 +821,7 @@ public class Hand extends Component {
 
         Button b = player.infoLst.get(0).btnPlay;
         if (b.isVisible()) {
-            if (b.getName().equals("bury")) {
+            if (b.getName() != null && b.getName().equals("bury")) {
                 b.setEnabled(this.selected.size() == 6);
             } else {
                 if (isFirst) {
