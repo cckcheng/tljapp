@@ -6,6 +6,7 @@ import com.codename1.ui.Component;
 import com.codename1.ui.Display;
 import com.codename1.ui.Font;
 import com.codename1.ui.Graphics;
+import com.codename1.ui.plaf.Style;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -77,12 +78,6 @@ public class Hand extends Component {
 //    int yPL2 = 0;   // left player 2 coodinate
 //    int xPopp = 0;   // oppisite player coodinate
 //    int yPopp = 0;   // opposite player coodinate
-
-    public void cancelRepaint() {
-        // this is no effect!!
-        this.cancelRepaints();
-    }
-
     public void setIsReady(boolean isReady) {
         this.isReady = isReady;
     }
@@ -288,7 +283,7 @@ public class Hand extends Component {
         }
         this.selected.clear();
         resortOnDemand();
-        this.repaint();
+//        this.repaint();
     }
 
     synchronized public void autoSelectCards() {
@@ -365,7 +360,7 @@ public class Hand extends Component {
             return;
         }
         this.selected.addAll(preSelection);
-        this.repaint();
+//        this.repaint();
     }
 
     synchronized public void removeCards(String cards) {
@@ -385,7 +380,7 @@ public class Hand extends Component {
             resortOnDemand();
         }
 
-        this.repaint();
+//        this.repaint();
     }
 
     private boolean needResort = true;
@@ -500,7 +495,7 @@ public class Hand extends Component {
         }
         splitSuites(trumpSuite);
 
-        this.repaint();
+//        this.repaint();
     }
 
     private void splitSuites(char trumpSuite) {
@@ -730,10 +725,11 @@ public class Hand extends Component {
 */
 
     @Override
-    synchronized public void paintBackground(Graphics g) {
+    synchronized public void paint(Graphics g) {
+//        this.getStyle().setBgTransparency(0);
         g.translate(-g.getTranslateX(), -g.getTranslateY());
-        g.setColor(TuoLaJi.BACKGROUND_COLOR);
-        g.fillRect(0, 0, getX() + getWidth(), getY() + getHeight());
+//        g.setColor(TuoLaJi.BACKGROUND_COLOR);
+//        g.fillRect(0, 0, getX() + getWidth(), getY() + getHeight());
         if (!this.isReady) {
             return;
         }
@@ -801,6 +797,7 @@ public class Hand extends Component {
 
     @Override
     synchronized public void pointerPressed(int x, int y) {
+        this.getStyle().setBgTransparency(0);
         if(!this.player.isPlaying) return;
         int y0 = getY() + getHeight() - hReserved;
         int y1 = y0 - cardHeight;
