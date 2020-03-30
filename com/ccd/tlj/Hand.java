@@ -6,6 +6,7 @@ import com.codename1.ui.Component;
 import com.codename1.ui.Display;
 import com.codename1.ui.Font;
 import com.codename1.ui.Graphics;
+import com.codename1.ui.plaf.Style;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -77,12 +78,6 @@ public class Hand extends Component {
 //    int yPL2 = 0;   // left player 2 coodinate
 //    int xPopp = 0;   // oppisite player coodinate
 //    int yPopp = 0;   // opposite player coodinate
-
-    public void cancelRepaint() {
-        // this is no effect!!
-        this.cancelRepaints();
-    }
-
     public void setIsReady(boolean isReady) {
         this.isReady = isReady;
     }
@@ -127,6 +122,11 @@ public class Hand extends Component {
 //        this.yPL2 = this.yPR2 = getY() + h / 2 - 20;
 //        this.xPopp = getX() + w / 4;
 //        this.yPopp = getY() + h / 4 - 20;
+
+//        if (fontRank.getHeight() > this.cardHeight / 2) {
+//            this.xFontRank = fontGeneral;
+//            this.xDeltaRank = deltaGeneral;
+//        }
     }
 
     public void addCard(Card c) {
@@ -283,7 +283,7 @@ public class Hand extends Component {
         }
         this.selected.clear();
         resortOnDemand();
-        this.repaint();
+//        this.repaint();
     }
 
     synchronized public void autoSelectCards() {
@@ -360,7 +360,7 @@ public class Hand extends Component {
             return;
         }
         this.selected.addAll(preSelection);
-        this.repaint();
+//        this.repaint();
     }
 
     synchronized public void removeCards(String cards) {
@@ -380,7 +380,7 @@ public class Hand extends Component {
             resortOnDemand();
         }
 
-        this.repaint();
+//        this.repaint();
     }
 
     private boolean needResort = true;
@@ -495,7 +495,7 @@ public class Hand extends Component {
         }
         splitSuites(trumpSuite);
 
-        this.repaint();
+//        this.repaint();
     }
 
     private void splitSuites(char trumpSuite) {
@@ -668,6 +668,10 @@ public class Hand extends Component {
 
     static final int deltaRank = fontRank.getDescent();
     static final int deltaGeneral = fontGeneral.getDescent();
+
+    Font xFontRank = fontRank;
+    int xDeltaRank = deltaRank;
+
     private void drawCard(Graphics g, Card c, int cardW, int cardH, boolean selfHand) {
         int x0 = 5;
 //        int y0 = -cardH;
@@ -686,13 +690,13 @@ public class Hand extends Component {
         }
 
         if (c.rank < Card.SmallJokerRank) {
-            g.setFont(fontRank);
+            g.setFont(this.xFontRank);
             String s = c.rankToString();
             if (s.length() < 2) {
-                g.drawString(s, x0 + 2, y0 - deltaRank + cardH / 20);
+                g.drawString(s, x0 + 2, y0 - this.xDeltaRank + cardH / 20);
             } else {
-                g.drawString("" + s.charAt(0), x0 - 5, y0 - deltaRank + cardH / 20);
-                g.drawString("" + s.charAt(1), x0 + 20, y0 - deltaRank + cardH / 20);
+                g.drawString("" + s.charAt(0), x0 - 5, y0 - this.xDeltaRank + cardH / 20);
+                g.drawString("" + s.charAt(1), x0 + cardW * 2 / 7, y0 - this.xDeltaRank + cardH / 20);
             }
             g.setFont(fontSymbol);
 //            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontRank.getHeight() - 5);
@@ -721,10 +725,11 @@ public class Hand extends Component {
 */
 
     @Override
-    synchronized public void paintBackground(Graphics g) {
+    synchronized public void paint(Graphics g) {
+//        this.getStyle().setBgTransparency(0);
         g.translate(-g.getTranslateX(), -g.getTranslateY());
-        g.setColor(TuoLaJi.BACKGROUND_COLOR);
-        g.fillRect(0, 0, getX() + getWidth(), getY() + getHeight());
+//        g.setColor(TuoLaJi.BACKGROUND_COLOR);
+//        g.fillRect(0, 0, getX() + getWidth(), getY() + getHeight());
         if (!this.isReady) {
             return;
         }
@@ -792,6 +797,7 @@ public class Hand extends Component {
 
     @Override
     synchronized public void pointerPressed(int x, int y) {
+        this.getStyle().setBgTransparency(0);
         if(!this.player.isPlaying) return;
         int y0 = getY() + getHeight() - hReserved;
         int y1 = y0 - cardHeight;
@@ -812,7 +818,7 @@ public class Hand extends Component {
 
         Button b = player.infoLst.get(0).btnPlay;
         if (b.isVisible()) {
-            if (b.getName().equals("bury")) {
+            if (b.getName() != null && b.getName().equals("bury")) {
                 b.setEnabled(this.selected.size() == 6);
             } else {
                 if (isFirst) {

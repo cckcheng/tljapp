@@ -430,8 +430,8 @@ public class Player {
             mySocket.addRequest(actionRobot, "\"on\":1");
         }
 
-        hand.repaint();
-        this.widget.revalidate();
+//        hand.repaint();
+//        this.widget.revalidate();
         main.validateTable();
         if (Card.DEBUG_MODE) {
             Log.p("refresh table: done");
@@ -523,13 +523,13 @@ public class Player {
         this.pointsInfo.getStyle().setFgColor(POINT_COLOR);
         this.pointsInfo.getStyle().setFont(Hand.fontRank);
 
-        table.add(hand);
-
         this.widget = new Container(new LayeredLayout());
-        table.add(this.widget);
 
         this.widget.add(bExit).add(this.lbGeneral).add(this.gameInfo).add(this.partnerInfo).add(this.pointsInfo);
         this.widget.add(bRobot);
+
+        table.add(hand);
+        table.add(this.widget);
 
         LayeredLayout ll = (LayeredLayout) table.getLayout();
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
@@ -544,6 +544,8 @@ public class Player {
         for (PlayerInfo pp : infoLst) {
             pp.addItems(this.widget);
         }
+
+        table.forceRevalidate();
     }
 
     public void refreshLang() {

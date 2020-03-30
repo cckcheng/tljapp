@@ -119,7 +119,7 @@ public class TuoLaJi {
     }
 
     public void validateTable() {
-        this.table.revalidate();
+        this.table.forceRevalidate();
     }
 
     public Form getCurrentForm() {
