@@ -527,9 +527,12 @@ public class Player {
 
         this.widget.add(bExit).add(this.lbGeneral).add(this.gameInfo).add(this.partnerInfo).add(this.pointsInfo);
         this.widget.add(bRobot);
+        this.widget.revalidate();
 
         table.add(hand);
+        table.revalidate();
         table.add(this.widget);
+        table.revalidate();
 
         LayeredLayout ll = (LayeredLayout) table.getLayout();
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
@@ -761,6 +764,7 @@ public class Player {
         int points = parseInteger(data.get("pt0")); // total points by non-contract players
         if (points != -1) {
             this.pointsInfo.setText(points + Dict.get(main.lang, " points"));
+            this.widget.revalidate();
         }
 
         int pointSeat = parseInteger(data.get("pseat"));
@@ -1402,6 +1406,7 @@ public class Player {
                     break;
             }
 
+            parent.revalidate();
         }
 
         void setMainInfo(int seat, String playerName, int rank) {
@@ -1507,6 +1512,7 @@ public class Player {
                             buttonContainer.removeAll();
                             buttonContainer.add(BorderLayout.CENTER, btnPlay);
                             actionButtons = btnPlay;
+                            buttonContainer.revalidate();
                         }
                     } else {
                         bidButtons.setEnabled(true);
@@ -1514,6 +1520,7 @@ public class Player {
                             buttonContainer.removeAll();
                             buttonContainer.add(BorderLayout.CENTER, bidButtons);
                             actionButtons = bidButtons;
+                            buttonContainer.revalidate();
                         }
                         this.maxBid = contractPoint - 5;
                         btnBid.setText("" + this.maxBid);
@@ -1555,6 +1562,7 @@ public class Player {
                         buttonContainer.removeAll();
                         buttonContainer.add(BorderLayout.CENTER, btnPlay);
                         actionButtons = btnPlay;
+                        buttonContainer.revalidate();
                     }
                 } else if (act.equals("play")) {
                     btnPlay.setName("play");
@@ -1564,6 +1572,7 @@ public class Player {
                         buttonContainer.removeAll();
                         buttonContainer.add(BorderLayout.CENTER, btnPlay);
                         actionButtons = btnPlay;
+                        buttonContainer.revalidate();
                     }
                 } else {
                     // not supported
@@ -1602,6 +1611,7 @@ public class Player {
             this.contractor.getAllStyles().setFgColor(RED_COLOR);
             this.contractor.setText(txt);
             this.isContractSide = true;
+            parent.revalidate();
         }
     }
 
