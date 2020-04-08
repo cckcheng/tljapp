@@ -20,6 +20,7 @@ import com.codename1.ui.Graphics;
 import com.codename1.ui.Label;
 import com.codename1.ui.RadioButton;
 import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.geom.Rectangle;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.LayeredLayout;
@@ -230,12 +231,47 @@ public class Player {
         return part;
     }
 
+    private void displayPartnerDef(String def) {
+        if (def.isEmpty()) {
+            return;
+        }
+        String part = Dict.get(main.lang, "1 vs 5");
+        if (def.length() >= 3) {
+            char seq = def.charAt(2);
+            part = Card.suiteSign(def.charAt(0)) + def.charAt(1);
+            this.partnerCard.setText(part);
+            if (def.charAt(0) == Card.HEART || def.charAt(0) == Card.DIAMOND) {
+                this.partnerCard.getStyle().setFgColor(RED_COLOR);
+            } else {
+                this.partnerCard.getStyle().setFgColor(BLACK_COLOR);
+            }
+            switch (seq) {
+                case '0':
+                    part = Dict.get(main.lang, " 1st");
+                    break;
+                case '1':
+                    part = Dict.get(main.lang, " 2nd");
+                    break;
+                case '2':
+                    part = Dict.get(main.lang, " 3rd");
+                    break;
+                case '3':
+                    part = Dict.get(main.lang, " 4th");
+                    break;
+            }
+            this.partnerCardSeq.setText(Dict.get(main.lang, "Partner") + ":" + part);
+        } else {
+            this.partnerCardSeq.setText(part);
+        }
+    }
+
     private void definePartner(Map<String, Object> data) {
         int seat = parseInteger(data.get("seat"));
         PlayerInfo pp = this.playerMap.get(seat);
         if (pp != null) pp.showTimer(timeout, 0, "play");
         String def = trimmedString(data.get("def"));
-        this.partnerInfo.setText(partnerDef(def));
+//        this.partnerCard.setText(partnerDef(def));
+        this.displayPartnerDef(def);
         this.widget.revalidate();
     }
 
@@ -278,8 +314,12 @@ public class Player {
     private int currentSeat;
     private Hand hand;
     private Label lbGeneral;
-    private Label gameInfo;
-    private Label partnerInfo;
+    private Container gameInfo;
+    private Container partnerInfo;
+    private Label contractInfo;
+    private Label trumpInfo;
+    private Label partnerCardSeq;
+    private Label partnerCard;
     private Label pointsInfo;
     private Button bExit;
     private CheckBox bRobot;
@@ -296,8 +336,10 @@ public class Player {
         contractPoint = -1;
         playerRank = 0;
         currentSeat = 0;
-        gameInfo.setText(" ");
-        partnerInfo.setText(" ");
+        contractInfo.setText(" ");
+        trumpInfo.setText(" ");
+        partnerCardSeq.setText(" ");
+        partnerCard.setText(" ");
         pointsInfo.setText(" ");
         for (PlayerInfo pp : this.infoLst) {
             pp.reset();
@@ -372,28 +414,35 @@ public class Player {
 
         lbGeneral.setText(main.lang.equalsIgnoreCase("zh") ? "第" + game + "局" : "Game " + game);
 
-        String gmInfo = " ";
-        String ptInfo = " ";
+        String trumpInfo = "";
+//        String ptInfo = " ";
         String pointInfo = " ";
         int actTime = parseInteger(data.get("acttime"));
         String act = trimmedString(data.get("act"));
         if (this.isPlaying) {
             p0.needChangeActions = true;
-            gmInfo = this.contractPoint + " ";
             if (!act.equals("dim")) {
                 if (trumpSuite == Card.JOKER) {
-                    gmInfo += "NT ";
+                    trumpInfo += "NT ";
                 } else {
-                    gmInfo += Card.suiteSign(trumpSuite);
+                    trumpInfo += Card.suiteSign(trumpSuite);
                 }
-                gmInfo += Card.rankToString(gameRank);
+                trumpInfo += Card.rankToString(gameRank);
             }
-            ptInfo = this.partnerDef(trimmedString(data.get("def")));
+//            ptInfo = this.partnerDef(trimmedString(data.get("def")));
+            this.displayPartnerDef(trimmedString(data.get("def")));
             int points = parseInteger(data.get("pt0"));
             pointInfo = points + Dict.get(main.lang, " points");
+
+            this.contractInfo.setText(this.contractPoint + "");
+            this.trumpInfo.setText(trumpInfo);
+            if (trumpSuite == Card.HEART || trumpSuite == Card.DIAMOND) {
+                this.trumpInfo.getStyle().setFgColor(RED_COLOR);
+            } else {
+                this.trumpInfo.getStyle().setFgColor(BLACK_COLOR);
+            }
         }
-        this.gameInfo.setText(gmInfo);
-        this.partnerInfo.setText(ptInfo);
+//        this.partnerCard.setText(ptInfo);
         this.pointsInfo.setText(pointInfo);
 
         PlayerInfo pp = this.playerMap.get(actionSeat);
@@ -512,12 +561,21 @@ public class Player {
         String ptInfo = "ptInfo";
         String pointInfo = "pointInfo";
 
-        this.gameInfo = new Label(gmInfo);
-        this.gameInfo.getStyle().setFgColor(0xebef07);
-        this.gameInfo.getStyle().setFont(Hand.fontRank);
-        this.partnerInfo = new Label(ptInfo);
-        this.partnerInfo.getStyle().setFgColor(INFO_COLOR);
-        this.partnerInfo.getStyle().setFont(Hand.fontGeneral);
+        this.gameInfo = new Container();
+        this.contractInfo = new Label(gmInfo);
+        this.trumpInfo = new Label(gmInfo);
+        this.contractInfo.getStyle().setFgColor(0xebef07);
+        this.contractInfo.getStyle().setFont(Hand.fontRank);
+        this.trumpInfo.getStyle().setFont(Hand.fontRank);
+        this.gameInfo.add(this.contractInfo).add(this.trumpInfo);
+
+        this.partnerInfo = new Container();
+        this.partnerCardSeq = new Label(ptInfo);
+        this.partnerCard = new Label(ptInfo);
+        this.partnerCardSeq.getStyle().setFgColor(INFO_COLOR);
+        this.partnerCardSeq.getStyle().setFont(Hand.fontRank);
+        this.partnerCard.getStyle().setFont(Hand.fontRank);
+        this.partnerInfo.add(this.partnerCardSeq).add(this.partnerCard);
 
         this.pointsInfo = new Label(pointInfo);
         this.pointsInfo.getStyle().setFgColor(POINT_COLOR);
@@ -684,9 +742,11 @@ public class Player {
         hand.repaint();
         this.infoLst.get(0).needChangeActions = true;
 
-        int x = hand.displayWidth(6) + 15;
+        int x = hand.displayWidth(6) + Hand.fontRank.getHeight();
         if (!summary.isEmpty()) {
+            Rectangle safeRect = this.main.formTable.getSafeArea();
             this.main.formTable.setGlassPane((g, rect) -> {
+                g.translate(safeRect.getX(), safeRect.getY());
                 g.setColor(INFO_COLOR);
                 g.setFont(Hand.fontGeneral);
                 int idx = -1;
@@ -703,6 +763,7 @@ public class Player {
                     y += Hand.fontGeneral.getHeight();
                     str = str.substring(idx + 1);
                 }
+                g.translate(-g.getTranslateX(), -g.getTranslateY());
             });
         }
     }
@@ -724,12 +785,15 @@ public class Player {
     }
 
     private void showInfo(Map<String, Object> data) {
-        final Form curForm = main.getCurrentForm();
+        final Form curForm = main.getCurForm();
         final String info = trimmedString(data.get("info"));
+        Rectangle safeRect = curForm.getSafeArea();
         if (!info.isEmpty() && !info.equals(".")) {
             int fontHeight = Hand.fontGeneral.getHeight();
-            int x = main.isMainForm ? fontHeight : hand.displayWidth(6) + 15;
+            int x = main.isMainForm ? fontHeight : (hand.displayWidth(6) + fontHeight);
             curForm.setGlassPane((g, rect) -> {
+                g.translate(safeRect.getX(), safeRect.getY());
+
                 g.setColor(INFO_COLOR);
                 g.setFont(Hand.fontGeneral);
                 int idx = -1;
@@ -746,6 +810,7 @@ public class Player {
                     y += fontHeight;
                     str = str.substring(idx + 1);
                 }
+                g.translate(-g.getTranslateX(), -g.getTranslateY());
             });
         } else {
             curForm.setGlassPane(null);
@@ -868,14 +933,20 @@ public class Player {
             }
         }
 
-        String gmInfo = contractPoint + " ";
+        String trumpInfo = "";
         if (currentTrump == Card.JOKER) {
-            gmInfo += "NT ";
+            trumpInfo += "NT ";
         } else {
-            gmInfo += Card.suiteSign(currentTrump);
+            trumpInfo += Card.suiteSign(currentTrump);
         }
-        gmInfo += Card.rankToString(gameRank);
-        this.gameInfo.setText(gmInfo);
+        trumpInfo += Card.rankToString(gameRank);
+        this.contractInfo.setText(this.contractPoint + "");
+        this.trumpInfo.setText(trumpInfo);
+        if (currentTrump == Card.HEART || currentTrump == Card.DIAMOND) {
+            this.trumpInfo.getStyle().setFgColor(RED_COLOR);
+        } else {
+            this.trumpInfo.getStyle().setFgColor(BLACK_COLOR);
+        }
         this.isPlaying = true;
         this.widget.revalidate();
     }
@@ -1218,6 +1289,7 @@ public class Player {
 //                btnPassSingle.getAllStyles().setBgImage(backImage);
                 btnBid.getAllStyles().setBgImage(main.back);
                 btnPass.getAllStyles().setBgImage(main.back);
+                btnPass.getAllStyles().setFont(Hand.fontRank);
 //                btnPassSingle.getAllStyles().setBgImage(main.back);
 
                 btnBid.addActionListener((e) -> {
@@ -1245,6 +1317,7 @@ public class Player {
 //                btnPlay.setSize(new Dimension(100, 40)); // does not work
 //                btnPlay.getAllStyles().setBgImage(backImage);
                 btnPlay.getAllStyles().setBgImage(main.back);
+                btnPlay.getAllStyles().setFont(Hand.fontRank);
                 btnPlay.getAllStyles().setAlignment(Component.CENTER);
 
                 bidButtons = BoxLayout.encloseXNoGrow(btnPlus, btnBid, btnMinus, btnPass);
@@ -1388,7 +1461,7 @@ public class Player {
 //                    ll.setInsets(actionButtons, "auto auto 33% auto");
                     pane.add(central);
                     pane.add(userHelp);
-                    ll.setInsets(central, "auto auto 33% auto");
+                    ll.setInsets(central, "auto auto 35% auto");
 //                    pane.add(btnPlay);
 //                    ll.setInsets(btnPlay, "auto auto 33% auto");
 //                    btnPlay.setVisible(false);
@@ -1493,6 +1566,12 @@ public class Player {
                         } else {
                             btn.setText(Card.suiteSign(c));
                         }
+                        btn.getAllStyles().setFont(Hand.fontRank);
+                        if (c == Card.HEART || c == Card.DIAMOND) {
+                            btn.getAllStyles().setFgColor(RED_COLOR);
+                        } else {
+                            btn.getAllStyles().setFgColor(BLACK_COLOR);
+                        }
                         buttons.add(btn);
                         btn.addActionListener((e) -> {
                             cancelTimer();
@@ -1591,6 +1670,12 @@ public class Player {
         private void addCardButton(Container buttons, char suite, String rnk, ButtonGroup btnGroup) {
             if(suite != currentTrump) {
                 Button btn = new Button(Card.suiteSign(suite) + rnk, "suite" + suite);
+                btn.getAllStyles().setFont(Hand.fontRank);
+                if (suite == Card.HEART || suite == Card.DIAMOND) {
+                    btn.getAllStyles().setFgColor(RED_COLOR);
+                } else {
+                    btn.getAllStyles().setFgColor(BLACK_COLOR);
+                }
                 buttons.add(new Label("   "));
                 buttons.add(btn);
                 btn.addActionListener((e)->{

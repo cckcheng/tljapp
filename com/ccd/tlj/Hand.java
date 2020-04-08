@@ -127,6 +127,10 @@ public class Hand extends Component {
 //            this.xFontRank = fontGeneral;
 //            this.xDeltaRank = deltaGeneral;
 //        }
+        int preferedFontHeight = this.cardHeight * 2 / 5;
+        if (fontGeneral.getHeight() < preferedFontHeight) {
+            xFontSuit = fontGeneral;
+        }
     }
 
     public void addCard(Card c) {
@@ -669,6 +673,7 @@ public class Hand extends Component {
     static final int deltaRank = fontRank.getDescent();
     static final int deltaGeneral = fontGeneral.getDescent();
 
+    Font xFontSuit = fontSymbol;
     Font xFontRank = fontRank;
     int xDeltaRank = deltaRank;
 
@@ -698,7 +703,7 @@ public class Hand extends Component {
                 g.drawString("" + s.charAt(0), x0 - 5, y0 - this.xDeltaRank + cardH / 20);
                 g.drawString("" + s.charAt(1), x0 + cardW * 2 / 7, y0 - this.xDeltaRank + cardH / 20);
             }
-            g.setFont(fontSymbol);
+            g.setFont(this.xFontSuit);
 //            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontRank.getHeight() - 5);
 //            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontGeneral.getHeight());
             g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + cardH / 2);
@@ -772,10 +777,10 @@ public class Hand extends Component {
                 int yp = pp.posY();
                 switch (pp.location) {
                     case "top":
-                        g.translate((this.maxWidth - dWidth) / 2, yp);
+                        g.translate(x + (this.maxWidth - dWidth) / 2, yp);
                         break;
                     case "bottom":
-                        g.translate((this.maxWidth - dWidth) / 2, y1 - cardHeight - 10);
+                        g.translate(x + (this.maxWidth - dWidth) / 2, y1 - cardHeight - 10);
                         break;
                     case "left up":
                     case "left down":
@@ -783,7 +788,7 @@ public class Hand extends Component {
                         break;
                     case "right up":
                     case "right down":
-                        g.translate(getX() + getWidth() - dWidth - 10, yp);
+                        g.translate(x + getWidth() - dWidth - 10, yp);
                         break;
                 }
                 for (Card c : pp.cards) {

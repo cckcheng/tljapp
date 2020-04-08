@@ -67,12 +67,13 @@ public class Tutor extends Container {
             topics = allTopics();
 
             index = new Container(BoxLayout.y());
+            index.setSafeArea(true);
             index.setScrollableY(true);
 
             if (currentLang.equals("zh")) {
                 index.add(TuoLaJi.boldText("入门教程"));
             } else {
-                index.add("Before playing games, please finish this tutorial first:");
+                index.add(TuoLaJi.boldText("Before playing games, please finish this tutorial first:"));
             }
 
             GridLayout layout1 = new GridLayout(2);
@@ -95,6 +96,8 @@ public class Tutor extends Container {
 
             index.add(index1);
 //            index.add(index2);
+
+//            index.getAllStyles().setFgColor(0); // no effect
             this.add(index);
             Button bExit = new Button(Dict.get(main.lang, "Exit"));
             FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
@@ -268,6 +271,7 @@ public class Tutor extends Container {
             }
 
             if (content != null) {
+                dlg.setSafeArea(true);
                 dlg.add(BorderLayout.CENTER, content);
             }
             dlg.show(0, 0, 0, 0);
