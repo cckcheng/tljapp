@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<resource majorVersion="1" minorVersion="10" useXmlUI="false">
+    <image name="btn.png"  />
+    <image name="h2.png"  />
+    <theme name="Theme">
+        <val key="@includeNativeBool" value="true" />
+        <val key="myLabel.bgImage" value="btn.png" />
+        <val key="myLabel.bgType" value="24" />
+        <val key="myLabel.dis#bgImage" value="btn.png" />
+        <val key="myLabel.dis#bgType" value="24" />
+        <val key="myLabel.sel#bgImage" value="btn.png" />
+        <val key="myLabel.sel#bgType" value="24" />
+        <val key="myLabel.sel#fgColor" value="3333ff" />
+        <font key="myLabel.sel#font" type="system" face="0" style="0" size="0" />
+    </theme>
+</resource>

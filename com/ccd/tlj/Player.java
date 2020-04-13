@@ -263,6 +263,8 @@ public class Player {
         } else {
             this.partnerCardSeq.setText(part);
         }
+        this.partnerInfo.revalidate();
+        this.widget.revalidate();
     }
 
     private void definePartner(Map<String, Object> data) {
@@ -272,7 +274,6 @@ public class Player {
         String def = trimmedString(data.get("def"));
 //        this.partnerCard.setText(partnerDef(def));
         this.displayPartnerDef(def);
-        this.widget.revalidate();
     }
 
     private boolean isValid(List<Card> cards, UserHelp uh) {
@@ -414,7 +415,7 @@ public class Player {
 
         lbGeneral.setText(main.lang.equalsIgnoreCase("zh") ? "第" + game + "局" : "Game " + game);
 
-        String trumpInfo = "";
+        String strTrump = "";
 //        String ptInfo = " ";
         String pointInfo = " ";
         int actTime = parseInteger(data.get("acttime"));
@@ -423,11 +424,11 @@ public class Player {
             p0.needChangeActions = true;
             if (!act.equals("dim")) {
                 if (trumpSuite == Card.JOKER) {
-                    trumpInfo += "NT ";
+                    strTrump += "NT ";
                 } else {
-                    trumpInfo += Card.suiteSign(trumpSuite);
+                    strTrump += Card.suiteSign(trumpSuite);
                 }
-                trumpInfo += Card.rankToString(gameRank);
+                strTrump += Card.rankToString(gameRank);
             }
 //            ptInfo = this.partnerDef(trimmedString(data.get("def")));
             this.displayPartnerDef(trimmedString(data.get("def")));
@@ -435,7 +436,7 @@ public class Player {
             pointInfo = points + Dict.get(main.lang, " points");
 
             this.contractInfo.setText(this.contractPoint + "");
-            this.trumpInfo.setText(trumpInfo);
+            this.trumpInfo.setText(strTrump);
             if (trumpSuite == Card.HEART || trumpSuite == Card.DIAMOND) {
                 this.trumpInfo.getStyle().setFgColor(RED_COLOR);
             } else {
@@ -948,6 +949,7 @@ public class Player {
             this.trumpInfo.getStyle().setFgColor(BLACK_COLOR);
         }
         this.isPlaying = true;
+        this.gameInfo.revalidate();
         this.widget.revalidate();
     }
 
