@@ -180,7 +180,7 @@ public class TuoLaJi {
 //        back = back.scaledHeight(Hand.fontRank.getHeight());
 //        String onlineHelp = getHelp();
         disp.lockOrientation(false);
-//        disp.requestFullScreen();
+        disp.requestFullScreen();
         disp.setNoSleep(true);
         disp.setScreenSaverEnabled(false);
         disp.setBuiltinSoundsEnabled(true);
@@ -242,6 +242,9 @@ public class TuoLaJi {
 
         FontImage.setMaterialIcon(bPlay, FontImage.MATERIAL_PEOPLE);
         bPlay.addActionListener((e) -> {
+            if (!isLandscape()) {
+                return;
+            }
             Object sgObj = Storage.getInstance().readObject("playerName");
             if (sgObj == null) {
                 showPlayOption();
@@ -263,6 +266,9 @@ public class TuoLaJi {
         FontImage.setMaterialIcon(btnHelp, FontImage.MATERIAL_HELP);
 //        btnHelp.setEnabled(false);
         btnHelp.addActionListener((e) -> {
+            if (!isLandscape()) {
+                return;
+            }
             showHelp(lang);
         });
 
@@ -271,6 +277,9 @@ public class TuoLaJi {
         btnTutor.getAllStyles().setFont(Hand.fontRank);
         FontImage.setMaterialIcon(btnTutor, FontImage.MATERIAL_TOUCH_APP);
         btnTutor.addActionListener((e) -> {
+            if (!isLandscape()) {
+                return;
+            }
             this.switchScene("tutor");
         });
 
@@ -352,10 +361,10 @@ public class TuoLaJi {
         this.currentComp = entry;
         mainForm.show();
 
-        this.formTable = new Form(new LayeredLayout());
+        this.formTable = new Form("Table", new BorderLayout());
         this.formTable.getStyle().setBgColor(BACKGROUND_COLOR);
         this.formTable.getToolbar().hideToolbar();
-        this.formTable.addComponent(this.table);
+        this.formTable.add(BorderLayout.CENTER, this.table);
 
         this.player.connectServer(false);
     }
@@ -780,5 +789,20 @@ public class TuoLaJi {
             p.add(new Label(txt.substring(0, idx)));
             txt = txt.substring(idx + 1);
         }
+    }
+
+    public boolean isLandscape() {
+        int w = Display.getInstance().getDisplayWidth();
+        int h = Display.getInstance().getDisplayHeight();
+        if (w > h) {
+            return true;
+        }
+
+        if (lang.equals("zh")) {
+            Dialog.show("横屏", "请置于横屏模式", Dict.get(lang, "OK"), null);
+        } else {
+            Dialog.show("Landscape", "Please rotate to landscape", Dict.get(lang, "OK"), null);
+        }
+        return false;
     }
 }

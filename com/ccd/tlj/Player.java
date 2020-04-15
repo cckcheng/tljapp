@@ -530,6 +530,7 @@ public class Player {
         this.infoLst.add(new PlayerInfo("left down"));
 
         this.bExit = new Button(Dict.get(main.lang, "Exit"));
+        this.bExit.getAllStyles().setFont(Hand.fontGeneral);
         FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
         bExit.setUIID("myExit");
         bExit.addActionListener((e) -> {
@@ -542,6 +543,7 @@ public class Player {
         });
 
         this.bRobot = new CheckBox(Dict.get(main.lang, "Robot"));
+        this.bRobot.getAllStyles().setFont(Hand.fontGeneral);
         FontImage.setMaterialIcon(bRobot, FontImage.MATERIAL_ANDROID);
         bRobot.getAllStyles().setFgColor(INFO_COLOR);
         bRobot.addActionListener((e) -> {
@@ -597,7 +599,7 @@ public class Player {
         ll.setInsets(bExit, "0 0 auto auto");   //top right bottom left
         ll.setInsets(bRobot, "auto 0 0 auto");   //top right bottom left
         ll.setInsets(this.lbGeneral, "-" + Hand.deltaGeneral + " auto auto 0")
-                .setInsets(this.partnerInfo, "-" + Hand.deltaGeneral + " 0 auto auto")
+                .setInsets(this.partnerInfo, "-" + Hand.deltaRank + " 0 auto auto")
                 .setInsets(this.pointsInfo, "0 auto auto 20%")
                 .setInsets(this.gameInfo, "-" + Hand.deltaRank + " auto auto 0");
         ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
@@ -1412,11 +1414,12 @@ public class Player {
 
             LayeredLayout ll = (LayeredLayout) pane.getLayout();
 
+            int deltaY = -Hand.deltaRank;
             switch (this.location) {
                 case "left up":
                     ll.setInsets(mainInfo, "15% auto auto 0");  //top right bottom left
-                    ll.setInsets(points, "0 auto auto 20")
-                            .setInsets(timer, "0 auto auto 20")
+                    ll.setInsets(points, deltaY + " auto auto 20")
+                            .setInsets(timer, deltaY + " auto auto 20")
                             .setInsets(contractor, "14% auto auto 20");
                     ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
                             .setReferenceComponentTop(timer, mainInfo, 1f)
@@ -1424,8 +1427,8 @@ public class Player {
                     break;
                 case "left down":
                     ll.setInsets(mainInfo, "35% auto auto 0");
-                    ll.setInsets(points, "0 auto auto 20")
-                            .setInsets(timer, "0 auto auto 20")
+                    ll.setInsets(points, deltaY + " auto auto 20")
+                            .setInsets(timer, deltaY + " auto auto 20")
                             .setInsets(contractor, "34% auto auto 20");
                     ll.setReferenceComponentLeft(contractor, mainInfo, 1f)
                             .setReferenceComponentTop(timer, mainInfo, 1f)
@@ -1433,8 +1436,8 @@ public class Player {
                     break;
                 case "right up":
                     ll.setInsets(mainInfo, "15% 0 auto auto");
-                    ll.setInsets(points, "0 20 auto auto")
-                            .setInsets(timer, "0 20 auto auto")
+                    ll.setInsets(points, deltaY + " 20 auto auto")
+                            .setInsets(timer, deltaY + " 20 auto auto")
                             .setInsets(contractor, "14% 20 auto auto");
                     ll.setReferenceComponentRight(contractor, mainInfo, 1f)
                             .setReferenceComponentTop(timer, mainInfo, 1f)
@@ -1442,8 +1445,8 @@ public class Player {
                     break;
                 case "right down":
                     ll.setInsets(mainInfo, "35% 0 auto auto");
-                    ll.setInsets(points, "0 20 auto auto")
-                            .setInsets(timer, "0 20 auto auto")
+                    ll.setInsets(points, deltaY + " 20 auto auto")
+                            .setInsets(timer, deltaY + " 20 auto auto")
                             .setInsets(contractor, "34% 20 auto auto");
                     ll.setReferenceComponentRight(contractor, mainInfo, 1f)
                             .setReferenceComponentTop(timer, mainInfo, 1f)
@@ -1628,7 +1631,7 @@ public class Player {
                         cancelTimer();
                         mySocket.addRequest(actionPartner, "\"def\":\"0\"");
                     });
-                    buttons.add(new Label("   ")).add(btn);
+                    buttons.add(btn);
 
                     buttonContainer.removeAll();
                     buttonContainer.add(BorderLayout.CENTER, buttons);

@@ -123,13 +123,18 @@ public class Hand extends Component {
 //        this.xPopp = getX() + w / 4;
 //        this.yPopp = getY() + h / 4 - 20;
 
-//        if (fontRank.getHeight() > this.cardHeight / 2) {
+        int preferedFontHeight = this.cardHeight / 2;
+//        if (fontRank.getHeight() > preferedFontHeight) {
 //            this.xFontRank = fontGeneral;
 //            this.xDeltaRank = deltaGeneral;
 //        }
-        int preferedFontHeight = this.cardHeight * 2 / 5;
-        if (fontGeneral.getHeight() < preferedFontHeight) {
-            xFontSuit = fontGeneral;
+
+//        if (fontGeneral.getHeight() <= preferedFontHeight) {
+//            xFontSuit = fontGeneral;
+//        }
+
+        if (Card.FOR_IOS) {
+            xFontSuit = fontRank;
         }
     }
 
