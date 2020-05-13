@@ -134,7 +134,8 @@ public class Hand extends Component {
 //        }
 
         if (Card.FOR_IOS) {
-            xFontSuit = fontRank;
+            xFontSuit = fontGeneral;
+            xDeltaSuit = deltaGeneral;
         }
     }
 
@@ -677,6 +678,9 @@ public class Hand extends Component {
 
     static final int deltaRank = fontRank.getDescent();
     static final int deltaGeneral = fontGeneral.getDescent();
+    static final int heightGeneral = fontGeneral.getHeight();
+
+    int xDeltaSuit = 0;
 
     Font xFontSuit = fontSymbol;
     Font xFontRank = fontRank;
@@ -709,9 +713,7 @@ public class Hand extends Component {
                 g.drawString("" + s.charAt(1), x0 + cardW * 2 / 7, y0 - this.xDeltaRank + cardH / 20);
             }
             g.setFont(this.xFontSuit);
-//            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontRank.getHeight() - 5);
-//            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + fontGeneral.getHeight());
-            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 + cardH / 2);
+            g.drawString(Card.suiteSign(c.suite), x0 + 2, y0 - this.xDeltaSuit + heightGeneral);
         } else {
             g.setFont(fontSymbol);
             x0 += 5;

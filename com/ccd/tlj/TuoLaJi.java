@@ -40,7 +40,8 @@ import java.util.Map;
  */
 public class TuoLaJi {
 
-    static public int BACKGROUND_COLOR = Card.DEBUG_MODE ? 0xffffff : 0x008000;
+    static public final int LIGHT_BLUE = 0x54698c;
+    static public int BACKGROUND_COLOR = Card.DEBUG_MODE ? 0xffffff : LIGHT_BLUE;
     static public final boolean DEBUG = false;
     private Form current;
     public Resources theme;

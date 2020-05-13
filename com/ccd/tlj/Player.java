@@ -576,7 +576,7 @@ public class Player {
         this.partnerCardSeq = new Label(ptInfo);
         this.partnerCard = new Label(ptInfo);
         this.partnerCardSeq.getStyle().setFgColor(INFO_COLOR);
-        this.partnerCardSeq.getStyle().setFont(Hand.fontRank);
+        this.partnerCardSeq.getStyle().setFont(Hand.fontGeneral);
         this.partnerCard.getStyle().setFont(Hand.fontRank);
         this.partnerInfo.add(this.partnerCardSeq).add(this.partnerCard);
 
@@ -603,7 +603,7 @@ public class Player {
                 .setInsets(this.pointsInfo, "0 auto auto 20%")
                 .setInsets(this.gameInfo, "-" + Hand.deltaRank + " auto auto 0");
         ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
-        ll.setReferenceComponentTop(this.partnerInfo, bExit, 1f);
+        ll.setReferenceComponentTop(this.partnerInfo, gameInfo, 0f);
 
         for (PlayerInfo pp : infoLst) {
             pp.addItems(this.widget);
@@ -1617,7 +1617,11 @@ public class Player {
                     RadioButton rb2 = new RadioButton(Dict.get(main.lang, "2nd"));
                     RadioButton rb3 = new RadioButton(Dict.get(main.lang, "3rd"));
                     RadioButton rb4 = new RadioButton(Dict.get(main.lang, "4th"));
-                    ButtonGroup btnGroup = new ButtonGroup(rb1,rb2,rb3,rb4);
+                    rb1.getAllStyles().setFont(Hand.fontGeneral);
+                    rb2.getAllStyles().setFont(Hand.fontGeneral);
+                    rb3.getAllStyles().setFont(Hand.fontGeneral);
+                    rb4.getAllStyles().setFont(Hand.fontGeneral);
+                    ButtonGroup btnGroup = new ButtonGroup(rb1, rb2, rb3, rb4);
                     buttons.addAll(rb1, rb2, rb3, rb4);
                     String rnk = Card.rankToString(playerRank);
                     rnk = rnk.equals("A") ? "K" : "A";
@@ -1626,6 +1630,7 @@ public class Player {
                     addCardButton(buttons, Card.DIAMOND, rnk, btnGroup);
                     addCardButton(buttons, Card.CLUB, rnk, btnGroup);
                     Button btn = new Button(Dict.get(main.lang, "1vs5"));
+                    btn.getAllStyles().setFont(Hand.fontGeneral);
                     btn.setCapsText(false);
                     btn.addActionListener((e)->{
                         cancelTimer();
