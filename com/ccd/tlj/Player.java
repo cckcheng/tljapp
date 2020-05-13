@@ -532,7 +532,7 @@ public class Player {
         this.bExit = new Button(Dict.get(main.lang, "Exit"));
         this.bExit.getAllStyles().setFont(Hand.fontGeneral);
         FontImage.setMaterialIcon(bExit, FontImage.MATERIAL_EXIT_TO_APP);
-        bExit.setUIID("myExit");
+        if (!Card.FOR_IOS) bExit.setUIID("myExit");
         bExit.addActionListener((e) -> {
             tableOn = false;
             robotOn = false;
@@ -603,7 +603,11 @@ public class Player {
                 .setInsets(this.pointsInfo, "0 auto auto 20%")
                 .setInsets(this.gameInfo, "-" + Hand.deltaRank + " auto auto 0");
         ll.setReferenceComponentTop(this.gameInfo, lbGeneral, 1f);
-        ll.setReferenceComponentTop(this.partnerInfo, gameInfo, 0f);
+        if (Card.FOR_IOS) {
+            ll.setReferenceComponentTop(this.partnerInfo, lbGeneral, 1f);
+        } else {
+            ll.setReferenceComponentTop(this.partnerInfo, bExit, 1f);
+        }
 
         for (PlayerInfo pp : infoLst) {
             pp.addItems(this.widget);
@@ -1686,7 +1690,7 @@ public class Player {
                 } else {
                     btn.getAllStyles().setFgColor(BLACK_COLOR);
                 }
-                buttons.add(new Label("   "));
+                buttons.add(new Label("  "));
                 buttons.add(btn);
                 btn.addActionListener((e)->{
                     if(!btnGroup.isSelected()) {
