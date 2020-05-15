@@ -161,9 +161,6 @@ public class Player {
             int rank = parseInteger(d);
             if (rank > 0) {
                 hand.addCard(new Card(suite, rank));
-                if (rank == this.playerRank || suite == Card.JOKER) {
-                    if (!candidateTrumps.contains(suite)) candidateTrumps.add(suite);
-                }
             }
         }
     }
@@ -360,6 +357,12 @@ public class Player {
         int defaultTimeout = parseInteger(data.get("timeout"));
         if (defaultTimeout > 0) this.timeout = defaultTimeout;
 
+        String pTrumps = trimmedString(data.get("ptrumps"));
+        if (!pTrumps.isEmpty()) {
+            for (int i = 0, n = pTrumps.length(); i < n; i++) {
+                this.candidateTrumps.add(pTrumps.charAt(i));
+            }
+        }
         this.addCards(data);
 
         PlayerInfo p0 = this.infoLst.get(0);
